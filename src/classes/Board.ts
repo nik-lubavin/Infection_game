@@ -1,0 +1,144 @@
+import { PlayerType } from "../interfaces/Board";
+import { Cell, CellContentType, ICell } from "./Cell";
+
+export class Board {
+  private constructor(
+    public rows: number,
+    public cols: number,
+    public cells: ICell[][]
+  ) {}
+
+  // Create a deep copy of the current board
+  public clone(): Board {
+    // Deep clone the cells array
+    const clonedCells: ICell[][] = [];
+    for (let rowIdx = 0; rowIdx < this.rows; rowIdx++) {
+      const clonedRow: ICell[] = [];
+      for (let colIdx = 0; colIdx < this.cols; colIdx++) {
+        const originalCell = this.cells[rowIdx][colIdx];
+        clonedRow.push(new Cell(rowIdx, colIdx, originalCell.content));
+      }
+      clonedCells.push(clonedRow);
+    }
+
+    // Create a new board with the cloned cells
+    return new Board(this.rows, this.cols, clonedCells);
+  }
+
+  static createBoard(rowNumber: number, columnNumber: number): Board {
+    const cells: ICell[][] = [];
+    for (let rowIdx = 0; rowIdx < rowNumber; rowIdx++) {
+      const row: ICell[] = [];
+      for (let colIdx = 0; colIdx < columnNumber; colIdx++) {
+        row.push(new Cell(rowIdx, colIdx));
+      }
+      cells.push(row);
+    }
+    return new Board(rowNumber, columnNumber, cells);
+  }
+
+  getAllCells(): ICell[] {
+    return this.cells.flat();
+  }
+
+  getAdjacentCells(cell: ICell): ICell[] {
+    const adjacentCells: ICell[] = [];
+
+    if (cell.rowIdx > 0) {
+      adjacentCells.push(this.cells[cell.rowIdx - 1][cell.colIdx]);
+      if (cell.colIdx > 0) {
+        adjacentCells.push(this.cells[cell.rowIdx - 1][cell.colIdx - 1]);
+      }
+      if (cell.colIdx < this.cols - 1) {
+        adjacentCells.push(this.cells[cell.rowIdx - 1][cell.colIdx + 1]);
+      }
+    }
+
+    if (cell.rowIdx < this.rows - 1) {
+      adjacentCells.push(this.cells[cell.rowIdx + 1][cell.colIdx]);
+      if (cell.colIdx > 0) {
+        adjacentCells.push(this.cells[cell.rowIdx + 1][cell.colIdx - 1]);
+      }
+      if (cell.colIdx < this.cols - 1) {
+        adjacentCells.push(this.cells[cell.rowIdx + 1][cell.colIdx + 1]);
+      }
+    }
+
+    if (cell.colIdx > 0) {
+      adjacentCells.push(this.cells[cell.rowIdx][cell.colIdx - 1]);
+      if (cell.rowIdx > 0) {
+        adjacentCells.push(this.cells[cell.rowIdx - 1][cell.colIdx - 1]);
+      }
+      if (cell.rowIdx < this.rows - 1) {
+        adjacentCells.push(this.cells[cell.rowIdx + 1][cell.colIdx - 1]);
+      }
+    }
+
+    if (cell.colIdx < this.cols - 1) {
+      adjacentCells.push(this.cells[cell.rowIdx][cell.colIdx + 1]);
+      if (cell.rowIdx > 0) {
+        adjacentCells.push(this.cells[cell.rowIdx - 1][cell.colIdx + 1]);
+      }
+      if (cell.rowIdx < this.rows - 1) {
+        adjacentCells.push(this.cells[cell.rowIdx + 1][cell.colIdx + 1]);
+      }
+    }
+
+    return Array.from(new Set(adjacentCells));
+  }
+
+  updateCell(cell: ICell) {
+    const newCell = new Cell(cell.rowIdx, cell.colIdx, cell.content);
+    this.cells[cell.rowIdx][cell.colIdx] = newCell;
+  }
+
+  public getVirusCells(playerType: PlayerType): ICell[] {
+    const virus =
+      playerType === PlayerType.RED
+        ? CellContentType.RED_VIRUS
+        : CellContentType.BLUE_VIRUS;
+    const virusCells: ICell[] = [];
+    for (const row of this.cells) {
+      for (const cell of row) {
+        if (cell.content === virus) {
+          virusCells.push(cell);
+        }
+      }
+    }
+
+    return virusCells;
+  }
+
+  public getStartingCell(playerType: PlayerType): ICell {
+    if (playerType === PlayerType.RED) {
+      return this.cells[0][0];
+    } else {
+      return this.cells[this.rows - 1][this.cols - 1];
+    }
+  }
+
+  public getColonyCells(playerType: PlayerType): ICell[] {
+    const colony =
+      playerType === PlayerType.RED
+        ? CellContentType.RED_COLONY
+        : CellContentType.BLUE_COLONY;
+    const colonyCells: ICell[] = [];
+    for (const row of this.cells) {
+      for (const cell of row) {
+        if (cell.content === colony) {
+          colonyCells.push(cell);
+        }
+      }
+    }
+
+    return colonyCells;
+  }
+
+  // public markAllUnavailableCells(): void {
+  //   for (const row of this.cells) {
+  //     for (const cell of row) {
+  //       cell.availableToMove = false;
+  //     }
+  //   }
+  // }
+}
