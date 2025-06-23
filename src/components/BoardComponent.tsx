@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { PlayerType } from "../interfaces/Board";
 import CellComponent from "./Cell";
 import "../styles/Board.css";
-import { CellContentType, ICell } from "../classes/Cell";
+import { ICell } from "../classes/Cell";
 import { Board } from "../classes/Board";
 
 export interface BoardComponentProps {
@@ -29,25 +29,6 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
   availableCells,
   onCellClick,
 }) => {
-  // const handleCellClick = (cell: ICell) => {
-  //   const isAvailable = isCellAvailable(
-  //     cell.rowIdx,
-  //     cell.colIdx,
-  //     availableCells
-  //   );
-
-  //   if (!isAvailable) return;
-
-  //   if (cell.content == null) {
-  //     cell.content =
-  //       currentTurn === PlayerType.RED
-  //         ? CellContentType.RED_VIRUS
-  //         : CellContentType.BLUE_VIRUS;
-  //   } else {
-  //     console.log("Under development");
-  //   }
-  // };
-
   const renderGrid = () => {
     return board.cells.map((row: ICell[]) => {
       const rowComponent = row.map((cell: ICell) => {

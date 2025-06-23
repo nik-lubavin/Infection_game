@@ -87,6 +87,61 @@ export class Board {
     return Array.from(new Set(adjacentCells));
   }
 
+  getAdjacentFriendlyColonyCell(
+    cell: ICell,
+    playerType: PlayerType
+  ): ICell[] {
+    const colony =
+      playerType === PlayerType.RED
+        ? CellContentType.RED_COLONY
+        : CellContentType.BLUE_COLONY;
+    const adjacentCells = this.getAdjacentCells(cell);
+    return adjacentCells.filter((cell) => cell.content === colony);
+  }
+
+  getJoinedColonies(playerType: PlayerType) {
+    // const colony =
+    //   playerType === PlayerType.RED
+    //     ? CellContentType.RED_COLONY
+    //     : CellContentType.BLUE_COLONY;
+
+    const cells = this.getColonyCells(playerType);
+    cells.sort((a, b) => {
+      const rowDiff = a.rowIdx - b.rowIdx;
+      const colDiff = a.colIdx - b.colIdx;
+      return rowDiff + colDiff;
+    });
+
+    console.log("AFTER SORT COLONIES", cells);
+    const colonies: { id: number; cells: ICell[] }[] = [];
+    let id = 0;
+    let currentColony;
+    let lastCell: ICell | null = null;
+    for (const cell of cells) {
+      if (!currentColony) {
+        currentColony = { id, cells: [cell] };
+        colonies.push(currentColony);
+        id++;
+        lastCell = cell;
+        continue;
+      }
+
+      if (
+        cell.rowIdx - lastCell!.rowIdx <= 1 ||
+        cell.colIdx - lastCell!.colIdx <= 1
+      ) {
+        currentColony.cells.push(cell);
+      } else {
+        currentColony = { id, cells: [cell] };
+        colonies.push(currentColony);
+        id++;
+      }
+      lastCell = cell;
+    }
+    console.log("COLONIES", colonies);
+    return colonies;
+  }
+
   updateCell(cell: ICell) {
     const newCell = new Cell(cell.rowIdx, cell.colIdx, cell.content);
     this.cells[cell.rowIdx][cell.colIdx] = newCell;
