@@ -13,6 +13,10 @@ export class ColonySet {
     this.colonyCells.push(cell);
   }
 
+  getColonyCells(): ICell[] {
+    return this.colonyCells;
+  }
+
   private checkActivity() {
     const friendlyVirus =
       this.playerType === PlayerType.RED

@@ -8,13 +8,31 @@ const { Header, Content, Footer, Sider } = Layout;
 const { Title, Text } = Typography;
 
 const HomePage: React.FC = () => {
-  const { board, currentPlayer, movesLeft, availableCells, onCellClick } =
-    useVirusGame();
+  const {
+    board,
+    currentPlayer,
+    movesLeft,
+    availableCells,
+    colonySets,
+    onCellClick,
+  } = useVirusGame();
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;
   const gridHeight = CELL_SIZE * GRID_SIZE;
   const containerPadding = 20;
+
+  // Prepare colonySets data for JSON display
+  const colonySetsData = colonySets.map((colonySet, index) => ({
+    id: index,
+    playerType: colonySet.playerType,
+    activated: colonySet.activated,
+    cells: colonySet.getColonyCells().map((cell) => ({
+      rowIdx: cell.rowIdx,
+      colIdx: cell.colIdx,
+      content: cell.content,
+    })),
+  }));
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -22,8 +40,12 @@ const HomePage: React.FC = () => {
         <Title level={2}>Virus Infection Game</Title>
       </Header>
       <Layout>
-        <Sider width={200} theme="light" style={{ padding: "20px" }}>
-          <Card title="Game Status" bordered={false}>
+        <Sider width={300} theme="light" style={{ padding: "20px" }}>
+          <Card
+            title="Game Status"
+            bordered={false}
+            style={{ marginBottom: "20px" }}
+          >
             <Row>
               <Col span={24}>
                 <Text
@@ -67,6 +89,30 @@ const HomePage: React.FC = () => {
                 </Col>
               </Row>
             )}
+          </Card>
+
+          <Card title="Colony Sets (JSON)" bordered={false}>
+            <div
+              style={{
+                backgroundColor: "#f5f5f5",
+                padding: "10px",
+                borderRadius: "4px",
+                maxHeight: "400px",
+                overflow: "auto",
+                fontSize: "12px",
+                fontFamily: "monospace",
+              }}
+            >
+              <pre
+                style={{
+                  margin: 0,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                }}
+              >
+                {JSON.stringify(colonySetsData, null, 2)}
+              </pre>
+            </div>
           </Card>
         </Sider>
         <Content

@@ -6,7 +6,7 @@ export interface IBoard {
   cols: number;
   cells: ICell[][];
   getAdjacentCells(cell: ICell): ICell[];
-  getAdjacentColonyCell(cell: ICell, playerType: PlayerType): ICell[];
+  getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[];
   getJoinedColonies(playerType: PlayerType): { id: number; cells: ICell[] }[];
   getColonyCells(playerType: PlayerType): ICell[];
   getVirusCells(playerType: PlayerType): ICell[];
@@ -100,7 +100,7 @@ export class Board implements IBoard {
     return Array.from(new Set(adjacentCells));
   }
 
-  getAdjacentColonyCell(cell: ICell, playerType: PlayerType): ICell[] {
+  getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[] {
     const colony =
       playerType === PlayerType.RED
         ? CellContentType.RED_COLONY

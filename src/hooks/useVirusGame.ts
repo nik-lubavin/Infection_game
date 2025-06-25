@@ -24,7 +24,7 @@ import { ColonySet } from "../classes/ColonySet";
 // }
 
 export function useVirusGame() {
-  const { addNewColonyCell } = useColonyManager();
+  const { handleAddingNewColonyCell, colonySets } = useColonyManager();
 
   const { board, updateBoard } = useBoard();
   const [availableCells, setAvailableCells] = useState<ICell[]>([]);
@@ -99,12 +99,12 @@ export function useVirusGame() {
           : CellContentType.BLUE_COLONY;
 
       // 2. Add the new colony cell to the board
-      addNewColonyCell(cell, currentPlayer);
+      handleAddingNewColonyCell(cell, currentPlayer);
 
       // 3. Get adjacent enemy colony cells to this cell if any
       const enemyPlayer =
         currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
-      const adjacentEnemyColonyCells = board.getAdjacentColonyCell(
+      const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
         cell,
         enemyPlayer
       );
@@ -138,6 +138,7 @@ export function useVirusGame() {
     currentPlayer,
     movesLeft,
     availableCells,
+    colonySets,
     onCellClick: handleCellClick,
   };
 }
