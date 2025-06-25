@@ -12,7 +12,7 @@ interface CellProps {
 
 const CellComponent: React.FC<CellProps> = (props: CellProps) => {
   const { cell, onCellClick: onClick, isAvailable, player } = props;
-  const { content: cellContent } = cell;
+  const { content: cellContent, colonySet } = cell;
   const [isHovered, setIsHovered] = useState(false);
 
   // Base color for all cells
@@ -54,35 +54,52 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     };
 
     // Style specific to content type
-    switch (cellContent) {
-      case CellContentType.RED_VIRUS:
+    if (cellContent === CellContentType.RED_VIRUS) {
+      return {
+        ...commonStyle,
+        borderRadius: "50%",
+        backgroundColor: "#ff0000",
+      };
+    } else if (cellContent === CellContentType.BLUE_VIRUS) {
+      return {
+        ...commonStyle,
+        borderRadius: "50%",
+        backgroundColor: "#0000ff",
+      };
+    } else if (cellContent === CellContentType.RED_COLONY) {
+      if (colonySet?.activated) {
         return {
           ...commonStyle,
-          borderRadius: "50%",
-          backgroundColor: "#ff0000",
+          borderRadius: "10%",
+          backgroundColor: "#ff6666",
+          border: "2px solid #ff0000",
         };
-      case CellContentType.BLUE_VIRUS:
-        return {
-          ...commonStyle,
-          borderRadius: "50%",
-          backgroundColor: "#0000ff",
-        };
-      case CellContentType.RED_COLONY:
+      } else {
         return {
           ...commonStyle,
           borderRadius: "10%",
           backgroundColor: "#ff3333",
           border: "2px solid #cc0000",
         };
-      case CellContentType.BLUE_COLONY:
+      }
+    } else if (cellContent === CellContentType.BLUE_COLONY) {
+      if (colonySet?.activated) {
+        return {
+          ...commonStyle,
+          borderRadius: "10%",
+          backgroundColor: "#6666ff",
+          border: "2px solid #0000ff",
+        };
+      } else {
         return {
           ...commonStyle,
           borderRadius: "10%",
           backgroundColor: "#3333ff",
           border: "2px solid #0000cc",
         };
-      default:
-        return undefined;
+      }
+    } else {
+      return undefined;
     }
   };
 

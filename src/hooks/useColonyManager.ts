@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { ColonyContainer } from "../classes/ColonyContainer";
+// import { useState } from "react";
+// import { ColonyContainer } from "../classes/ColonyContainer";
 import { PlayerType } from "../interfaces/Board";
-import { CellContentType, ICell } from "../classes/Cell";
+import { ICell } from "../classes/Cell";
 import { useBoard } from "./useBoard";
 import { ColonySet } from "../classes/ColonySet";
 
 export function useColonyManager() {
-  const [redColonyContainer, setRedColonyContainer] = useState<ColonyContainer>(
-    new ColonyContainer(PlayerType.RED)
-  );
-  const [blueColonyContainer, setBlueColonyContainer] =
-    useState<ColonyContainer>(new ColonyContainer(PlayerType.BLUE));
+  // const [redColonyContainer, setRedColonyContainer] = useState<ColonyContainer>(
+  //   new ColonyContainer(PlayerType.RED)
+  // );
+  // const [blueColonyContainer, setBlueColonyContainer] =
+  //   useState<ColonyContainer>(new ColonyContainer(PlayerType.BLUE));
 
   const { board } = useBoard();
 
   const addNewColonyCell = (colonyCell: ICell, playerType: PlayerType) => {
     // get adjacent ColonyCells for the same player
-    const adjacentColonyCells = board.getAdjacentFriendlyColonyCell(
+    const adjacentColonyCells = board.getAdjacentColonyCell(
       colonyCell,
       playerType
     );
@@ -32,15 +32,10 @@ export function useColonyManager() {
       // TODO      if more then one ColonySets -> can be merged
     } else {
       // create a new ColonySet
-      colonySet = new ColonySet([colonyCell]);
+      colonySet = new ColonySet([colonyCell], playerType);
     }
 
     colonySet.activated = true;
-
-    // if there is none:
-    //      create a new ColonySet
-    //      add the ColonyCell to it
-    // mark ColonySet as activated
   };
 
   return {
