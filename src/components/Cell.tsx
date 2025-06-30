@@ -7,11 +7,11 @@ interface CellProps {
   cell: ICell;
   onCellClick?: (cell: ICell) => void;
   isAvailable: boolean;
-  player: PlayerType;
+  currentTurn: PlayerType;
 }
 
 const CellComponent: React.FC<CellProps> = (props: CellProps) => {
-  const { cell, onCellClick: onClick, isAvailable, player } = props;
+  const { cell, onCellClick: onClick, isAvailable, currentTurn } = props;
   const { content: cellContent, colonySet } = cell;
   const [isHovered, setIsHovered] = useState(false);
 
@@ -35,9 +35,9 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       backgroundColor = notAvailableHoverColor;
     }
   } else if (isAvailable) {
-    if (player === PlayerType.RED) {
+    if (currentTurn === PlayerType.RED) {
       backgroundColor = redBaseColor;
-    } else if (player === PlayerType.BLUE) {
+    } else if (currentTurn === PlayerType.BLUE) {
       backgroundColor = blueBaseColor;
     }
   }
@@ -54,19 +54,28 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     };
 
     // Style specific to content type
-    if (cellContent === CellContentType.RED_VIRUS) {
+    if (
+      cellContent?.content === CellContentType.VIRUS &&
+      cellContent?.player === PlayerType.RED
+    ) {
       return {
         ...commonStyle,
         borderRadius: "50%",
         backgroundColor: "#ff0000",
       };
-    } else if (cellContent === CellContentType.BLUE_VIRUS) {
+    } else if (
+      cellContent?.content === CellContentType.VIRUS &&
+      cellContent?.player === PlayerType.BLUE
+    ) {
       return {
         ...commonStyle,
         borderRadius: "50%",
         backgroundColor: "#0000ff",
       };
-    } else if (cellContent === CellContentType.RED_COLONY) {
+    } else if (
+      cellContent?.content === CellContentType.COLONY &&
+      cellContent?.player === PlayerType.RED
+    ) {
       if (colonySet?.activated) {
         return {
           ...commonStyle,
@@ -82,7 +91,10 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
           border: "2px solid #cc0000",
         };
       }
-    } else if (cellContent === CellContentType.BLUE_COLONY) {
+    } else if (
+      cellContent?.content === CellContentType.COLONY &&
+      cellContent?.player === PlayerType.BLUE
+    ) {
       if (colonySet?.activated) {
         return {
           ...commonStyle,

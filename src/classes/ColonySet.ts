@@ -18,15 +18,14 @@ export class ColonySet {
   }
 
   private checkActivity() {
-    const friendlyVirus =
-      this.playerType === PlayerType.RED
-        ? CellContentType.RED_VIRUS
-        : CellContentType.BLUE_VIRUS;
-
     for (const colonyCell of this.colonyCells) {
       const adjacentVirusCells = colonyCell.board
         .getAdjacentCells(colonyCell)
-        .filter((cell) => cell.content === friendlyVirus);
+        .filter(
+          (cell) =>
+            cell.content?.content === CellContentType.VIRUS &&
+            cell.content?.player === this.playerType
+        );
 
       if (adjacentVirusCells.length) {
         return true;

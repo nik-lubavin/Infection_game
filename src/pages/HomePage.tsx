@@ -13,7 +13,8 @@ const HomePage: React.FC = () => {
     currentPlayer,
     movesLeft,
     availableCells,
-    colonySets,
+    blueColonySets,
+    redColonySets,
     onCellClick,
   } = useVirusGame();
 
@@ -23,7 +24,18 @@ const HomePage: React.FC = () => {
   const containerPadding = 20;
 
   // Prepare colonySets data for JSON display
-  const colonySetsData = colonySets.map((colonySet, index) => ({
+  const redColonySetsData = redColonySets.map((colonySet, index) => ({
+    id: index,
+    playerType: colonySet.playerType,
+    activated: colonySet.activated,
+    cells: colonySet.getColonyCells().map((cell) => ({
+      rowIdx: cell.rowIdx,
+      colIdx: cell.colIdx,
+      content: cell.content,
+    })),
+  }));
+
+  const blueColonySetsData = blueColonySets.map((colonySet, index) => ({
     id: index,
     playerType: colonySet.playerType,
     activated: colonySet.activated,
@@ -110,7 +122,16 @@ const HomePage: React.FC = () => {
                   wordBreak: "break-word",
                 }}
               >
-                {JSON.stringify(colonySetsData, null, 2)}
+                RED: {JSON.stringify(redColonySetsData, null, 2)}
+              </pre>
+              <pre
+                style={{
+                  margin: 0,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                }}
+              >
+                BLUE: {JSON.stringify(blueColonySetsData, null, 2)}
               </pre>
             </div>
           </Card>

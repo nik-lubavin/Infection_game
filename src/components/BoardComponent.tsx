@@ -47,7 +47,7 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
               cell={cell}
               onCellClick={onCellClick}
               isAvailable={isAvailable}
-              player={currentTurn}
+              currentTurn={currentTurn}
             />
           </div>
         );

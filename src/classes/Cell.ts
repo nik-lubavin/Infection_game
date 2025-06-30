@@ -1,31 +1,41 @@
 import { ColonySet } from "./ColonySet";
 import { Board, IBoard } from "./Board";
+import { PlayerType } from "../interfaces/Board";
 
 export interface ICell {
   rowIdx: number;
   colIdx: number;
-  content: CellContentType | null;
+  content: ICellContent | null;
   board: IBoard;
   colonySet: ColonySet | null;
 }
 
+export interface ICellContent {
+  content: CellContentType;
+  player: PlayerType | null;
+}
+
 export class Cell implements ICell {
+  content: ICellContent | null = null;
   colonySet: ColonySet | null = null;
+
   constructor(
     public rowIdx: number,
     public colIdx: number,
-    public content: CellContentType | null = null,
-    public board: Board
-  ) {}
-
-  // getAdjacentCells(board: IBoard): ICell[] {
-  //   // return board.getAdjacentCells(this);
-  // }
+    public board: Board,
+    content: CellContentType | null,
+    player: PlayerType | null
+  ) {
+    if (content) {
+      this.content = {
+        content: content,
+        player: player,
+      };
+    }
+  }
 }
 
 export enum CellContentType {
-  RED_VIRUS = "red_virus",
-  BLUE_VIRUS = "blue_virus",
-  RED_COLONY = "red_colony",
-  BLUE_COLONY = "blue_colony",
+  VIRUS = "virus",
+  COLONY = "colony",
 }

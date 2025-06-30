@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { CellContentType, ICell } from "../classes/Cell";
 import { Board } from "../classes/Board";
-// import { GRID_SIZE } from "../constants/board";
 import { useColonyManager } from "./useColonyManager";
 import { useBoard } from "./useBoard";
 import { ColonySet } from "../classes/ColonySet";
@@ -24,7 +23,8 @@ import { ColonySet } from "../classes/ColonySet";
 // }
 
 export function useVirusGame() {
-  const { handleAddingNewColonyCell, colonySets } = useColonyManager();
+  const { handleAddingNewColonyCell, blueColonySets, redColonySets } =
+    useColonyManager();
 
   const { board, updateBoard } = useBoard();
   const [availableCells, setAvailableCells] = useState<ICell[]>([]);
@@ -41,8 +41,8 @@ export function useVirusGame() {
 
       const enemyVirus =
         currentPlayer === PlayerType.RED
-          ? CellContentType.BLUE_VIRUS
-          : CellContentType.RED_VIRUS;
+          ? CellContentType.VIRUS && PlayerType.BLUE
+          : CellContentType.VIRUS && PlayerType.RED;
 
       if (!virusCells.length) {
         const startingCell = currentBoard.getStartingCell(currentPlayer);
@@ -53,13 +53,15 @@ export function useVirusGame() {
       virusCells.forEach((virusCell) => {
         const adjacentCells = currentBoard.getAdjacentCells(virusCell);
         adjacentCells.forEach((cell) => {
-          if (cell.content == null || cell.content === enemyVirus) {
+          if (
+            cell.content == null ||
+            (cell.content?.content === CellContentType.VIRUS &&
+              cell.content?.player === enemyVirus)
+          ) {
             availableCells.push(cell);
           }
         });
       });
-
-      // const joinedColonies = currentBoard.getJoinedColonies(currentPlayer);
 
       return Array.from(new Set(availableCells));
     },
@@ -75,28 +77,24 @@ export function useVirusGame() {
     const isAvailable = availableCells.indexOf(cell) !== -1;
     if (!isAvailable) return;
 
-    const enemyVirus =
-      currentPlayer === PlayerType.RED
-        ? CellContentType.BLUE_VIRUS
-        : CellContentType.RED_VIRUS;
-
     if (cell.content == null) {
       // Create a clone of the current cell with the new content
-      cell.content =
-        currentPlayer === PlayerType.RED
-          ? CellContentType.RED_VIRUS
-          : CellContentType.BLUE_VIRUS;
-
-      // Create a new board instance
+      cell.content = {
+        content: CellContentType.VIRUS,
+        player: currentPlayer,
+      };
       updateBoard();
-    } else if (cell.content === enemyVirus) {
-      // Here we replace the enemy virus with our colony
 
+      // ENEMY VIRUS
+    } else if (
+      cell.content?.content === CellContentType.VIRUS &&
+      cell.content?.player !== currentPlayer
+    ) {
       // 1. Create a clone of the current cell with the new content
-      cell.content =
-        currentPlayer === PlayerType.RED
-          ? CellContentType.RED_COLONY
-          : CellContentType.BLUE_COLONY;
+      cell.content = {
+        content: CellContentType.COLONY,
+        player: currentPlayer,
+      };
 
       // 2. Add the new colony cell to the board
       handleAddingNewColonyCell(cell, currentPlayer);
@@ -138,7 +136,8 @@ export function useVirusGame() {
     currentPlayer,
     movesLeft,
     availableCells,
-    colonySets,
+    blueColonySets,
+    redColonySets,
     onCellClick: handleCellClick,
   };
 }
