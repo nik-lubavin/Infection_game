@@ -1,12 +1,11 @@
 import { ColonySet } from "./ColonySet";
-import { Board, IBoard } from "./Board";
 import { PlayerType } from "../interfaces/Board";
 
 export interface ICell {
   rowIdx: number;
   colIdx: number;
+  code: string;
   content: ICellContent | null;
-  board: IBoard;
   colonySet: ColonySet | null;
 }
 
@@ -15,20 +14,25 @@ export interface ICellContent {
   player: PlayerType | null;
 }
 
+function generateCellCode(rowIdx: number, colIdx: number): string {
+  return `${rowIdx}-${colIdx}`;
+}
+
 export class Cell implements ICell {
   content: ICellContent | null = null;
-  colonySet: ColonySet | null = null;
+  code: string;
 
   constructor(
     public rowIdx: number,
     public colIdx: number,
-    public board: Board,
-    content: CellContentType | null,
-    player: PlayerType | null
+    contentType: CellContentType | null,
+    player: PlayerType | null,
+    public colonySet: ColonySet | null
   ) {
-    if (content) {
+    this.code = generateCellCode(rowIdx, colIdx);
+    if (contentType) {
       this.content = {
-        content: content,
+        content: contentType,
         player: player,
       };
     }

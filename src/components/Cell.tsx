@@ -8,10 +8,17 @@ interface CellProps {
   onCellClick?: (cell: ICell) => void;
   isAvailable: boolean;
   currentTurn: PlayerType;
+  setOutputText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const CellComponent: React.FC<CellProps> = (props: CellProps) => {
-  const { cell, onCellClick: onClick, isAvailable, currentTurn } = props;
+  const {
+    cell,
+    onCellClick: onClick,
+    isAvailable,
+    currentTurn,
+    setOutputText,
+  } = props;
   const { content: cellContent, colonySet } = cell;
   const [isHovered, setIsHovered] = useState(false);
 
@@ -117,6 +124,30 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
 
   const contentStyle = getCellContentStyle();
 
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    const { rowIdx, colIdx, content, colonySet } = cell;
+    const cellData = {
+      rowIdx,
+      colIdx,
+      content,
+      colonySet: colonySet
+        ? {
+            activated: colonySet.activated,
+            playerType: colonySet.playerType,
+            id: colonySet.id,
+            cellsLength: colonySet.getColonyCells().length,
+          }
+        : null,
+    };
+    setOutputText(JSON.stringify(cellData, null, 2));
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setOutputText("");
+  };
+
   return (
     <div
       style={{
@@ -133,8 +164,8 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
         alignItems: "center",
       }}
       onClick={() => isAvailable && onClick && onClick(cell)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {cellContent && <div style={contentStyle} />}
     </div>

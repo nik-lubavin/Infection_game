@@ -11,12 +11,13 @@ const { Title } = Typography;
 
 const HomePage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [outputText, setOutputText] = useState("");
 
   const {
     board,
     currentPlayer,
     movesLeft,
-    availableCells,
+    availableCellCodes,
     blueColonySets,
     redColonySets,
     onCellClick,
@@ -51,7 +52,14 @@ const HomePage: React.FC = () => {
   }));
 
   return (
-    <Layout style={{ minHeight: "100vh", overflow: "hidden" }}>
+    <Layout
+      style={{
+        minHeight: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Header
         style={{
           background: "#fff",
@@ -74,26 +82,20 @@ const HomePage: React.FC = () => {
         </Title>
         <div style={{ width: 64 }}></div>
       </Header>
-      <Layout
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          height: "calc(100vh - 64px)",
-        }}
-      >
+      <Layout style={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
         <Sidebar
           currentPlayer={currentPlayer}
           movesLeft={movesLeft}
-          availableCells={availableCells}
+          availableCellCodes={availableCellCodes}
           redColonySets={redColonySetsData}
           blueColonySets={blueColonySetsData}
           collapsed={sidebarCollapsed}
-          onCollapse={setSidebarCollapsed}
         />
         <Content
           style={{
             padding: "20px",
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             overflow: "auto",
@@ -118,11 +120,32 @@ const HomePage: React.FC = () => {
               currentTurn={currentPlayer}
               onCellClick={onCellClick}
               board={board}
-              availableCells={availableCells}
+              availableCellCodes={availableCellCodes}
+              setOutputText={setOutputText}
             />
           </div>
         </Content>
       </Layout>
+      <div
+        style={{
+          width: "100%",
+          textAlign: "center",
+          whiteSpace: "pre-wrap",
+          wordWrap: "break-word",
+          padding: "10px",
+          backgroundColor: "#f0f0f0",
+          borderTop: "1px solid #e0e0e0",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }}
+      >
+        <Typography.Text>
+          {outputText || "Hover over a cell to see details here."}
+        </Typography.Text>
+      </div>
       <Footer style={{ textAlign: "center" }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>

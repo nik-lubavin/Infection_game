@@ -1,80 +1,24 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { CellContentType, ICell } from "../classes/Cell";
-import { Board } from "../classes/Board";
+
 import { useColonyManager } from "./useColonyManager";
 import { useBoard } from "./useBoard";
-import { ColonySet } from "../classes/ColonySet";
-
-// class Colony {
-//   static newId = 0;
-
-//   id: number;
-//   playerType: PlayerType;
-//   cells: ICell[];
-//   activated: boolean;
-
-//   constructor(playerType: PlayerType, cells: ICell[] = []) {
-//     this.id = Colony.newId++;
-//     this.playerType = playerType;
-//     this.cells = cells;
-//     this.activated = false;
-//   }
-// }
+import { useAvailableCellCodes } from "./useAvailableCellCodes";
+import { useCurrentPlayer } from "./useCurrentPlayer";
 
 export function useVirusGame() {
   const { handleAddingNewColonyCell, blueColonySets, redColonySets } =
     useColonyManager();
 
   const { board, updateBoard } = useBoard();
-  const [availableCells, setAvailableCells] = useState<ICell[]>([]);
-  const [currentPlayer, setCurrentPlayer] = useState<PlayerType>(
-    PlayerType.RED
-  );
+  const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
   const [movesLeft, setMovesLeft] = useState<number>(3);
-
-  // Calculate available cells based on current state
-  const calculateAvailableCells = useCallback(
-    (currentPlayer: PlayerType, currentBoard: Board): ICell[] => {
-      const availableCells: ICell[] = [];
-      const virusCells = currentBoard.getVirusCells(currentPlayer);
-
-      const enemyVirus =
-        currentPlayer === PlayerType.RED
-          ? CellContentType.VIRUS && PlayerType.BLUE
-          : CellContentType.VIRUS && PlayerType.RED;
-
-      if (!virusCells.length) {
-        const startingCell = currentBoard.getStartingCell(currentPlayer);
-        availableCells.push(startingCell);
-        return availableCells;
-      }
-
-      virusCells.forEach((virusCell) => {
-        const adjacentCells = currentBoard.getAdjacentCells(virusCell);
-        adjacentCells.forEach((cell) => {
-          if (
-            cell.content == null ||
-            (cell.content?.content === CellContentType.VIRUS &&
-              cell.content?.player === enemyVirus)
-          ) {
-            availableCells.push(cell);
-          }
-        });
-      });
-
-      return Array.from(new Set(availableCells));
-    },
-    []
-  );
-
-  // Update available cells when game state changes
-  useEffect(() => {
-    setAvailableCells(calculateAvailableCells(currentPlayer, board));
-  }, [currentPlayer, board, calculateAvailableCells]);
+  const { availableCellCodes } = useAvailableCellCodes();
 
   const handleCellClick = (cell: ICell) => {
-    const isAvailable = availableCells.indexOf(cell) !== -1;
+    const isAvailable = availableCellCodes.indexOf(cell.code) !== -1;
+
     if (!isAvailable) return;
 
     if (cell.content == null) {
@@ -83,6 +27,8 @@ export function useVirusGame() {
         content: CellContentType.VIRUS,
         player: currentPlayer,
       };
+      board.cloneCell(cell);
+
       updateBoard();
 
       // ENEMY VIRUS
@@ -98,27 +44,31 @@ export function useVirusGame() {
 
       // 2. Add the new colony cell to the board
       handleAddingNewColonyCell(cell, currentPlayer);
+      board.cloneCell(cell);
 
-      // 3. Get adjacent enemy colony cells to this cell if any
-      const enemyPlayer =
-        currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
-      const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
-        cell,
-        enemyPlayer
-      );
+      // 3. Checking if we deactivated any enemy colonies
+      // const enemyPlayer =
+      //   currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+      // const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
+      //   cell,
+      //   enemyPlayer
+      // );
 
-      if (adjacentEnemyColonyCells.length) {
-        const enemyColonySets = adjacentEnemyColonyCells
-          .map((cell) => cell.colonySet)
-          .filter(Boolean) as ColonySet[];
+      // if (adjacentEnemyColonyCells.length) {
+      //   const enemyColonySets = adjacentEnemyColonyCells
+      //     .map((cell) => cell.colonySet)
+      //     .filter(Boolean) as ColonySet[];
 
-        enemyColonySets.forEach((colonySet) => {
-          colonySet.checkAndUpdateActivity();
-        });
-      }
+      //   enemyColonySets.forEach((colonySet) => {
+      //     colonySet.checkAndUpdateActivity();
+      //   });
+      // }
 
       // Create a new board instance
       updateBoard();
+      console.log("handleCellClick5", board);
+    } else {
+      console.log("handleCellClick ELSE");
     }
 
     if (movesLeft > 1) {
@@ -135,7 +85,7 @@ export function useVirusGame() {
     board,
     currentPlayer,
     movesLeft,
-    availableCells,
+    availableCellCodes,
     blueColonySets,
     redColonySets,
     onCellClick: handleCellClick,

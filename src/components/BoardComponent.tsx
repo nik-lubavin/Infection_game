@@ -10,33 +10,25 @@ export interface BoardComponentProps {
   currentTurn: PlayerType;
   onCellClick: (cell: ICell) => void;
   board: Board;
-  availableCells: ICell[];
+  availableCellCodes: string[];
+  setOutputText: React.Dispatch<React.SetStateAction<string>>;
 }
 
-function isCellAvailable(
-  rowIdx: number,
-  colIdx: number,
-  availableCells: ICell[]
-): boolean {
-  return availableCells.some(
-    (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
-  );
+function isCellAvailable(cell: ICell, availableCellCodes: string[]): boolean {
+  return availableCellCodes.some((cellCode) => cellCode === cell.code);
 }
 
 const BoardComponent: React.FC<BoardComponentProps> = ({
   currentTurn,
   board,
-  availableCells,
+  availableCellCodes,
   onCellClick,
+  setOutputText,
 }) => {
   const renderGrid = () => {
     return board.cells.map((row: ICell[]) => {
       const rowComponent = row.map((cell: ICell) => {
-        const isAvailable = isCellAvailable(
-          cell.rowIdx,
-          cell.colIdx,
-          availableCells
-        );
+        const isAvailable = isCellAvailable(cell, availableCellCodes);
 
         return (
           <div
@@ -48,6 +40,7 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
               onCellClick={onCellClick}
               isAvailable={isAvailable}
               currentTurn={currentTurn}
+              setOutputText={setOutputText}
             />
           </div>
         );

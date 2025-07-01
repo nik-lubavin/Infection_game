@@ -1,28 +1,25 @@
 import React, { useState, useRef } from "react";
 import { Typography, Card, Row, Col, Badge } from "antd";
 import { PlayerType } from "../interfaces/Board";
-import { ICell } from "../classes/Cell";
 
 const { Text } = Typography;
 
 interface SidebarProps {
   currentPlayer: PlayerType;
   movesLeft: number;
-  availableCells: ICell[];
+  availableCellCodes: string[];
   redColonySets: any[];
   blueColonySets: any[];
   collapsed: boolean;
-  onCollapse: (collapsed: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentPlayer,
   movesLeft,
-  availableCells,
+  availableCellCodes,
   redColonySets,
   blueColonySets,
   collapsed,
-  onCollapse,
 }) => {
   const [width, setWidth] = useState(300);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -118,11 +115,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             <Row style={{ marginTop: 16 }}>
               <Col span={24}>
                 <Text style={{ fontSize: "14px" }}>
-                  Available Cells: {availableCells.length}
+                  Available Cells: {availableCellCodes.length}
                 </Text>
               </Col>
             </Row>
-            {availableCells.length > 0 && (
+            {availableCellCodes.length > 0 && (
               <Row style={{ marginTop: 16 }}>
                 <Col span={24}>
                   <Text type="warning" style={{ fontSize: "14px" }}>

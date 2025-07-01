@@ -1,61 +1,69 @@
 import { PlayerType } from "../interfaces/Board";
 import { Cell, CellContentType, ICell } from "./Cell";
 
+function generateNewEmptyBoard(rowsNum: number, colsNum: number): ICell[][] {
+  const cells: ICell[][] = [];
+  for (let row = 0; row < rowsNum; row++) {
+    cells[row] = [];
+    for (let col = 0; col < colsNum; col++) {
+      cells[row][col] = new Cell(row, col, null, null, null);
+    }
+  }
+  return cells;
+}
+
 export interface IBoard {
   rows: number;
   cols: number;
   cells: ICell[][];
+  version: number;
   clone(): IBoard;
   getAdjacentCells(cell: ICell): ICell[];
   getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[];
-  getJoinedColonies(playerType: PlayerType): { id: number; cells: ICell[] }[];
+  // getJoinedColonies(playerType: PlayerType): { id: number; cells: ICell[] }[];
   getColonyCells(playerType: PlayerType): ICell[];
   getVirusCells(playerType: PlayerType): ICell[];
   getStartingCell(playerType: PlayerType): ICell;
 }
 
+let versionCounter = 0;
 export class Board implements IBoard {
-  private constructor(
-    public rows: number,
-    public cols: number,
-    public cells: ICell[][] = []
-  ) {}
+  version: number;
+  cells: ICell[][];
+
+  constructor(public rows: number, public cols: number) {
+    this.version = versionCounter++;
+    this.cells = generateNewEmptyBoard(rows, cols);
+  }
+
+  public cloneCell(cell: ICell): ICell {
+    const newCell = new Cell(
+      cell.rowIdx,
+      cell.colIdx,
+      // this,
+      cell.content?.content ?? null,
+      cell.content?.player ?? null,
+      cell.colonySet ?? null
+    );
+
+    this.cells[cell.rowIdx][cell.colIdx] = newCell;
+
+    return newCell;
+  }
 
   // Create a deep copy of the current board
   public clone(): Board {
     const newBoard = new Board(this.rows, this.cols);
+    newBoard.cells = generateNewEmptyBoard(this.rows, this.cols);
 
     // Deep clone the cells array
     for (let rowIdx = 0; rowIdx < this.rows; rowIdx++) {
-      const clonedRow: ICell[] = [];
       for (let colIdx = 0; colIdx < this.cols; colIdx++) {
         const originalCell = this.cells[rowIdx][colIdx];
-        clonedRow.push(
-          new Cell(
-            rowIdx,
-            colIdx,
-            this,
-            originalCell.content?.content ?? null,
-            originalCell.content?.player ?? null
-          )
-        );
+        newBoard.cloneCell(originalCell);
       }
-      newBoard.cells.push(clonedRow);
     }
-
-    return newBoard;
-  }
-
-  static createBoard(rowNumber: number, columnNumber: number): Board {
-    const newBoard = new Board(rowNumber, columnNumber, []);
-    // newBoard.cells: ICell[][] = [];
-    for (let rowIdx = 0; rowIdx < rowNumber; rowIdx++) {
-      const row: ICell[] = [];
-      for (let colIdx = 0; colIdx < columnNumber; colIdx++) {
-        row.push(new Cell(rowIdx, colIdx, newBoard, null, null));
-      }
-      newBoard.cells.push(row);
-    }
+    newBoard.version = versionCounter++;
     return newBoard;
   }
 
@@ -111,48 +119,14 @@ export class Board implements IBoard {
 
   getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[] {
     const adjacentCells = this.getAdjacentCells(cell);
-    return adjacentCells.filter(
+    console.log("BOARD adjacentCells to cell", cell, adjacentCells, this);
+    const result = adjacentCells.filter(
       (cell) =>
         cell.content?.content === CellContentType.COLONY &&
         cell.content?.player === playerType
     );
-  }
-
-  getJoinedColonies(playerType: PlayerType) {
-    const cells = this.getColonyCells(playerType);
-    cells.sort((a, b) => {
-      const rowDiff = a.rowIdx - b.rowIdx;
-      const colDiff = a.colIdx - b.colIdx;
-      return rowDiff + colDiff;
-    });
-
-    const colonies: { id: number; cells: ICell[] }[] = [];
-    let id = 0;
-    let currentColony;
-    let lastCell: ICell | null = null;
-    for (const cell of cells) {
-      if (!currentColony) {
-        currentColony = { id, cells: [cell] };
-        colonies.push(currentColony);
-        id++;
-        lastCell = cell;
-        continue;
-      }
-
-      if (
-        cell.rowIdx - lastCell!.rowIdx <= 1 ||
-        cell.colIdx - lastCell!.colIdx <= 1
-      ) {
-        currentColony.cells.push(cell);
-      } else {
-        currentColony = { id, cells: [cell] };
-        colonies.push(currentColony);
-        id++;
-      }
-      lastCell = cell;
-    }
-    console.log("COLONIES", colonies);
-    return colonies;
+    console.log("BOARD getAdjacentColonyCells to cell", cell, result);
+    return result;
   }
 
   public getVirusCells(playerType: PlayerType): ICell[] {
