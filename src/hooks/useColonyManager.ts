@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 // import { ColonyContainer } from "../classes/ColonyContainer";
 import { PlayerType } from "../interfaces/Board";
 import { ICell } from "../classes/Cell";
-import { useBoard } from "./useBoard";
 import { ColonySet } from "../classes/ColonySet";
+import { Board } from "../classes/Board";
 
-export function useColonyManager() {
-  const { board } = useBoard();
+export function useColonyManager(board: Board) {
   const [redColonySets, setRedColonySets] = useState<ColonySet[]>([]);
   const [blueColonySets, setBlueColonySets] = useState<ColonySet[]>([]);
+
+  useEffect(() => {
+    console.log("useColonyManager board updated", board.version);
+  }, [board]);
 
   const _getAdjacentColonySets = (
     colonyCell: ICell,
@@ -87,10 +90,6 @@ export function useColonyManager() {
 
     mainColonySet.activated = true;
   };
-
-  useEffect(() => {
-    console.log("Component re-rendered with board version:", board.version);
-  }, [board]);
 
   return {
     blueColonySets,

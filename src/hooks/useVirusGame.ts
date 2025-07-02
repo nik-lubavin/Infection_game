@@ -8,13 +8,12 @@ import { useAvailableCellCodes } from "./useAvailableCellCodes";
 import { useCurrentPlayer } from "./useCurrentPlayer";
 
 export function useVirusGame() {
-  const { handleAddingNewColonyCell, blueColonySets, redColonySets } =
-    useColonyManager();
-
   const { board, updateBoard } = useBoard();
+  const { handleAddingNewColonyCell, blueColonySets, redColonySets } =
+    useColonyManager(board);
   const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
   const [movesLeft, setMovesLeft] = useState<number>(3);
-  const { availableCellCodes } = useAvailableCellCodes();
+  const { availableCellCodes } = useAvailableCellCodes(board);
 
   const handleCellClick = (cell: ICell) => {
     const isAvailable = availableCellCodes.indexOf(cell.code) !== -1;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Board } from "../classes/Board";
 import { GRID_SIZE } from "../constants/board";
 import { PlayerType } from "../interfaces/Board";
@@ -55,15 +55,15 @@ export function useBoard() {
   const updateBoard = () => {
     const newBoard = board.clone();
     setBoard(newBoard);
-    console.log("updateBoard", newBoard);
+    console.log("updateBoard", newBoard.version);
 
     // updateAvailableCells();
   };
 
   // Use useEffect to perform actions when the board state changes
-  // useEffect(() => {
-  //   console.log("Board state updated:", board);
-  // }, [board]);
+  useEffect(() => {
+    console.log("Board state updated:", board);
+  }, [board]);
 
   return {
     board,

@@ -119,13 +119,11 @@ export class Board implements IBoard {
 
   getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[] {
     const adjacentCells = this.getAdjacentCells(cell);
-    console.log("BOARD adjacentCells to cell", cell, adjacentCells, this);
     const result = adjacentCells.filter(
       (cell) =>
         cell.content?.content === CellContentType.COLONY &&
         cell.content?.player === playerType
     );
-    console.log("BOARD getAdjacentColonyCells to cell", cell, result);
     return result;
   }
 
