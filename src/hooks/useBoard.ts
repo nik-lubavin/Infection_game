@@ -52,10 +52,10 @@ export function useBoard() {
   const [board, setBoard] = useState<Board>(createDebugBoard());
   // const { updateAvailableCells } = useAvailableCells();
 
-  const updateBoard = () => {
+  const updateCloneBoard = () => {
     const newBoard = board.clone();
     setBoard(newBoard);
-    console.log("updateBoard", newBoard.version);
+    // console.log("updateBoard", newBoard.version);
 
     // updateAvailableCells();
   };
@@ -67,6 +67,6 @@ export function useBoard() {
 
   return {
     board,
-    updateBoard,
+    updateCloneBoard,
   };
 }

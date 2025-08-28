@@ -4,13 +4,15 @@ import { PlayerType } from "../interfaces/Board";
 import { ICell } from "../classes/Cell";
 import { ColonySet } from "../classes/ColonySet";
 import { Board } from "../classes/Board";
+import { useBoard } from "./useBoard";
 
 export function useColonyManager(board: Board) {
   const [redColonySets, setRedColonySets] = useState<ColonySet[]>([]);
   const [blueColonySets, setBlueColonySets] = useState<ColonySet[]>([]);
+  const { updateCloneBoard } = useBoard();
 
   useEffect(() => {
-    console.log("useColonyManager board updated", board.version);
+    // console.log("useColonyManager board updated", board.version);
   }, [board]);
 
   const _getAdjacentColonySets = (
@@ -21,7 +23,7 @@ export function useColonyManager(board: Board) {
       colonyCell,
       currentPlayer
     );
-    console.log("_getAdjacentColonySets", adjacentColonyCells, board);
+    // console.log("_getAdjacentColonySets", adjacentColonyCells, board);
     const colonySets = adjacentColonyCells
       .map((cell) => cell.colonySet)
       .filter(Boolean) as ColonySet[];
@@ -54,11 +56,11 @@ export function useColonyManager(board: Board) {
     setsUpdateFunction([...otherSets, mainColonySet]);
   };
 
-  const handleAddingNewColonyCell = (
+  const handle_NewColonyCellCreated = (
     colonyCell: ICell,
     currentPlayer: PlayerType
   ) => {
-    // Adding / creating colony set
+    // 1. Adding / creating friendly colony set
     const adjacentColonySets = _getAdjacentColonySets(
       colonyCell,
       currentPlayer
@@ -94,32 +96,51 @@ export function useColonyManager(board: Board) {
 
     mainColonySet.activated = true;
 
-    // 2.
+    // 2. working with enemy colonies perhaps deactivated
     const enemyPlayer =
       currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
     const enemyColonySets = _getAdjacentColonySets(colonyCell, enemyPlayer);
     console.log("2 enemyColonySets", enemyColonySets);
     if (enemyColonySets.length) {
       enemyColonySets.forEach((colonySet) => {
-        checkPossibleSetDeactivation(colonySet);
+        _checkFixPossibleSetDeactivation(colonySet);
       });
     }
   };
 
-  const checkPossibleSetDeactivation = (colonySet: ColonySet) => {
-    const isActive = colonySet.checkActivity(board);
-    console.log("checkPossibleSetDeactivation", colonySet, isActive);
-    if (colonySet.activated !== isActive) {
+  const _deactivateRedColonySet = (colonySet: ColonySet) => {
+    const rest = redColonySets.filter((set) => set !== colonySet);
+
+    const newSet = colonySet.clone();
+    newSet.activated = false;
+
+    setRedColonySets([...rest, newSet]);
+
+    board.getAllCellsByColonySet(colonySet).forEach((cell) => {
+      cell.colonySet = newSet;
+    });
+    updateCloneBoard();
+  };
+
+  const _deactivateBlueColonySet = (colonySet: ColonySet) => {
+    const rest = blueColonySets.filter((set) => set !== colonySet);
+    const newSet = colonySet.clone();
+    newSet.activated = false;
+    setBlueColonySets([...rest, newSet]);
+  };
+
+  const _checkFixPossibleSetDeactivation = (colonySet: ColonySet) => {
+    const shouldBeActive = colonySet.checkActivity(board);
+    console.log("checkPossibleSetDeactivation", {
+      colonySet,
+      shouldBeActive,
+      activated: colonySet.activated,
+    });
+    if (colonySet.activated !== shouldBeActive) {
       if (colonySet.playerType === PlayerType.RED) {
-        const otherSets = redColonySets.filter((set) => set !== colonySet);
-        const newSet = colonySet.clone();
-        newSet.activated = isActive;
-        setRedColonySets([...otherSets, newSet]);
+        _deactivateRedColonySet(colonySet);
       } else {
-        const otherSets = blueColonySets.filter((set) => set !== colonySet);
-        const newSet = colonySet.clone();
-        newSet.activated = isActive;
-        setBlueColonySets([...otherSets, newSet]);
+        _deactivateBlueColonySet(colonySet);
       }
     }
   };
@@ -127,7 +148,6 @@ export function useColonyManager(board: Board) {
   return {
     blueColonySets,
     redColonySets,
-    handleAddingNewColonyCell,
-    checkPossibleSetDeactivation,
+    handle_NewColonyCellCreated,
   };
 }

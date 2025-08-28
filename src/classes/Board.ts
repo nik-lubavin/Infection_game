@@ -1,5 +1,6 @@
 import { PlayerType } from "../interfaces/Board";
 import { Cell, CellContentType, ICell } from "./Cell";
+import { ColonySet } from "./ColonySet";
 
 function generateNewEmptyBoard(rowsNum: number, colsNum: number): ICell[][] {
   const cells: ICell[][] = [];
@@ -69,6 +70,10 @@ export class Board implements IBoard {
 
   getAllCells(): ICell[] {
     return this.cells.flat();
+  }
+
+  getAllCellsByColonySet(colonySet: ColonySet): ICell[] {
+    return this.cells.flat().filter((cell) => cell.colonySet === colonySet);
   }
 
   getCellByCode(code: string): ICell {

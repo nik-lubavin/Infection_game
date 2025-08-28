@@ -16,12 +16,14 @@ export class ColonySet {
   }
 
   clone() {
-    return new ColonySet(
+    const newSet = new ColonySet(
       this.colonyCellsCodes,
       this.playerType,
       this.activated,
       this.board
     );
+
+    return newSet;
   }
 
   addCell(cell: ICell) {

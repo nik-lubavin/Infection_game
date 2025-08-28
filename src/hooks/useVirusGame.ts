@@ -6,15 +6,13 @@ import { useColonyManager } from "./useColonyManager";
 import { useBoard } from "./useBoard";
 import { useAvailableCellCodes } from "./useAvailableCellCodes";
 import { useCurrentPlayer } from "./useCurrentPlayer";
-import { ColonySet } from "../classes/ColonySet";
 
 export function useVirusGame() {
-  const { board, updateBoard } = useBoard();
+  const { board, updateCloneBoard } = useBoard();
   const {
-    handleAddingNewColonyCell,
+    handle_NewColonyCellCreated,
     blueColonySets,
     redColonySets,
-    checkPossibleSetDeactivation,
   } = useColonyManager(board);
   const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
   const [movesLeft, setMovesLeft] = useState<number>(3);
@@ -31,9 +29,8 @@ export function useVirusGame() {
         content: CellContentType.VIRUS,
         player: currentPlayer,
       };
-      board.cloneCell(cell);
-
-      updateBoard();
+      // board.cloneCell(cell);
+      updateCloneBoard();
 
       // ENEMY VIRUS
     } else if (
@@ -47,34 +44,34 @@ export function useVirusGame() {
       };
 
       // 2. Add the new colony cell to the board
-      handleAddingNewColonyCell(cell, currentPlayer);
-      board.cloneCell(cell);
+      handle_NewColonyCellCreated(cell, currentPlayer);
+      // board.cloneCell(cell);
 
       // 3. Checking if we deactivated any enemy colonies
-      const enemyPlayer =
-        currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
-      // Candidates that could have been deactivated
-      const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
-        cell,
-        enemyPlayer
-      );
+      // const enemyPlayer =
+      //   currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+      // // Candidates that could have been deactivated
+      // const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
+      //   cell,
+      //   enemyPlayer
+      // );
 
-      if (adjacentEnemyColonyCells.length) {
-        const enemyColonySets = Array.from(
-          new Set(
-            adjacentEnemyColonyCells
-              .map((cell) => cell.colonySet)
-              .filter(Boolean)
-          )
-        ) as ColonySet[];
+      // if (adjacentEnemyColonyCells.length) {
+      //   const enemyColonySets = Array.from(
+      //     new Set(
+      //       adjacentEnemyColonyCells
+      //         .map((cell) => cell.colonySet)
+      //         .filter(Boolean)
+      //     )
+      //   ) as ColonySet[];
 
-        enemyColonySets.forEach((colonySet) => {
-          checkPossibleSetDeactivation(colonySet);
-        });
-      }
+      //   enemyColonySets.forEach((colonySet) => {
+      //     checkFixPossibleSetDeactivation(colonySet);
+      //   });
+      // }
 
       // Create a new board instance
-      updateBoard();
+      updateCloneBoard();
     } else {
       console.log("handleCellClick ELSE");
     }
