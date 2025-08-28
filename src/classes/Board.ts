@@ -18,7 +18,7 @@ export interface IBoard {
   cells: ICell[][];
   version: number;
   clone(): IBoard;
-  getAdjacentCells(cell: ICell): ICell[];
+  getAdjacentCells(cellCode: string): ICell[];
   getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[];
   // getJoinedColonies(playerType: PlayerType): { id: number; cells: ICell[] }[];
   getColonyCells(playerType: PlayerType): ICell[];
@@ -71,7 +71,16 @@ export class Board implements IBoard {
     return this.cells.flat();
   }
 
-  getAdjacentCells(cell: ICell): ICell[] {
+  getCellByCode(code: string): ICell {
+    const cell = this.cells.flat().find((cell) => cell.code === code);
+    if (!cell) {
+      throw new Error(`Cell with code ${code} not found`);
+    }
+    return cell;
+  }
+
+  getAdjacentCells(cellCode: string): ICell[] {
+    const cell = this.getCellByCode(cellCode);
     const adjacentCells: ICell[] = [];
 
     if (cell.rowIdx > 0) {
@@ -118,7 +127,7 @@ export class Board implements IBoard {
   }
 
   getAdjacentColonyCells(cell: ICell, playerType: PlayerType): ICell[] {
-    const adjacentCells = this.getAdjacentCells(cell);
+    const adjacentCells = this.getAdjacentCells(cell.code);
     const result = adjacentCells.filter(
       (cell) =>
         cell.content?.content === CellContentType.COLONY &&
@@ -151,13 +160,18 @@ export class Board implements IBoard {
     }
   }
 
-  public getColonyCells(playerType: PlayerType): ICell[] {
+  public getColonyCells(
+    playerType: PlayerType,
+    activatedOnly: boolean | null = null
+  ): ICell[] {
     const colonyCells: ICell[] = [];
     for (const row of this.cells) {
       for (const cell of row) {
         if (
           cell.content?.content === CellContentType.COLONY &&
-          cell.content?.player === playerType
+          cell.content?.player === playerType &&
+          (activatedOnly === null ||
+            cell.colonySet?.activated === activatedOnly)
         ) {
           colonyCells.push(cell);
         }

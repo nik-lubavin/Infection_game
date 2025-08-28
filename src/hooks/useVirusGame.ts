@@ -6,14 +6,19 @@ import { useColonyManager } from "./useColonyManager";
 import { useBoard } from "./useBoard";
 import { useAvailableCellCodes } from "./useAvailableCellCodes";
 import { useCurrentPlayer } from "./useCurrentPlayer";
+import { ColonySet } from "../classes/ColonySet";
 
 export function useVirusGame() {
   const { board, updateBoard } = useBoard();
-  const { handleAddingNewColonyCell, blueColonySets, redColonySets } =
-    useColonyManager(board);
+  const {
+    handleAddingNewColonyCell,
+    blueColonySets,
+    redColonySets,
+    checkPossibleSetDeactivation,
+  } = useColonyManager(board);
   const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
   const [movesLeft, setMovesLeft] = useState<number>(3);
-  const { availableCellCodes } = useAvailableCellCodes(board);
+  const { availableCellCodes } = useAvailableCellCodes(board, currentPlayer);
 
   const handleCellClick = (cell: ICell) => {
     const isAvailable = availableCellCodes.indexOf(cell.code) !== -1;
@@ -46,26 +51,30 @@ export function useVirusGame() {
       board.cloneCell(cell);
 
       // 3. Checking if we deactivated any enemy colonies
-      // const enemyPlayer =
-      //   currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
-      // const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
-      //   cell,
-      //   enemyPlayer
-      // );
+      const enemyPlayer =
+        currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+      // Candidates that could have been deactivated
+      const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
+        cell,
+        enemyPlayer
+      );
 
-      // if (adjacentEnemyColonyCells.length) {
-      //   const enemyColonySets = adjacentEnemyColonyCells
-      //     .map((cell) => cell.colonySet)
-      //     .filter(Boolean) as ColonySet[];
+      if (adjacentEnemyColonyCells.length) {
+        const enemyColonySets = Array.from(
+          new Set(
+            adjacentEnemyColonyCells
+              .map((cell) => cell.colonySet)
+              .filter(Boolean)
+          )
+        ) as ColonySet[];
 
-      //   enemyColonySets.forEach((colonySet) => {
-      //     colonySet.checkAndUpdateActivity();
-      //   });
-      // }
+        enemyColonySets.forEach((colonySet) => {
+          checkPossibleSetDeactivation(colonySet);
+        });
+      }
 
       // Create a new board instance
       updateBoard();
-      console.log("handleCellClick5", board);
     } else {
       console.log("handleCellClick ELSE");
     }

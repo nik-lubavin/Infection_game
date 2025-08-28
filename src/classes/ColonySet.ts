@@ -1,50 +1,51 @@
 import { PlayerType } from "../interfaces/Board";
-import { ICell } from "./Cell";
+import { Board } from "./Board";
+import { CellContentType, ICell } from "./Cell";
 
-let idCounter = 0;
+let idCounter = 1;
 export class ColonySet {
-  public activated: boolean;
   public id: number;
 
   constructor(
-    private colonyCells: ICell[] = [],
-    public playerType: PlayerType
+    private colonyCellsCodes: string[] = [],
+    public playerType: PlayerType,
+    public activated: boolean = true,
+    private board: Board
   ) {
     this.id = idCounter++;
-    this.activated = true;
+  }
+
+  clone() {
+    return new ColonySet(
+      this.colonyCellsCodes,
+      this.playerType,
+      this.activated,
+      this.board
+    );
   }
 
   addCell(cell: ICell) {
-    this.colonyCells.push(cell);
+    this.colonyCellsCodes.push(cell.code);
   }
 
   getColonyCells(): ICell[] {
-    return this.colonyCells;
+    return this.colonyCellsCodes.map((code) => this.board.getCellByCode(code));
   }
 
-  private checkActivity() {
-    // for (const colonyCell of this.colonyCells) {
-    //   const adjacentVirusCells = colonyCell.board
-    //     .getAdjacentCells(colonyCell)
-    //     .filter(
-    //       (cell) =>
-    //         cell.content?.content === CellContentType.VIRUS &&
-    //         cell.content?.player === this.playerType
-    //     );
-    //   if (adjacentVirusCells.length) {
-    //     return true;
-    //   }
-    // }
-    // return false;
-  }
-
-  public checkAndUpdateActivity() {
-    // const activity = this.checkActivity();
-    // if (activity !== this.activated) {
-    //   console.log(
-    //     `ColonySet activity changed: ${this.activated} -> ${activity}`
-    //   );
-    //   this.activated = activity;
-    // }
+  public checkActivity(board: Board) {
+    for (const colonyCellCode of this.colonyCellsCodes) {
+      const adjacentVirusCells = board
+        .getAdjacentCells(colonyCellCode)
+        .filter(
+          (cell) =>
+            cell.content?.content === CellContentType.VIRUS &&
+            cell.content?.player === this.playerType
+        );
+      if (adjacentVirusCells.length) {
+        return true;
+      }
+    }
+    console.log("checkActivity - false", this.playerType, this.id);
+    return false;
   }
 }

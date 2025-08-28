@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { CellContentType } from "../classes/Cell";
-import { useCurrentPlayer } from "./useCurrentPlayer";
 import { Board } from "../classes/Board";
 
-export function useAvailableCellCodes(board: Board) {
+export function useAvailableCellCodes(board: Board, currentPlayer: PlayerType) {
   const [availableCellCodes, setAvailableCellCodes] = useState<string[]>([]);
-  const { currentPlayer } = useCurrentPlayer();
 
   const _getAvailableCellCodes = useCallback((): string[] => {
     const availableCellCodes: string[] = [];
@@ -22,7 +20,7 @@ export function useAvailableCellCodes(board: Board) {
       currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
 
     virusCells.forEach((virusCell) => {
-      const adjacentCells = board.getAdjacentCells(virusCell);
+      const adjacentCells = board.getAdjacentCells(virusCell.code);
       adjacentCells.forEach((cell) => {
         if (
           cell.content == null ||
@@ -32,6 +30,20 @@ export function useAvailableCellCodes(board: Board) {
           availableCellCodes.push(cell.code);
         }
       });
+    });
+
+    const activeColonyCells = board.getColonyCells(currentPlayer, true);
+    activeColonyCells.forEach((cell) => {
+      const adjacentCells = board.getAdjacentCells(cell.code);
+      const availableAdjacentCells = adjacentCells.filter(
+        (cell) =>
+          cell.content == null ||
+          (cell.content?.content === CellContentType.VIRUS &&
+            cell.content?.player === enemyPlayer)
+      );
+      availableCellCodes.push(
+        ...availableAdjacentCells.map((cell) => cell.code)
+      );
     });
 
     return Array.from(new Set(availableCellCodes));

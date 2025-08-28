@@ -58,17 +58,21 @@ export function useColonyManager(board: Board) {
     colonyCell: ICell,
     currentPlayer: PlayerType
   ) => {
+    // Adding / creating colony set
     const adjacentColonySets = _getAdjacentColonySets(
       colonyCell,
       currentPlayer
     );
     let mainColonySet: ColonySet;
 
-    console.log("adjacentColonySets", adjacentColonySets);
-
     if (!adjacentColonySets.length) {
       // create a new ColonySet
-      mainColonySet = new ColonySet([colonyCell], currentPlayer);
+      mainColonySet = new ColonySet(
+        [colonyCell.code],
+        currentPlayer,
+        true,
+        board
+      );
       if (currentPlayer === PlayerType.RED) {
         setRedColonySets([...redColonySets, mainColonySet]);
       } else {
@@ -89,11 +93,41 @@ export function useColonyManager(board: Board) {
     }
 
     mainColonySet.activated = true;
+
+    // 2.
+    const enemyPlayer =
+      currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+    const enemyColonySets = _getAdjacentColonySets(colonyCell, enemyPlayer);
+    console.log("2 enemyColonySets", enemyColonySets);
+    if (enemyColonySets.length) {
+      enemyColonySets.forEach((colonySet) => {
+        checkPossibleSetDeactivation(colonySet);
+      });
+    }
+  };
+
+  const checkPossibleSetDeactivation = (colonySet: ColonySet) => {
+    const isActive = colonySet.checkActivity(board);
+    console.log("checkPossibleSetDeactivation", colonySet, isActive);
+    if (colonySet.activated !== isActive) {
+      if (colonySet.playerType === PlayerType.RED) {
+        const otherSets = redColonySets.filter((set) => set !== colonySet);
+        const newSet = colonySet.clone();
+        newSet.activated = isActive;
+        setRedColonySets([...otherSets, newSet]);
+      } else {
+        const otherSets = blueColonySets.filter((set) => set !== colonySet);
+        const newSet = colonySet.clone();
+        newSet.activated = isActive;
+        setBlueColonySets([...otherSets, newSet]);
+      }
+    }
   };
 
   return {
     blueColonySets,
     redColonySets,
     handleAddingNewColonyCell,
+    checkPossibleSetDeactivation,
   };
 }
