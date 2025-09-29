@@ -5,8 +5,8 @@ export interface ICell {
   rowIdx: number;
   colIdx: number;
   code: string;
-  content: ICellContent | null;
-  colonySet: ColonySet | null;
+  // content: ICellContent | null;
+  // colonySet: ColonySet | null;
 }
 
 export interface ICellContent {

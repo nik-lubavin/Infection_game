@@ -1,79 +1,31 @@
 import { useState } from "react";
 import { PlayerType } from "../interfaces/Board";
-import { CellContentType, ICell } from "../classes/Cell";
+import { ICell } from "../classes/Cell";
 
-import { useColonyManager } from "./useColonyManager";
-import { useBoard } from "./useBoard";
-import { useAvailableCellCodes } from "./useAvailableCellCodes";
-import { useCurrentPlayer } from "./useCurrentPlayer";
+import { useAvailableCellCodesFromContext } from "./useAvailableCellCodesFromContext";
+import { useCellsFromContext } from "./useCellsFromContext";
+import { useGameContext } from "../contexts/GameContext";
 
 export function useVirusGame() {
-  const { board, updateCloneBoard } = useBoard();
-  const {
-    handle_NewColonyCellCreated,
-    blueColonySets,
-    redColonySets,
-  } = useColonyManager(board);
-  const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
   const [movesLeft, setMovesLeft] = useState<number>(3);
-  const { availableCellCodes } = useAvailableCellCodes(board, currentPlayer);
+  const { board, addVirusCellCode, currentPlayer, setCurrentPlayer } =
+    useGameContext();
+  const { availableCellCodes } =
+    useAvailableCellCodesFromContext(currentPlayer);
+  const { getCellType } = useCellsFromContext();
 
   const handleCellClick = (cell: ICell) => {
     const isAvailable = availableCellCodes.indexOf(cell.code) !== -1;
 
     if (!isAvailable) return;
 
-    if (cell.content == null) {
-      // Create a clone of the current cell with the new content
-      cell.content = {
-        content: CellContentType.VIRUS,
-        player: currentPlayer,
-      };
-      // board.cloneCell(cell);
-      updateCloneBoard();
+    const cellType = getCellType(cell.code);
 
-      // ENEMY VIRUS
-    } else if (
-      cell.content?.content === CellContentType.VIRUS &&
-      cell.content?.player !== currentPlayer
-    ) {
-      // 1. Create a clone of the current cell with the new content
-      cell.content = {
-        content: CellContentType.COLONY,
-        player: currentPlayer,
-      };
-
-      // 2. Add the new colony cell to the board
-      handle_NewColonyCellCreated(cell, currentPlayer);
-      // board.cloneCell(cell);
-
-      // 3. Checking if we deactivated any enemy colonies
-      // const enemyPlayer =
-      //   currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
-      // // Candidates that could have been deactivated
-      // const adjacentEnemyColonyCells = board.getAdjacentColonyCells(
-      //   cell,
-      //   enemyPlayer
-      // );
-
-      // if (adjacentEnemyColonyCells.length) {
-      //   const enemyColonySets = Array.from(
-      //     new Set(
-      //       adjacentEnemyColonyCells
-      //         .map((cell) => cell.colonySet)
-      //         .filter(Boolean)
-      //     )
-      //   ) as ColonySet[];
-
-      //   enemyColonySets.forEach((colonySet) => {
-      //     checkFixPossibleSetDeactivation(colonySet);
-      //   });
-      // }
-
-      // Create a new board instance
-      updateCloneBoard();
+    if (cellType == null) {
+      addVirusCellCode(cell.code, currentPlayer);
     } else {
-      console.log("handleCellClick ELSE");
+      // ENEMY VIRUS
+      // TODO create colony
     }
 
     if (movesLeft > 1) {
@@ -90,9 +42,6 @@ export function useVirusGame() {
     board,
     currentPlayer,
     movesLeft,
-    availableCellCodes,
-    blueColonySets,
-    redColonySets,
     onCellClick: handleCellClick,
   };
 }

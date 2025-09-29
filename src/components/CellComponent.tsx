@@ -1,14 +1,18 @@
 import React, { useState, CSSProperties } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { CELL_SIZE } from "../constants/board";
-import { CellContentType, ICell } from "../classes/Cell";
+import { ICell } from "../classes/Cell";
+import { ColonySet } from "../classes/ColonySet";
+import { CellType } from "../enums/CellType";
 
 interface CellProps {
   cell: ICell;
+  currentTurn: PlayerType;
   onCellClick?: (cell: ICell) => void;
   isAvailable: boolean;
-  currentTurn: PlayerType;
   setOutputText: React.Dispatch<React.SetStateAction<string>>;
+  colonySet: ColonySet | null;
+  cellType: CellType | null;
 }
 
 const CellComponent: React.FC<CellProps> = (props: CellProps) => {
@@ -18,8 +22,10 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     isAvailable,
     currentTurn,
     setOutputText,
+    colonySet,
+    cellType,
   } = props;
-  const { content: cellContent, colonySet } = cell;
+
   const [isHovered, setIsHovered] = useState(false);
 
   // Base color for all cells
@@ -50,8 +56,10 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
   }
 
   // Determine cell content styling
-  const getCellContentStyle = (): CSSProperties | undefined => {
-    if (!cellContent) return undefined;
+  const getCellContentStyle = (
+    cellType: CellType | null
+  ): CSSProperties | undefined => {
+    if (!cellType) return undefined;
 
     // Common style for all cell contents
     const commonStyle: CSSProperties = {
@@ -61,82 +69,66 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     };
 
     // Style specific to content type
-    if (
-      cellContent?.content === CellContentType.VIRUS &&
-      cellContent?.player === PlayerType.RED
-    ) {
+    if (cellType === CellType.RED_VIRUS) {
       return {
         ...commonStyle,
         borderRadius: "50%",
         backgroundColor: "#ff0000",
       };
-    } else if (
-      cellContent?.content === CellContentType.VIRUS &&
-      cellContent?.player === PlayerType.BLUE
-    ) {
+    } else if (cellType === CellType.BLUE_VIRUS) {
       return {
         ...commonStyle,
         borderRadius: "50%",
         backgroundColor: "#0000ff",
       };
-    } else if (
-      cellContent?.content === CellContentType.COLONY &&
-      cellContent?.player === PlayerType.RED
-    ) {
-      if (colonySet?.activated) {
-        return {
-          ...commonStyle,
-          borderRadius: "10%",
-          backgroundColor: "#ff6666",
-          border: "2px solid #ff0000",
-        };
-      } else {
-        return {
-          ...commonStyle,
-          borderRadius: "10%",
-          backgroundColor: "#ff3333",
-          border: "2px solid #cc0000",
-        };
-      }
-    } else if (
-      cellContent?.content === CellContentType.COLONY &&
-      cellContent?.player === PlayerType.BLUE
-    ) {
-      if (colonySet?.activated) {
-        return {
-          ...commonStyle,
-          borderRadius: "10%",
-          backgroundColor: "#6666ff",
-          border: "2px solid #0000ff",
-        };
-      } else {
-        return {
-          ...commonStyle,
-          borderRadius: "10%",
-          backgroundColor: "#3333ff",
-          border: "2px solid #0000cc",
-        };
-      }
+    } else if (cellType === CellType.RED_COLONY_ACTIVE) {
+      return {
+        ...commonStyle,
+        borderRadius: "10%",
+        backgroundColor: "#ff6666",
+        border: "2px solid #ff0000",
+      };
+    } else if (cellType === CellType.RED_COLONY_INACTIVE) {
+      return {
+        ...commonStyle,
+        borderRadius: "10%",
+        backgroundColor: "#ff3333",
+        border: "2px solidrgb(91, 12, 12)",
+      };
+    } else if (cellType === CellType.BLUE_COLONY_ACTIVE) {
+      return {
+        ...commonStyle,
+        borderRadius: "10%",
+        backgroundColor: "#6666ff",
+        border: "2px solid #0000ff",
+      };
+    } else if (cellType === CellType.BLUE_COLONY_INACTIVE) {
+      return {
+        ...commonStyle,
+        borderRadius: "10%",
+        backgroundColor: "#3333ff",
+        border: "2px solid #0000cc",
+      };
     } else {
       return undefined;
     }
   };
 
-  const contentStyle = getCellContentStyle();
+  const contentStyle = getCellContentStyle(cellType);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    const { rowIdx, colIdx, content, colonySet } = cell;
+    const { rowIdx, colIdx } = cell;
     const cellData = {
       rowIdx,
       colIdx,
-      content,
+      content: cellType,
       colonySet: colonySet
         ? {
             activated: colonySet.activated,
             playerType: colonySet.playerType,
             id: colonySet.id,
-            cellsLength: colonySet.getColonyCells().length,
+            cellsLength: colonySet?.getCellCodes().length,
           }
         : null,
     };
@@ -167,7 +159,7 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {cellContent && <div style={contentStyle} />}
+      {cellType && <div style={contentStyle} />}
     </div>
   );
 };

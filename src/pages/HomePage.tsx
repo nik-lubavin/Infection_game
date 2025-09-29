@@ -5,6 +5,7 @@ import BoardComponent from "../components/BoardComponent";
 import Sidebar from "../components/Sidebar";
 import { GRID_SIZE, CELL_SIZE } from "../constants/board";
 import { useVirusGame } from "../hooks/useVirusGame";
+import { useColonySets } from "../hooks/useColonySets";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -13,15 +14,10 @@ const HomePage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [outputText, setOutputText] = useState("");
 
-  const {
-    board,
-    currentPlayer,
-    movesLeft,
-    availableCellCodes,
-    blueColonySets,
-    redColonySets,
-    onCellClick,
-  } = useVirusGame();
+  // Here we import from
+  const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
+
+  const {} = useColonySets();
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;

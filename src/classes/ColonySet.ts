@@ -7,47 +7,56 @@ export class ColonySet {
   public id: number;
 
   constructor(
-    private colonyCellsCodes: string[] = [],
+    public colonyCellsCodes: Set<string> = new Set(),
     public playerType: PlayerType,
-    public activated: boolean = true,
-    private board: Board
+    public activated: boolean = true
   ) {
     this.id = idCounter++;
   }
 
   clone() {
-    const newSet = new ColonySet(
+    return new ColonySet(
       this.colonyCellsCodes,
       this.playerType,
-      this.activated,
-      this.board
+      this.activated
     );
+    // const newSet = new ColonySet(
+    //   this.colonyCellsCodes,
+    //   this.playerType,
+    //   this.activated,
+    // );
 
-    return newSet;
+    // return newSet;
   }
 
-  addCell(cell: ICell) {
-    this.colonyCellsCodes.push(cell.code);
+  addCellCodes(cellCodes: string[]) {
+    cellCodes.forEach((cellCode) => {
+      this.colonyCellsCodes.add(cellCode);
+    });
   }
 
-  getColonyCells(): ICell[] {
-    return this.colonyCellsCodes.map((code) => this.board.getCellByCode(code));
+  getCellCodes(): string[] {
+    return Array.from(this.colonyCellsCodes);
   }
 
-  public checkActivity(board: Board) {
-    for (const colonyCellCode of this.colonyCellsCodes) {
-      const adjacentVirusCells = board
-        .getAdjacentCells(colonyCellCode)
-        .filter(
-          (cell) =>
-            cell.content?.content === CellContentType.VIRUS &&
-            cell.content?.player === this.playerType
-        );
-      if (adjacentVirusCells.length) {
-        return true;
-      }
-    }
-    console.log("checkActivity - false", this.playerType, this.id);
-    return false;
-  }
+  // getColonyCells(): ICell[] {
+  //   return this.colonyCellsCodes.map((code) => this.board.getCellByCode(code));
+  // }
+
+  // public checkActivity(board: Board) {
+  //   for (const colonyCellCode of this.colonyCellsCodes) {
+  //     const adjacentVirusCells = board
+  //       .getAdjacentCells(colonyCellCode)
+  //       .filter(
+  //         (cell) =>
+  //           cell.content?.content === CellContentType.VIRUS &&
+  //           cell.content?.player === this.playerType
+  //       );
+  //     if (adjacentVirusCells.length) {
+  //       return true;
+  //     }
+  //   }
+  //   console.log("checkActivity - false", this.playerType, this.id);
+  //   return false;
+  // }
 }

@@ -1,9 +1,10 @@
 import React from "react";
 import { PlayerType } from "../interfaces/Board";
-import CellComponent from "./Cell";
+import CellComponent from "./CellComponent";
 import "../styles/Board.css";
 import { ICell } from "../classes/Cell";
 import { Board } from "../classes/Board";
+import { useCellsFromContext } from "../hooks/useCellsFromContext";
 
 export interface BoardComponentProps {
   size: number;
@@ -25,38 +26,44 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
   onCellClick,
   setOutputText,
 }) => {
-  const renderGrid = () => {
-    return board.cells.map((row: ICell[]) => {
-      const rowComponent = row.map((cell: ICell) => {
-        const isAvailable = isCellAvailable(cell, availableCellCodes);
+  const { getCellType, getCellColonySet } = useCellsFromContext();
+
+  return (
+    <div className="virus-grid-container">
+      {board.cells.map((row: ICell[]) => {
+        const rowComponent = row.map((cell: ICell) => {
+          const isAvailable = isCellAvailable(cell, availableCellCodes);
+          const cellType = getCellType(cell.code);
+          const colonySet = getCellColonySet(cell.code);
+
+          return (
+            <div
+              key={`cell-${cell.rowIdx}-${cell.colIdx}`}
+              className="grid-cell-wrapper"
+            >
+              <CellComponent
+                cell={cell}
+                onCellClick={onCellClick}
+                isAvailable={isAvailable}
+                setOutputText={setOutputText}
+                currentTurn={currentTurn}
+                cellType={cellType}
+                colonySet={colonySet}
+              />
+            </div>
+          );
+        });
+
+        const rowIdx = row[0].rowIdx;
 
         return (
-          <div
-            key={`cell-${cell.rowIdx}-${cell.colIdx}`}
-            className="grid-cell-wrapper"
-          >
-            <CellComponent
-              cell={cell}
-              onCellClick={onCellClick}
-              isAvailable={isAvailable}
-              currentTurn={currentTurn}
-              setOutputText={setOutputText}
-            />
+          <div key={`row-${rowIdx}`} className="grid-row">
+            {rowComponent}
           </div>
         );
-      });
-
-      const rowIdx = row[0].rowIdx;
-
-      return (
-        <div key={`row-${rowIdx}`} className="grid-row">
-          {rowComponent}
-        </div>
-      );
-    });
-  };
-
-  return <div className="virus-grid-container">{renderGrid()}</div>;
+      })}
+    </div>
+  );
 };
 
 export default BoardComponent;
