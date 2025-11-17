@@ -1,5 +1,5 @@
 import { ColonySet } from "../classes/ColonySet";
-import { useGameContext } from "../contexts/GameContext";
+import { useAppSelector } from "../store/hooks";
 import { helperGetAdjacentCellCodes } from "../state/helpers/getAdjacentCellCodes";
 
 export enum CellType {
@@ -12,12 +12,8 @@ export enum CellType {
 }
 
 export function useCellsFromContext() {
-  const {
-    redVirusCellCodes,
-    blueVirusCellCodes,
-    redColonySets,
-    blueColonySets,
-  } = useGameContext();
+  const { redVirusCellCodes, blueVirusCellCodes, redColonySets, blueColonySets } =
+    useAppSelector((state) => state.game);
 
   function getCellType(cellCode: string): CellType | null {
     if (redVirusCellCodes.has(cellCode)) {

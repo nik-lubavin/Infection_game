@@ -1,23 +1,16 @@
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 import { PlayerType } from "../interfaces/Board";
-import { useGameContext } from "../contexts/GameContext";
+import { useAppSelector } from "../store/hooks";
 import { useCellsFromContext } from "./useCellsFromContext";
 import { CellType } from "../enums/CellType";
 
 export function useAvailableCellCodesFromContext(currentPlayer: PlayerType) {
-  const [availableCellCodes, setAvailableCellCodes] = useState<string[]>([]);
-
-  const {
-    redVirusCellCodes,
-    blueVirusCellCodes,
-    redColonySets,
-    blueColonySets,
-    // getAdjacentCellCodes,
-  } = useGameContext();
+  const { redVirusCellCodes, blueVirusCellCodes, redColonySets, blueColonySets } =
+    useAppSelector((state) => state.game);
 
   const { getCellType, getAdjacentCellCodes } = useCellsFromContext();
 
-  const updateAvailableCellCodes = useCallback(() => {
+  const availableCellCodes = useMemo(() => {
     const virusContainer =
       currentPlayer === PlayerType.RED ? redVirusCellCodes : blueVirusCellCodes;
     const enemyVirusType =
@@ -53,7 +46,7 @@ export function useAvailableCellCodesFromContext(currentPlayer: PlayerType) {
         });
       });
 
-    setAvailableCellCodes(Array.from(result));
+    return Array.from(result);
   }, [
     currentPlayer,
     redVirusCellCodes,
@@ -65,7 +58,6 @@ export function useAvailableCellCodesFromContext(currentPlayer: PlayerType) {
   ]);
 
   return {
-    updateAvailableCellCodes,
     availableCellCodes,
   };
 }

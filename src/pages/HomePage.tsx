@@ -5,20 +5,44 @@ import BoardComponent from "../components/BoardComponent";
 import Sidebar from "../components/Sidebar";
 import { GRID_SIZE, CELL_SIZE } from "../constants/board";
 import { useVirusGame } from "../hooks/useVirusGame";
-import { useRedColonies } from "../hooks/useRedColonies";
-import { useBlueColonies } from "../hooks/useBlueColonies";
+import { useGameContext } from "../contexts/GameContext";
+import { useAppSelector } from "../store/hooks";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 const HomePage: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [outputText, setOutputText] = useState("");
+  const { sidebarCollapsed, setSidebarCollapsed, outputText, setOutputText } =
+    useGameContext();
 
   const { board, currentPlayer, movesLeft, availableCellCodes, onCellClick } =
     useVirusGame();
-  const { redColoniesData } = useRedColonies();
-  const { blueColoniesData } = useBlueColonies();
+  const { redColonySets, blueColonySets } = useAppSelector(
+    (state) => state.game
+  );
+
+  // Transform colony data for UI
+  const redColoniesData = redColonySets.map((colonySet, index) => ({
+    id: index,
+    playerType: colonySet.playerType,
+    activated: colonySet.activated,
+    cells: colonySet.getColonyCells().map((cell) => ({
+      rowIdx: cell.rowIdx,
+      colIdx: cell.colIdx,
+      code: cell.code,
+    })),
+  }));
+
+  const blueColoniesData = blueColonySets.map((colonySet, index) => ({
+    id: index,
+    playerType: colonySet.playerType,
+    activated: colonySet.activated,
+    cells: colonySet.getColonyCells().map((cell) => ({
+      rowIdx: cell.rowIdx,
+      colIdx: cell.colIdx,
+      code: cell.code,
+    })),
+  }));
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;

@@ -8,6 +8,8 @@ export function getAvailableCellCodes(state: GameState): string[] {
       ? state.redVirusCellCodes
       : state.blueVirusCellCodes;
 
+  const result: Set<string> = new Set();
+
   virusContainer.forEach((virusCellCode) => {
     const adjacentVirusCellCodes = helperGetAdjacentCellCodes(virusCellCode, {
       redVirusCellCodes: state.redVirusCellCodes,
@@ -15,5 +17,10 @@ export function getAvailableCellCodes(state: GameState): string[] {
       redColonySets: state.redColonySets,
       blueColonySets: state.blueColonySets,
     });
+    adjacentVirusCellCodes.forEach((cellCode) => {
+      result.add(cellCode);
+    });
   });
+
+  return Array.from(result);
 }
