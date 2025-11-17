@@ -39,9 +39,22 @@ export class ColonySet {
     return Array.from(this.colonyCellsCodes);
   }
 
-  // getColonyCells(): ICell[] {
-  //   return this.colonyCellsCodes.map((code) => this.board.getCellByCode(code));
-  // }
+  getColonyCells(): ICell[] {
+    // For now, return basic cell info based on cell codes
+    // This will be enhanced when we have proper board integration
+    return Array.from(this.colonyCellsCodes).map((code) => {
+      const [rowStr, colStr] = code.split('-');
+      return {
+        rowIdx: parseInt(rowStr),
+        colIdx: parseInt(colStr),
+        code: code,
+        content: {
+          content: CellContentType.COLONY,
+          player: this.playerType,
+        },
+      } as ICell;
+    });
+  }
 
   // public checkActivity(board: Board) {
   //   for (const colonyCellCode of this.colonyCellsCodes) {

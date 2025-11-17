@@ -5,7 +5,8 @@ import BoardComponent from "../components/BoardComponent";
 import Sidebar from "../components/Sidebar";
 import { GRID_SIZE, CELL_SIZE } from "../constants/board";
 import { useVirusGame } from "../hooks/useVirusGame";
-import { useColonySets } from "../hooks/useColonySets";
+import { useRedColonies } from "../hooks/useRedColonies";
+import { useBlueColonies } from "../hooks/useBlueColonies";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -14,38 +15,15 @@ const HomePage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [outputText, setOutputText] = useState("");
 
-  // Here we import from
-  const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
-
-  const {} = useColonySets();
+  const { board, currentPlayer, movesLeft, availableCellCodes, onCellClick } =
+    useVirusGame();
+  const { redColoniesData } = useRedColonies();
+  const { blueColoniesData } = useBlueColonies();
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;
   const gridHeight = CELL_SIZE * GRID_SIZE;
   const containerPadding = 20;
-
-  // Prepare colonySets data for JSON display
-  const redColonySetsData = redColonySets.map((colonySet, index) => ({
-    id: index,
-    playerType: colonySet.playerType,
-    activated: colonySet.activated,
-    cells: colonySet.getColonyCells().map((cell) => ({
-      rowIdx: cell.rowIdx,
-      colIdx: cell.colIdx,
-      content: cell.content,
-    })),
-  }));
-
-  const blueColonySetsData = blueColonySets.map((colonySet, index) => ({
-    id: index,
-    playerType: colonySet.playerType,
-    activated: colonySet.activated,
-    cells: colonySet.getColonyCells().map((cell) => ({
-      rowIdx: cell.rowIdx,
-      colIdx: cell.colIdx,
-      content: cell.content,
-    })),
-  }));
 
   return (
     <Layout
@@ -83,8 +61,8 @@ const HomePage: React.FC = () => {
           currentPlayer={currentPlayer}
           movesLeft={movesLeft}
           availableCellCodes={availableCellCodes}
-          redColonySets={redColonySetsData}
-          blueColonySets={blueColonySetsData}
+          redColonySets={redColoniesData}
+          blueColonySets={blueColoniesData}
           collapsed={sidebarCollapsed}
         />
         <Content

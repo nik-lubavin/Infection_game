@@ -1,5 +1,6 @@
 import { ColonySet } from "../classes/ColonySet";
 import { useGameContext } from "../contexts/GameContext";
+import { helperGetAdjacentCellCodes } from "../state/helpers/getAdjacentCellCodes";
 
 export enum CellType {
   RED_VIRUS = "red_virus",
@@ -47,8 +48,12 @@ export function useCellsFromContext() {
   }
 
   function getAdjacentCellCodes(cellCode: string): string[] {
-    // FIXME
-    return [];
+    return helperGetAdjacentCellCodes(cellCode, {
+      redVirusCellCodes,
+      blueVirusCellCodes,
+      redColonySets,
+      blueColonySets,
+    });
   }
 
   function getCellColonySet(cellCode: string): ColonySet | null {

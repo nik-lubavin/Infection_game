@@ -8,7 +8,7 @@ import { useGameContext } from "../contexts/GameContext";
 
 export function useVirusGame() {
   const [movesLeft, setMovesLeft] = useState<number>(3);
-  const { board, addVirusCellCode, currentPlayer, setCurrentPlayer } =
+  const { board, addVirusCellCode, currentPlayer, switchPlayer } =
     useGameContext();
   const { availableCellCodes } =
     useAvailableCellCodesFromContext(currentPlayer);
@@ -32,9 +32,7 @@ export function useVirusGame() {
       setMovesLeft(movesLeft - 1);
     } else {
       setMovesLeft(3);
-      setCurrentPlayer(
-        currentPlayer === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED
-      );
+      switchPlayer();
     }
   };
 
@@ -42,6 +40,7 @@ export function useVirusGame() {
     board,
     currentPlayer,
     movesLeft,
+    availableCellCodes,
     onCellClick: handleCellClick,
   };
 }

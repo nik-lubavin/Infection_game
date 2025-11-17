@@ -1,28 +1,39 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useReducer,
+  useEffect,
+} from "react";
 import { PlayerType } from "../interfaces/Board";
-import { useCurrentPlayer } from "../hooks/useCurrentPlayer";
-import { useVirusCellCodes } from "../hooks/useVirusCells";
-import { useColonySets } from "../hooks/useColonySets";
-import { useBoard } from "../hooks/useBoard";
 import { ColonySet } from "../classes/ColonySet";
+import { gameReducer, GameState, GameAction } from "../state/gameReducer";
+import { initialGameState } from "../state/gameState";
 
 interface GameContextType {
-  // Current player state
-  currentPlayer: PlayerType;
-  setCurrentPlayer: (player: PlayerType) => void;
+  // State from reducer
+  state: GameState;
+  dispatch: React.Dispatch<GameAction>;
 
-  // Board state
-  board: any; // Replace with proper Board type
-  // getAdjacentCellCodes: (cellCode: string) => string[];
+  // Convenience getters
+  currentPlayer: PlayerType;
+  movesLeft: number;
+  board: any;
 
   // Virus cells
   redVirusCellCodes: Set<string>;
   blueVirusCellCodes: Set<string>;
-  addVirusCellCode: (cellCode: string, player: PlayerType) => void;
 
   // Colony sets
   redColonySets: ColonySet[];
   blueColonySets: ColonySet[];
+
+  // Actions
+  addVirusCellCode: (cellCode: string, player: PlayerType) => void;
+  addCellToColony: (cellCode: string, player: PlayerType) => void;
+  switchPlayer: () => void;
+  decrementMoves: () => void;
+  resetMoves: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -30,36 +41,60 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 interface GameProviderProps {
   children: ReactNode;
 }
-// RED player moves from (0,0) towards center: (0,0) -> (1,1) -> (2,2) -> (3,3)
-const initialRedViruses = ["0-0", "1-1", "2-2", "3-3", "4-4", "5-5"];
-// BLUE player moves from (9,9) towards center: (9,9) -> (8,8) -> (7,7) -> (6,6)
-const initialBlueViruses = ["9-9", "8-8", "7-7", "6-6", "5-6", "6-5"];
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-  const { board } = useBoard();
-  const { currentPlayer, setCurrentPlayer } = useCurrentPlayer();
-  const { redVirusCellCodes, blueVirusCellCodes, addVirusCellCode } =
-    useVirusCellCodes();
+  const [state, dispatch] = useReducer(gameReducer, initialGameState);
 
-  const { redColonySets, blueColonySets } = useColonySets();
+  // Initialize game on mount
+  useEffect(() => {
+    dispatch({ type: "INITIALIZE_GAME" });
+  }, []);
 
-  // Setting initial data
-  initialRedViruses.forEach((virusCode) => {
-    addVirusCellCode(virusCode, PlayerType.RED);
-  });
-  initialBlueViruses.forEach((virusCode) => {
-    addVirusCellCode(virusCode, PlayerType.BLUE);
-  });
+  // Convenience getters
+  const currentPlayer = state.currentPlayer;
+  const movesLeft = state.movesLeft;
+  const board = state.board;
+  const redVirusCellCodes = state.redVirusCellCodes;
+  const blueVirusCellCodes = state.blueVirusCellCodes;
+  const redColonySets = state.redColonySets;
+  const blueColonySets = state.blueColonySets;
+
+  // Action creators
+  const addVirusCellCode = (cellCode: string, player: PlayerType) => {
+    dispatch({ type: "ADD_VIRUS_CELL", payload: { cellCode, player } });
+  };
+
+  const addCellToColony = (cellCode: string, player: PlayerType) => {
+    dispatch({ type: "ADD_CELL_TO_COLONY", payload: { cellCode, player } });
+  };
+
+  const switchPlayer = () => {
+    dispatch({ type: "SWITCH_PLAYER" });
+  };
+
+  const decrementMoves = () => {
+    dispatch({ type: "DECREMENT_MOVES" });
+  };
+
+  const resetMoves = () => {
+    dispatch({ type: "RESET_MOVES" });
+  };
 
   const value = {
+    state,
+    dispatch,
     currentPlayer,
-    setCurrentPlayer,
+    switchPlayer,
+    movesLeft,
     board,
     redVirusCellCodes,
     blueVirusCellCodes,
-    addVirusCellCode,
     redColonySets,
     blueColonySets,
+    addVirusCellCode,
+    addCellToColony,
+    decrementMoves,
+    resetMoves,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
