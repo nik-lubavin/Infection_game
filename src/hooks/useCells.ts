@@ -1,6 +1,6 @@
 import { ColonySet } from "../classes/ColonySet";
 import { useAppSelector } from "../store/hooks";
-import { helperGetAdjacentCellCodes } from "../state/helpers/getAdjacentCellCodes";
+import { getAdjacentCellCodesFiltered } from "../state/helpers/getAdjacentCellCodes";
 
 export enum CellType {
   RED_VIRUS = "red_virus",
@@ -44,7 +44,7 @@ export function useCells() {
   }
 
   function getAdjacentCellCodes(cellCode: string): string[] {
-    return helperGetAdjacentCellCodes(cellCode, {
+    return getAdjacentCellCodesFiltered(cellCode, {
       redVirusCellCodes: new Set(redVirusCellCodes),
       blueVirusCellCodes: new Set(blueVirusCellCodes),
       redColonySets,

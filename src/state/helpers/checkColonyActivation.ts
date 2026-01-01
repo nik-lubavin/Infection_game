@@ -5,7 +5,7 @@ import { ColonySet } from "../../classes/ColonySet";
  * Checks if a colony has any adjacent virus cells of the same player
  * A colony is active if at least one of its cells has an adjacent virus cell
  */
-export function checkColonyHasAdjacentVirus(
+export function checkColonyIsActive(
   colonySet: ColonySet,
   playerVirusCellCodes: string[]
 ): boolean {
@@ -54,7 +54,7 @@ export function updateColonyActivations(
 ): { redColonySets: ColonySet[]; blueColonySets: ColonySet[] } {
   // Update red colonies
   const updatedRedColonies = redColonySets.map((colony) => {
-    const hasAdjacentVirus = checkColonyHasAdjacentVirus(colony, redVirusCellCodes);
+    const hasAdjacentVirus = checkColonyIsActive(colony, redVirusCellCodes);
     if (colony.activated !== hasAdjacentVirus) {
       return new ColonySet(
         new Set(colony.colonyCellsCodes),
@@ -67,7 +67,7 @@ export function updateColonyActivations(
 
   // Update blue colonies
   const updatedBlueColonies = blueColonySets.map((colony) => {
-    const hasAdjacentVirus = checkColonyHasAdjacentVirus(colony, blueVirusCellCodes);
+    const hasAdjacentVirus = checkColonyIsActive(colony, blueVirusCellCodes);
     if (colony.activated !== hasAdjacentVirus) {
       return new ColonySet(
         new Set(colony.colonyCellsCodes),

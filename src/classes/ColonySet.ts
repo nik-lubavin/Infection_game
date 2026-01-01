@@ -1,5 +1,4 @@
 import { PlayerType } from "../interfaces/Board";
-import { Board } from "./Board";
 import { CellContentType, ICell } from "./Cell";
 
 let idCounter = 1;
@@ -20,13 +19,6 @@ export class ColonySet {
       this.playerType,
       this.activated
     );
-    // const newSet = new ColonySet(
-    //   this.colonyCellsCodes,
-    //   this.playerType,
-    //   this.activated,
-    // );
-
-    // return newSet;
   }
 
   addCellCodes(cellCodes: string[]) {

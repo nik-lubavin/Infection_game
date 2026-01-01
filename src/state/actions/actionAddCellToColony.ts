@@ -1,159 +1,139 @@
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
-import { helperGetAdjacentCellCodes } from "../helpers/getAdjacentCellCodes";
+import { getAdjacentCellCodes } from "../helpers/getAdjacentCellCodes";
 import { ColonySet } from "../../classes/ColonySet";
 import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
-import { updateColonyActivations } from "../helpers/checkColonyActivation";
-
+import { checkColonyIsActive } from "../helpers/checkColonyActivation";
 
 export function actionAddCellToColony(
   cellCode: string,
   player: PlayerType,
   state: GameState
 ): GameState {
-  const adjacentCellCodes = helperGetAdjacentCellCodes(cellCode, {
-    redVirusCellCodes: new Set(state.redVirusCellCodes),
-    blueVirusCellCodes: new Set(state.blueVirusCellCodes),
-    redColonySets: state.redColonySets,
-    blueColonySets: state.blueColonySets,
-  });
-  const adjacentColonySets: Set<ColonySet> = new Set();
+  // Prepare new state
+  const newState: GameState = {
+    ...state,
+  };
 
-  // Find adjacent colony sets
-  const colonyContainer =
-    player === PlayerType.RED ? state.redColonySets : state.blueColonySets;
+  // 1. Enemy - remove virus cell
+  if (player === PlayerType.RED) {
+    const updatedEnemyVirusCodes = state.blueVirusCellCodes.filter(
+      (code: string) => code !== cellCode
+    );
+    newState.blueVirusCellCodes = updatedEnemyVirusCodes;
+  } else {
+    const updatedEnemyVirusCodes = state.redVirusCellCodes.filter(
+      (code: string) => code !== cellCode
+    );
+    newState.redVirusCellCodes = updatedEnemyVirusCodes;
+  }
 
-  adjacentCellCodes.forEach((adjacentCellCode) => {
-    const colonySet = colonyContainer.find((item: ColonySet) =>
+  // 2. Gather adjacent colonies data
+  const allAdjacentCellCodes = getAdjacentCellCodes(cellCode);
+  const adjacentRedColonies: ColonySet[] = [];
+  const adjacentBlueColonies: ColonySet[] = [];
+  allAdjacentCellCodes.forEach((adjacentCellCode) => {
+    const foundRedColonySet = state.redColonySets.find((item: ColonySet) =>
       item.colonyCellsCodes.has(adjacentCellCode)
     );
-    if (colonySet) {
-      adjacentColonySets.add(colonySet);
+    if (foundRedColonySet) {
+      adjacentRedColonies.push(foundRedColonySet);
+    }
+
+    const foundBlueColonySet = state.blueColonySets.find((item: ColonySet) =>
+      item.colonyCellsCodes.has(adjacentCellCode)
+    );
+    if (foundBlueColonySet) {
+      adjacentBlueColonies.push(foundBlueColonySet);
     }
   });
+  const adjacentEnemyColonies =
+    player === PlayerType.RED ? adjacentBlueColonies : adjacentRedColonies;
+  const adjacentTargetColonies =
+    player === PlayerType.RED ? adjacentRedColonies : adjacentBlueColonies;
+  const enemyVirusCellCodes =
+    player === PlayerType.RED
+      ? newState.blueVirusCellCodes
+      : newState.redVirusCellCodes;
 
-  if (adjacentColonySets.size === 0) {
-    // Create new colony (activation will be checked below)
-    const newColonySet = new ColonySet(new Set([cellCode]), player, false);
-
-    // Remove the cell from enemy's virus list if it was an enemy virus
-    const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
-    const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
-
-    let newState = player === PlayerType.RED
-      ? {
-          ...state,
-          redColonySets: [...state.redColonySets, newColonySet],
-          blueVirusCellCodes: updatedEnemyVirusCodes,
-        }
-      : {
-          ...state,
-          blueColonySets: [...state.blueColonySets, newColonySet],
-          redVirusCellCodes: updatedEnemyVirusCodes,
-        };
-    
-    // Update colony activations after removing enemy virus
-    const updatedColonies = updateColonyActivations(
-      newState.redColonySets,
-      newState.blueColonySets,
-      newState.redVirusCellCodes,
-      newState.blueVirusCellCodes
-    );
-    newState.redColonySets = updatedColonies.redColonySets;
-    newState.blueColonySets = updatedColonies.blueColonySets;
-    
-    newState.availableCellCodes = getAvailableCellCodes(newState);
-    return newState;
-  } else if (adjacentColonySets.size === 1) {
-    // Add to existing colony
-    const mainSet = Array.from(adjacentColonySets)[0];
-    mainSet.addCellCodes([cellCode]);
-    // Activation will be checked below
-
-    // Remove the cell from enemy's virus list if it was an enemy virus
-    const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
-    const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
-
-    let newState = player === PlayerType.RED
-      ? {
-          ...state,
-          redColonySets: [
-            ...state.redColonySets.filter((item: ColonySet) => item !== mainSet),
-            mainSet.clone(),
-          ],
-          blueVirusCellCodes: updatedEnemyVirusCodes,
-        }
-      : {
-          ...state,
-          blueColonySets: [
-            ...state.blueColonySets.filter((item: ColonySet) => item !== mainSet),
-            mainSet.clone(),
-          ],
-          redVirusCellCodes: updatedEnemyVirusCodes,
-        };
-    
-    // Update colony activations after removing enemy virus
-    const updatedColonies = updateColonyActivations(
-      newState.redColonySets,
-      newState.blueColonySets,
-      newState.redVirusCellCodes,
-      newState.blueVirusCellCodes
-    );
-    newState.redColonySets = updatedColonies.redColonySets;
-    newState.blueColonySets = updatedColonies.blueColonySets;
-    
-    newState.availableCellCodes = getAvailableCellCodes(newState);
-    return newState;
+  // 3. Enemy adjacent colonies - check for deactivation and update if needed
+  const toUpdateColonies: ColonySet[] = [];
+  adjacentEnemyColonies.forEach((colony) => {
+    if (colony.activated) {
+      const active = checkColonyIsActive(colony, enemyVirusCellCodes);
+      if (!active) {
+        colony.activated = false;
+        toUpdateColonies.push(colony.clone());
+      }
+    }
+  });
+  const enemyColonySets =
+    player === PlayerType.RED
+      ? newState.blueColonySets
+      : newState.redColonySets;
+  const updated = enemyColonySets.filter(
+    (colony) => !toUpdateColonies.includes(colony)
+  );
+  updated.push(...toUpdateColonies);
+  if (player === PlayerType.RED) {
+    newState.blueColonySets = updated;
   } else {
-    // Merge colonies
-    const colonySetsArray = Array.from(adjacentColonySets);
-    const mainSet = colonySetsArray[0];
-    mainSet.addCellCodes([cellCode]);
+    newState.redColonySets = updated;
+  }
 
-    for (let i = 1; i < colonySetsArray.length; i++) {
-      const current = colonySetsArray[i];
-      mainSet.addCellCodes(current.getCellCodes());
+  // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
+  if (adjacentTargetColonies.length === 0) {
+    const newColonySet = new ColonySet(new Set([cellCode]), player, true);
+
+    if (player === PlayerType.RED) {
+      newState.redColonySets = [...newState.redColonySets, newColonySet];
+    } else {
+      newState.blueColonySets = [...newState.blueColonySets, newColonySet];
     }
 
-    // Activation will be checked below
+    // 5. If there is one adjacent colony - add cell to it
+  } else if (adjacentTargetColonies.length === 1) {
+    // Add to existing colony
+    const mainSet = adjacentTargetColonies[0];
+    mainSet.addCellCodes([cellCode]);
+    mainSet.activated = true;
+    if (player === PlayerType.RED) {
+      // Clone mainSet and re-add to redColonySets
+      const updatedRedColonySets = newState.redColonySets.filter(
+        (item: ColonySet) => item !== mainSet
+      );
+      updatedRedColonySets.push(mainSet.clone());
+      newState.redColonySets = updatedRedColonySets;
+    } else {
+      // Clone mainSet and re-add to blueColonySets
+      const updatedBlueColonySets = newState.blueColonySets.filter(
+        (item: ColonySet) => item !== mainSet
+      );
+      updatedBlueColonySets.push(mainSet.clone());
+    }
 
-    // Remove the cell from enemy's virus list if it was an enemy virus
-    const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
-    const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
+    // 6. If there are more than one adjacent colonies - merge them into main one
+  } else {
+    // Merge colonies
+    const mainColony = adjacentTargetColonies[0];
+    mainColony.addCellCodes([cellCode]);
+    mainColony.activated = true;
 
-    let newState = player === PlayerType.RED
-      ? {
-          ...state,
-          redColonySets: [
-            ...state.redColonySets.filter(
-              (item: ColonySet) => !adjacentColonySets.has(item)
-            ),
-            mainSet.clone(),
-          ],
-          blueVirusCellCodes: updatedEnemyVirusCodes,
-        }
-      : {
-          ...state,
-          blueColonySets: [
-            ...state.blueColonySets.filter(
-              (item: ColonySet) => !adjacentColonySets.has(item)
-            ),
-            mainSet.clone(),
-          ],
-          redVirusCellCodes: updatedEnemyVirusCodes,
-        };
-    
-    // Update colony activations after removing enemy virus
-    const updatedColonies = updateColonyActivations(
-      newState.redColonySets,
-      newState.blueColonySets,
-      newState.redVirusCellCodes,
-      newState.blueVirusCellCodes
-    );
-    newState.redColonySets = updatedColonies.redColonySets;
-    newState.blueColonySets = updatedColonies.blueColonySets;
-    
-    newState.availableCellCodes = getAvailableCellCodes(newState);
-    return newState;
+    let updatedColonySets: ColonySet[] = [];
+    if (player === PlayerType.RED) {
+      updatedColonySets = newState.redColonySets.filter(
+        (item) => !adjacentTargetColonies.includes(item)
+      );
+      updatedColonySets.push(mainColony);
+      newState.redColonySets = updatedColonySets;
+    } else {
+      updatedColonySets = newState.blueColonySets.filter(
+        (item) => !adjacentTargetColonies.includes(item)
+      );
+      updatedColonySets.push(mainColony);
+      newState.blueColonySets = updatedColonySets;
+    }
   }
+  newState.availableCellCodes = getAvailableCellCodes(newState);
+  return newState;
 }

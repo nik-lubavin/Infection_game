@@ -1,17 +1,17 @@
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
-import { helperGetAdjacentCellCodes } from "./getAdjacentCellCodes";
+import { getAdjacentCellCodesFiltered } from "./getAdjacentCellCodes";
 
 export function getAvailableCellCodes(state: GameState): string[] {
-  const virusContainer =
+  const virusCellCodes =
     state.currentPlayer === PlayerType.RED
       ? state.redVirusCellCodes
       : state.blueVirusCellCodes;
 
   const result: Set<string> = new Set();
 
-  virusContainer.forEach((virusCellCode) => {
-    const adjacentVirusCellCodes = helperGetAdjacentCellCodes(virusCellCode, {
+  virusCellCodes.forEach((virusCellCode) => {
+    const adjacentVirusCellCodes = getAdjacentCellCodesFiltered(virusCellCode, {
       redVirusCellCodes: new Set(state.redVirusCellCodes),
       blueVirusCellCodes: new Set(state.blueVirusCellCodes),
       redColonySets: state.redColonySets,
