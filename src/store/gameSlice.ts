@@ -14,21 +14,19 @@ export interface GameState {
   currentPlayer: PlayerType;
   movesLeft: number;
   board: Board;
-  redVirusCellCodes: Set<string>;
-  blueVirusCellCodes: Set<string>;
+  redVirusCellCodes: string[];
+  blueVirusCellCodes: string[];
   redColonySets: ColonySet[];
   blueColonySets: ColonySet[];
   availableCellCodes: string[];
 }
 
-// Redux doesn't support Set/Map in state, so we'll use arrays and convert
-// For now, we'll keep Sets but serialize them properly
 const initialState: GameState = {
   currentPlayer: PlayerType.RED,
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
-  redVirusCellCodes: new Set<string>(),
-  blueVirusCellCodes: new Set<string>(),
+  redVirusCellCodes: [],
+  blueVirusCellCodes: [],
   redColonySets: [],
   blueColonySets: [],
   availableCellCodes: [],
@@ -40,8 +38,8 @@ const gameSlice = createSlice({
   reducers: {
     initializeGame: (state) => {
       state.board = new Board(GRID_SIZE, GRID_SIZE);
-      state.redVirusCellCodes = new Set(initialRedViruses);
-      state.blueVirusCellCodes = new Set(initialBlueViruses);
+      state.redVirusCellCodes = [...initialRedViruses];
+      state.blueVirusCellCodes = [...initialBlueViruses];
     },
     addVirusCell: (state, action: PayloadAction<{ cellCode: string; player: PlayerType }>) => {
       const newState = actionAddVirusCell(action.payload.cellCode, action.payload.player, state);

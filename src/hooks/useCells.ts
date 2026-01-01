@@ -11,14 +11,14 @@ export enum CellType {
   BLUE_COLONY_INACTIVE = "blue_colony_inactive",
 }
 
-export function useCellsFromContext() {
+export function useCells() {
   const { redVirusCellCodes, blueVirusCellCodes, redColonySets, blueColonySets } =
     useAppSelector((state) => state.game);
 
   function getCellType(cellCode: string): CellType | null {
-    if (redVirusCellCodes.has(cellCode)) {
+    if (redVirusCellCodes.includes(cellCode)) {
       return CellType.RED_VIRUS;
-    } else if (blueVirusCellCodes.has(cellCode)) {
+    } else if (blueVirusCellCodes.includes(cellCode)) {
       return CellType.BLUE_VIRUS;
     } else {
       const redColonySet = redColonySets.find((set) =>
@@ -45,8 +45,8 @@ export function useCellsFromContext() {
 
   function getAdjacentCellCodes(cellCode: string): string[] {
     return helperGetAdjacentCellCodes(cellCode, {
-      redVirusCellCodes,
-      blueVirusCellCodes,
+      redVirusCellCodes: new Set(redVirusCellCodes),
+      blueVirusCellCodes: new Set(blueVirusCellCodes),
       redColonySets,
       blueColonySets,
     });

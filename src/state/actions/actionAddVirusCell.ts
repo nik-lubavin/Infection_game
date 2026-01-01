@@ -9,8 +9,10 @@ export function actionAddVirusCell(
 ): GameState {
   const key =
     player === PlayerType.RED ? "redVirusCellCodes" : "blueVirusCellCodes";
-  const existingSet = state[key];
-  const value = new Set(Array.from(existingSet).concat(cellCode));
+  const existingArray = state[key];
+  const value = existingArray.includes(cellCode) 
+    ? existingArray 
+    : [...existingArray, cellCode];
   const newState = {
     ...state,
     [key]: value,

@@ -7,8 +7,8 @@ export interface GameState {
   currentPlayer: PlayerType;
   movesLeft: number;
   board: Board;
-  redVirusCellCodes: Set<string>;
-  blueVirusCellCodes: Set<string>;
+  redVirusCellCodes: string[];
+  blueVirusCellCodes: string[];
   redColonySets: ColonySet[];
   blueColonySets: ColonySet[];
   availableCellCodes: string[];
@@ -32,8 +32,8 @@ export const initialGameState: GameState = {
   currentPlayer: PlayerType.RED,
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
-  redVirusCellCodes: new Set<string>(),
-  blueVirusCellCodes: new Set<string>(),
+  redVirusCellCodes: [],
+  blueVirusCellCodes: [],
   redColonySets: [],
   blueColonySets: [],
   availableCellCodes: [],

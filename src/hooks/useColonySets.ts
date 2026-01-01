@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { ColonySet } from "../classes/ColonySet";
-import { useCellsFromContext } from "./useCellsFromContext";
+import { useCells } from "./useCells";
 
 export function useColonySets() {
   const [redColonySets, setRedColonySets] = useState<ColonySet[]>([]);
   const [blueColonySets, setBlueColonySets] = useState<ColonySet[]>([]);
 
-  const { getAdjacentCellCodes } = useCellsFromContext();
+  const { getAdjacentCellCodes } = useCells();
 
   function addCellToColony(cellCode: string, currentPlayer: PlayerType) {
     let colonyStateContainer: ColonySet[];

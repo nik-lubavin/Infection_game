@@ -4,7 +4,7 @@ import CellComponent from "./CellComponent";
 import "../styles/Board.css";
 import { ICell } from "../classes/Cell";
 import { Board } from "../classes/Board";
-import { useCellsFromContext } from "../hooks/useCellsFromContext";
+import { useCells } from "../hooks/useCells";
 
 export interface BoardComponentProps {
   size: number;
@@ -26,7 +26,7 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
   onCellClick,
   setOutputText,
 }) => {
-  const { getCellType, getCellColonySet } = useCellsFromContext();
+  const { getCellType, getCellColonySet } = useCells();
 
   return (
     <div className="virus-grid-container">

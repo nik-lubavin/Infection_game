@@ -9,14 +9,14 @@ import {
   decrementMoves,
   resetMoves,
 } from "../store/gameSlice";
-import { useAvailableCellCodesFromContext } from "./useAvailableCellCodesFromContext";
-import { useCellsFromContext } from "./useCellsFromContext";
+import { useAvailableCellCodes } from "./useAvailableCellCodesFromContext";
+import { useCells } from "./useCells";
 
 export function useVirusGame() {
   const dispatch = useAppDispatch();
   const { board, currentPlayer, movesLeft } = useAppSelector((state) => state.game);
-  const { availableCellCodes } = useAvailableCellCodesFromContext(currentPlayer);
-  const { getCellType } = useCellsFromContext();
+  const { availableCellCodes } = useAvailableCellCodes(currentPlayer);
+  const { getCellType } = useCells();
 
   // Initialize game on mount
   useEffect(() => {
@@ -33,8 +33,7 @@ export function useVirusGame() {
     if (cellType == null) {
       dispatch(addVirusCell({ cellCode: cell.code, player: currentPlayer }));
     } else {
-      // ENEMY VIRUS
-      // TODO create colony
+      // ENEMY VIRUS - create or add to colony
       dispatch(addCellToColony({ cellCode: cell.code, player: currentPlayer }));
     }
 

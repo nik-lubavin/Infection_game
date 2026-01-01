@@ -12,8 +12,8 @@ export function getAvailableCellCodes(state: GameState): string[] {
 
   virusContainer.forEach((virusCellCode) => {
     const adjacentVirusCellCodes = helperGetAdjacentCellCodes(virusCellCode, {
-      redVirusCellCodes: state.redVirusCellCodes,
-      blueVirusCellCodes: state.blueVirusCellCodes,
+      redVirusCellCodes: new Set(state.redVirusCellCodes),
+      blueVirusCellCodes: new Set(state.blueVirusCellCodes),
       redColonySets: state.redColonySets,
       blueColonySets: state.blueColonySets,
     });

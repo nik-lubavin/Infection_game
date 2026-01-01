@@ -140,6 +140,12 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     setOutputText("");
   };
 
+  const handleClick = () => {
+    if (isAvailable && onClick) {
+      onClick(cell);
+    }
+  };
+
   return (
     <div
       style={{
@@ -155,11 +161,11 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
         justifyContent: "center",
         alignItems: "center",
       }}
-      onClick={() => isAvailable && onClick && onClick(cell)}
+      onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {cellType && <div style={contentStyle} />}
+      {cellType && <div style={{ ...contentStyle, pointerEvents: "none" }} />}
     </div>
   );
 };

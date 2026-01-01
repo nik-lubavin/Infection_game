@@ -21,8 +21,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newState = {
         ...state,
         board: new Board(GRID_SIZE, GRID_SIZE),
-        redVirusCellCodes: new Set(initialRedViruses),
-        blueVirusCellCodes: new Set(initialBlueViruses),
+        redVirusCellCodes: [...initialRedViruses],
+        blueVirusCellCodes: [...initialBlueViruses],
       };
       return newState;
     }

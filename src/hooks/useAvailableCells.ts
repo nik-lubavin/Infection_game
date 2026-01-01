@@ -46,9 +46,9 @@ export function useAvailableCells(currentPlayer: PlayerType) {
 
   // Helper function to get cell type
   const getCellType = (cellCode: string): CellType | null => {
-    if (redVirusCellCodes.has(cellCode)) {
+    if (redVirusCellCodes.includes(cellCode)) {
       return CellType.RED_VIRUS;
-    } else if (blueVirusCellCodes.has(cellCode)) {
+    } else if (blueVirusCellCodes.includes(cellCode)) {
       return CellType.BLUE_VIRUS;
     } else {
       const redColonySet = redColonySets.find((set: ColonySet) =>
