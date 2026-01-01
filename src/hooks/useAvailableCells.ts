@@ -1,7 +1,8 @@
-import { useGameContext } from "../contexts/GameContext";
+import { useAppSelector } from "../store/hooks";
 import { PlayerType } from "../interfaces/Board";
 import { CellType } from "../enums/CellType";
 import { GRID_SIZE } from "../constants/board";
+import { ColonySet } from "../classes/ColonySet";
 
 // Hook that calculates available cells for a player
 export function useAvailableCells(currentPlayer: PlayerType) {
@@ -10,7 +11,7 @@ export function useAvailableCells(currentPlayer: PlayerType) {
     blueVirusCellCodes,
     redColonySets,
     blueColonySets,
-  } = useGameContext();
+  } = useAppSelector((state) => state.game);
 
   // Helper function to get adjacent cell codes
   const getAdjacentCellCodes = (cellCode: string): string[] => {
@@ -50,7 +51,7 @@ export function useAvailableCells(currentPlayer: PlayerType) {
     } else if (blueVirusCellCodes.has(cellCode)) {
       return CellType.BLUE_VIRUS;
     } else {
-      const redColonySet = redColonySets.find((set) =>
+      const redColonySet = redColonySets.find((set: ColonySet) =>
         set.colonyCellsCodes.has(cellCode)
       );
       if (redColonySet) {
@@ -59,7 +60,7 @@ export function useAvailableCells(currentPlayer: PlayerType) {
           : CellType.RED_COLONY_INACTIVE;
       }
 
-      const blueColonySet = blueColonySets.find((set) =>
+      const blueColonySet = blueColonySets.find((set: ColonySet) =>
         set.colonyCellsCodes.has(cellCode)
       );
       if (blueColonySet) {
@@ -86,9 +87,9 @@ export function useAvailableCells(currentPlayer: PlayerType) {
     const result: Set<string> = new Set();
 
     // Check virus cells
-    virusContainer.forEach((virusCellCode) => {
+    virusContainer.forEach((virusCellCode: string) => {
       const adjacentVirusCellCodes = getAdjacentCellCodes(virusCellCode);
-      adjacentVirusCellCodes.forEach((cellCode) => {
+      adjacentVirusCellCodes.forEach((cellCode: string) => {
         const cellType = getCellType(cellCode);
         if (!cellType || cellType === enemyVirusType) {
           result.add(cellCode);
@@ -98,11 +99,11 @@ export function useAvailableCells(currentPlayer: PlayerType) {
 
     // Check colony cells
     colonyContainer
-      .filter((colonySet) => colonySet.activated)
-      .forEach((colonySet) => {
-        colonySet.getCellCodes().forEach((cellCode) => {
+      .filter((colonySet: ColonySet) => colonySet.activated)
+      .forEach((colonySet: ColonySet) => {
+        colonySet.getCellCodes().forEach((cellCode: string) => {
           const adjacentColonyCellCodes = getAdjacentCellCodes(cellCode);
-          adjacentColonyCellCodes.forEach((cellCode) => {
+          adjacentColonyCellCodes.forEach((cellCode: string) => {
             const cellType = getCellType(cellCode);
             if (!cellType || cellType === enemyVirusType) {
               result.add(cellCode);
