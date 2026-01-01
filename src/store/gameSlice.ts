@@ -1,25 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, current } from "@reduxjs/toolkit";
 import { Board } from "../classes/Board";
-import { ColonySet } from "../classes/ColonySet";
 import { GRID_SIZE } from "../constants/board";
 import { PlayerType } from "../interfaces/Board";
 import { actionAddVirusCell } from "../state/actions/actionAddVirusCell";
 import { actionAddCellToColony } from "../state/actions/actionAddCellToColony";
+import { GameState } from "../state/gameState";
 
 // Initial virus positions
 const initialRedViruses = ["0-0", "1-1", "2-2", "3-3", "4-4", "5-5"];
 const initialBlueViruses = ["9-9", "8-8", "7-7", "6-6", "5-6", "6-5"];
-
-export interface GameState {
-  currentPlayer: PlayerType;
-  movesLeft: number;
-  board: Board;
-  redVirusCellCodes: string[];
-  blueVirusCellCodes: string[];
-  redColonySets: ColonySet[];
-  blueColonySets: ColonySet[];
-  availableCellCodes: string[];
-}
 
 const initialState: GameState = {
   currentPlayer: PlayerType.RED,
@@ -42,11 +31,13 @@ const gameSlice = createSlice({
       state.blueVirusCellCodes = [...initialBlueViruses];
     },
     addVirusCell: (state, action: PayloadAction<{ cellCode: string; player: PlayerType }>) => {
-      const newState = actionAddVirusCell(action.payload.cellCode, action.payload.player, state);
+      const plainState = current(state) as GameState;
+      const newState = actionAddVirusCell(action.payload.cellCode, action.payload.player, plainState);
       return newState;
     },
     addCellToColony: (state, action: PayloadAction<{ cellCode: string; player: PlayerType }>) => {
-      const newState = actionAddCellToColony(action.payload.cellCode, action.payload.player, state);
+      const plainState = current(state) as GameState;
+      const newState = actionAddCellToColony(action.payload.cellCode, action.payload.player, plainState);
       return newState;
     },
     switchPlayer: (state) => {

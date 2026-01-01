@@ -4,20 +4,26 @@ import { CellContentType, ICell } from "./Cell";
 let idCounter = 1;
 export class ColonySet {
   public id: number;
+  public _previousIds: number[] = [];
 
   constructor(
     public colonyCellsCodes: Set<string> = new Set(),
     public playerType: PlayerType,
-    public activated: boolean = true
+    public activated: boolean = true,
+    previousId?: number
   ) {
     this.id = idCounter++;
+    if (previousId) {
+      this._previousIds.push(previousId);
+    }
   }
 
   clone() {
     return new ColonySet(
       this.colonyCellsCodes,
       this.playerType,
-      this.activated
+      this.activated,
+      this.id
     );
   }
 
@@ -35,7 +41,7 @@ export class ColonySet {
     // For now, return basic cell info based on cell codes
     // This will be enhanced when we have proper board integration
     return Array.from(this.colonyCellsCodes).map((code) => {
-      const [rowStr, colStr] = code.split('-');
+      const [rowStr, colStr] = code.split("-");
       return {
         rowIdx: parseInt(rowStr),
         colIdx: parseInt(colStr),
@@ -47,21 +53,4 @@ export class ColonySet {
       } as ICell;
     });
   }
-
-  // public checkActivity(board: Board) {
-  //   for (const colonyCellCode of this.colonyCellsCodes) {
-  //     const adjacentVirusCells = board
-  //       .getAdjacentCells(colonyCellCode)
-  //       .filter(
-  //         (cell) =>
-  //           cell.content?.content === CellContentType.VIRUS &&
-  //           cell.content?.player === this.playerType
-  //       );
-  //     if (adjacentVirusCells.length) {
-  //       return true;
-  //     }
-  //   }
-  //   console.log("checkActivity - false", this.playerType, this.id);
-  //   return false;
-  // }
 }

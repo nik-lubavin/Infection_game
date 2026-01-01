@@ -4,13 +4,17 @@ import { getAdjacentCellCodes } from "../helpers/getAdjacentCellCodes";
 import { ColonySet } from "../../classes/ColonySet";
 import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
 import { checkColonyIsActive } from "../helpers/checkColonyActivation";
+import {
+  addNewDeleteOldColonies,
+  substituteColonySets,
+} from "../helpers/partiallyUpdateColonySets";
 
 export function actionAddCellToColony(
   cellCode: string,
   player: PlayerType,
   state: GameState
 ): GameState {
-  // Prepare new state
+  // 0 Prepare new state
   const newState: GameState = {
     ...state,
   };
@@ -63,27 +67,16 @@ export function actionAddCellToColony(
       const active = checkColonyIsActive(colony, enemyVirusCellCodes);
       if (!active) {
         colony.activated = false;
-        toUpdateColonies.push(colony.clone());
+        toUpdateColonies.push(colony);
       }
     }
   });
-  const enemyColonySets =
-    player === PlayerType.RED
-      ? newState.blueColonySets
-      : newState.redColonySets;
-  const updated = enemyColonySets.filter(
-    (colony) => !toUpdateColonies.includes(colony)
-  );
-  updated.push(...toUpdateColonies);
-  if (player === PlayerType.RED) {
-    newState.blueColonySets = updated;
-  } else {
-    newState.redColonySets = updated;
-  }
+  substituteColonySets(newState, toUpdateColonies, player);
 
   // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
   if (adjacentTargetColonies.length === 0) {
     const newColonySet = new ColonySet(new Set([cellCode]), player, true);
+    // TODO is this new colony mergeable?
 
     if (player === PlayerType.RED) {
       newState.redColonySets = [...newState.redColonySets, newColonySet];
@@ -97,20 +90,7 @@ export function actionAddCellToColony(
     const mainSet = adjacentTargetColonies[0];
     mainSet.addCellCodes([cellCode]);
     mainSet.activated = true;
-    if (player === PlayerType.RED) {
-      // Clone mainSet and re-add to redColonySets
-      const updatedRedColonySets = newState.redColonySets.filter(
-        (item: ColonySet) => item !== mainSet
-      );
-      updatedRedColonySets.push(mainSet.clone());
-      newState.redColonySets = updatedRedColonySets;
-    } else {
-      // Clone mainSet and re-add to blueColonySets
-      const updatedBlueColonySets = newState.blueColonySets.filter(
-        (item: ColonySet) => item !== mainSet
-      );
-      updatedBlueColonySets.push(mainSet.clone());
-    }
+    substituteColonySets(newState, [mainSet], player);
 
     // 6. If there are more than one adjacent colonies - merge them into main one
   } else {
@@ -118,21 +98,16 @@ export function actionAddCellToColony(
     const mainColony = adjacentTargetColonies[0];
     mainColony.addCellCodes([cellCode]);
     mainColony.activated = true;
-
-    let updatedColonySets: ColonySet[] = [];
-    if (player === PlayerType.RED) {
-      updatedColonySets = newState.redColonySets.filter(
-        (item) => !adjacentTargetColonies.includes(item)
-      );
-      updatedColonySets.push(mainColony);
-      newState.redColonySets = updatedColonySets;
-    } else {
-      updatedColonySets = newState.blueColonySets.filter(
-        (item) => !adjacentTargetColonies.includes(item)
-      );
-      updatedColonySets.push(mainColony);
-      newState.blueColonySets = updatedColonySets;
+    for (let i = 1; i < adjacentTargetColonies.length; i++) {
+      const adjColony = adjacentTargetColonies[i];
+      mainColony.addCellCodes(adjColony.getCellCodes());
     }
+    addNewDeleteOldColonies(
+      newState,
+      adjacentTargetColonies,
+      [mainColony],
+      player
+    );
   }
   newState.availableCellCodes = getAvailableCellCodes(newState);
   return newState;
