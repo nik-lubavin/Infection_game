@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { PlayerType } from "../interfaces/Board";
 import { ICell } from "../classes/Cell";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
