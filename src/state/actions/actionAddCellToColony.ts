@@ -3,6 +3,7 @@ import { GameState } from "../gameState";
 import { helperGetAdjacentCellCodes } from "../helpers/getAdjacentCellCodes";
 import { ColonySet } from "../../classes/ColonySet";
 import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
+import { updateColonyActivations } from "../helpers/checkColonyActivation";
 
 
 export function actionAddCellToColony(
@@ -32,14 +33,14 @@ export function actionAddCellToColony(
   });
 
   if (adjacentColonySets.size === 0) {
-    // Create new colony
-    const newColonySet = new ColonySet(new Set([cellCode]), player, true);
+    // Create new colony (activation will be checked below)
+    const newColonySet = new ColonySet(new Set([cellCode]), player, false);
 
     // Remove the cell from enemy's virus list if it was an enemy virus
     const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
     const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
 
-    const newState = player === PlayerType.RED
+    let newState = player === PlayerType.RED
       ? {
           ...state,
           redColonySets: [...state.redColonySets, newColonySet],
@@ -51,19 +52,29 @@ export function actionAddCellToColony(
           redVirusCellCodes: updatedEnemyVirusCodes,
         };
     
+    // Update colony activations after removing enemy virus
+    const updatedColonies = updateColonyActivations(
+      newState.redColonySets,
+      newState.blueColonySets,
+      newState.redVirusCellCodes,
+      newState.blueVirusCellCodes
+    );
+    newState.redColonySets = updatedColonies.redColonySets;
+    newState.blueColonySets = updatedColonies.blueColonySets;
+    
     newState.availableCellCodes = getAvailableCellCodes(newState);
     return newState;
   } else if (adjacentColonySets.size === 1) {
     // Add to existing colony
     const mainSet = Array.from(adjacentColonySets)[0];
     mainSet.addCellCodes([cellCode]);
-    mainSet.activated = true;
+    // Activation will be checked below
 
     // Remove the cell from enemy's virus list if it was an enemy virus
     const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
     const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
 
-    const newState = player === PlayerType.RED
+    let newState = player === PlayerType.RED
       ? {
           ...state,
           redColonySets: [
@@ -81,6 +92,16 @@ export function actionAddCellToColony(
           redVirusCellCodes: updatedEnemyVirusCodes,
         };
     
+    // Update colony activations after removing enemy virus
+    const updatedColonies = updateColonyActivations(
+      newState.redColonySets,
+      newState.blueColonySets,
+      newState.redVirusCellCodes,
+      newState.blueVirusCellCodes
+    );
+    newState.redColonySets = updatedColonies.redColonySets;
+    newState.blueColonySets = updatedColonies.blueColonySets;
+    
     newState.availableCellCodes = getAvailableCellCodes(newState);
     return newState;
   } else {
@@ -94,13 +115,13 @@ export function actionAddCellToColony(
       mainSet.addCellCodes(current.getCellCodes());
     }
 
-    mainSet.activated = true;
+    // Activation will be checked below
 
     // Remove the cell from enemy's virus list if it was an enemy virus
     const enemyVirusKey = player === PlayerType.RED ? "blueVirusCellCodes" : "redVirusCellCodes";
     const updatedEnemyVirusCodes = state[enemyVirusKey].filter((code: string) => code !== cellCode);
 
-    const newState = player === PlayerType.RED
+    let newState = player === PlayerType.RED
       ? {
           ...state,
           redColonySets: [
@@ -121,6 +142,16 @@ export function actionAddCellToColony(
           ],
           redVirusCellCodes: updatedEnemyVirusCodes,
         };
+    
+    // Update colony activations after removing enemy virus
+    const updatedColonies = updateColonyActivations(
+      newState.redColonySets,
+      newState.blueColonySets,
+      newState.redVirusCellCodes,
+      newState.blueVirusCellCodes
+    );
+    newState.redColonySets = updatedColonies.redColonySets;
+    newState.blueColonySets = updatedColonies.blueColonySets;
     
     newState.availableCellCodes = getAvailableCellCodes(newState);
     return newState;

@@ -1,6 +1,7 @@
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
 import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
+import { updateColonyActivations } from "../helpers/checkColonyActivation";
 
 export function actionAddVirusCell(
   cellCode: string,
@@ -17,6 +18,16 @@ export function actionAddVirusCell(
     ...state,
     [key]: value,
   };
+
+  // Update colony activations after adding virus (might reactivate colonies)
+  const updatedColonies = updateColonyActivations(
+    newState.redColonySets,
+    newState.blueColonySets,
+    newState.redVirusCellCodes,
+    newState.blueVirusCellCodes
+  );
+  newState.redColonySets = updatedColonies.redColonySets;
+  newState.blueColonySets = updatedColonies.blueColonySets;
 
   newState.availableCellCodes = getAvailableCellCodes(newState);
 
