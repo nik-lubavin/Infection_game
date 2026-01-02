@@ -65,32 +65,47 @@ export function addNewDeleteOldColonies(
     .filter((colony: ColonySet) => colony.owner === PlayerType.BLUE)
     .map((colony: ColonySet) => colony.id);
 
-  if (toDeleteRedIds.length > 0) {
-    const updatedRedColonies = [
+  const redColoniesToAdd = toAddColonies.filter(
+    (colony: ColonySet) => colony.owner === PlayerType.RED
+  );
+  const blueColoniesToAdd = toAddColonies.filter(
+    (colony: ColonySet) => colony.owner === PlayerType.BLUE
+  );
+
+  let updatedRedColonies = gameState.redColonySets;
+  let updatedBlueColonies = gameState.blueColonySets;
+
+  // Handle red colonies deletion and addition
+  if (toDeleteRedIds.length > 0 || redColoniesToAdd.length > 0) {
+    updatedRedColonies = [
       // remove colonies to delete
       ...gameState.redColonySets.filter(
         (colony: ColonySet) => !toDeleteRedIds.includes(colony.id)
       ),
       // Colonies are already cloned in action functions, so use them directly
-      ...toAddColonies,
+      ...redColoniesToAdd,
     ];
-    return {
-      ...gameState,
-      redColonySets: updatedRedColonies,
-    };
   }
 
-  if (toDeleteBlueIds.length > 0) {
-    const updatedBlueColonies = [
+  // Handle blue colonies deletion and addition
+  if (toDeleteBlueIds.length > 0 || blueColoniesToAdd.length > 0) {
+    updatedBlueColonies = [
       // remove colonies to delete
       ...gameState.blueColonySets.filter(
         (colony: ColonySet) => !toDeleteBlueIds.includes(colony.id)
       ),
       // Colonies are already cloned in action functions, so use them directly
-      ...toAddColonies,
+      ...blueColoniesToAdd,
     ];
+  }
+
+  if (
+    updatedRedColonies !== gameState.redColonySets ||
+    updatedBlueColonies !== gameState.blueColonySets
+  ) {
     return {
       ...gameState,
+      redColonySets: updatedRedColonies,
       blueColonySets: updatedBlueColonies,
     };
   }
