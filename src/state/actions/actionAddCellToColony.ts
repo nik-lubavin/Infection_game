@@ -13,12 +13,28 @@ export function actionAddCellToColony(
   cellCode: string,
   state: GameState
 ): GameState {
-  // 0 Prepare new state
+  // 1. Prepare new state
   const newState: GameState = {
     ...state,
   };
+  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
+    cellCode,
+    state
+  );
+  const adjacentEnemyColonies =
+    state.currentPlayer === PlayerType.RED
+      ? adjacentBlueColonies
+      : adjacentRedColonies;
+  const adjacentFriendlyColonies =
+    state.currentPlayer === PlayerType.RED
+      ? adjacentRedColonies
+      : adjacentBlueColonies;
+  const enemyVirusCellCodes =
+    state.currentPlayer === PlayerType.RED
+      ? newState.blueVirusCellCodes
+      : newState.redVirusCellCodes;
 
-  // 1. Enemy - remove virus cell
+  // 2. Enemy - remove virus cell
   if (state.currentPlayer === PlayerType.RED) {
     const updatedEnemyVirusCodes = state.blueVirusCellCodes.filter(
       (code: string) => code !== cellCode
@@ -30,25 +46,6 @@ export function actionAddCellToColony(
     );
     newState.redVirusCellCodes = updatedEnemyVirusCodes;
   }
-
-  // 2. Gather adjacent colonies data
-  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
-    cellCode,
-    state
-  );
-
-  const adjacentEnemyColonies =
-    state.currentPlayer === PlayerType.RED
-      ? adjacentBlueColonies
-      : adjacentRedColonies;
-  const adjacentTargetColonies =
-    state.currentPlayer === PlayerType.RED
-      ? adjacentRedColonies
-      : adjacentBlueColonies;
-  const enemyVirusCellCodes =
-    state.currentPlayer === PlayerType.RED
-      ? newState.blueVirusCellCodes
-      : newState.redVirusCellCodes;
 
   // 3. Enemy adjacent colonies - check for deactivation and update if needed
   const toUpdateColonies: ColonySet[] = [];
@@ -64,12 +61,12 @@ export function actionAddCellToColony(
   refreshColonySets(newState, toUpdateColonies);
 
   // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
-  if (adjacentTargetColonies.length === 0) {
+  if (adjacentFriendlyColonies.length === 0) {
     const newColonySet = new ColonySet(
       new Set([cellCode]),
-      true
+      true,
+      state.currentPlayer
     );
-    // TODO is this new colony mergeable?
 
     if (state.currentPlayer === PlayerType.RED) {
       newState.redColonySets = [...newState.redColonySets, newColonySet];
@@ -78,9 +75,9 @@ export function actionAddCellToColony(
     }
 
     // 5. If there is one adjacent colony - add cell to it
-  } else if (adjacentTargetColonies.length === 1) {
+  } else if (adjacentFriendlyColonies.length === 1) {
     // Add to existing colony
-    const mainSet = adjacentTargetColonies[0];
+    const mainSet = adjacentFriendlyColonies[0];
     mainSet.addCellCodes([cellCode]);
     mainSet.activated = true;
     refreshColonySets(newState, [mainSet]);
@@ -88,16 +85,16 @@ export function actionAddCellToColony(
     // 6. If there are more than one adjacent colonies - merge them into main one
   } else {
     // Merge colonies
-    const mainColony = adjacentTargetColonies[0];
+    const mainColony = adjacentFriendlyColonies[0];
     mainColony.addCellCodes([cellCode]);
     mainColony.activated = true;
-    for (let i = 1; i < adjacentTargetColonies.length; i++) {
-      const adjColony = adjacentTargetColonies[i];
+    for (let i = 1; i < adjacentFriendlyColonies.length; i++) {
+      const adjColony = adjacentFriendlyColonies[i];
       mainColony.addCellCodes(adjColony.getCellCodes());
     }
     addNewDeleteOldColonies(
       newState,
-      adjacentTargetColonies,
+      adjacentFriendlyColonies,
       [mainColony],
       state.currentPlayer
     );

@@ -1,4 +1,4 @@
-// import { CellContentType, ICell } from "./Cell";
+import { PlayerType } from "../interfaces/Board";
 
 let idCounter = 1;
 export class ColonySet {
@@ -6,13 +6,14 @@ export class ColonySet {
 
   constructor(
     public colonyCellsCodes: Set<string> = new Set(),
-    public activated: boolean = true
+    public activated: boolean = true,
+    public owner: PlayerType
   ) {
     this.id = idCounter++;
   }
 
   clone() {
-    return new ColonySet(this.colonyCellsCodes, this.activated);
+    return new ColonySet(this.colonyCellsCodes, this.activated, this.owner);
   }
 
   addCellCodes(cellCodes: string[]) {

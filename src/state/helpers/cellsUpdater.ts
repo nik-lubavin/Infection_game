@@ -6,15 +6,11 @@ export function refreshColonySets(
   gameState: GameState,
   toUpdateColonies: ColonySet[]
 ) {
-  // Determine which colonies belong to red and which to blue
-  const redColonyIds = new Set(gameState.redColonySets.map((c) => c.id));
-  const blueColonyIds = new Set(gameState.blueColonySets.map((c) => c.id));
-
-  const redColoniesToUpdate = toUpdateColonies.filter((c) =>
-    redColonyIds.has(c.id)
+  const redColoniesToUpdate = toUpdateColonies.filter(
+    (c) => c.owner === PlayerType.RED
   );
-  const blueColoniesToUpdate = toUpdateColonies.filter((c) =>
-    blueColonyIds.has(c.id)
+  const blueColoniesToUpdate = toUpdateColonies.filter(
+    (c) => c.owner === PlayerType.BLUE
   );
 
   if (redColoniesToUpdate.length > 0) {
