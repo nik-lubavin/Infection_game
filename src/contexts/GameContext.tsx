@@ -9,8 +9,6 @@ import React, {
 interface SecondaryContextType {
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  outputText: string;
-  setOutputText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const GameContext = createContext<SecondaryContextType | undefined>(undefined);
@@ -21,13 +19,10 @@ interface GameProviderProps {
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [outputText, setOutputText] = useState("");
 
   const value = {
     sidebarCollapsed,
     setSidebarCollapsed,
-    outputText,
-    setOutputText,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

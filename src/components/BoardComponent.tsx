@@ -17,7 +17,6 @@ export interface BoardComponentProps {
   onCellClick: (cell: ICell) => void;
   board: Board;
   availableCellCodes: string[];
-  setOutputText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const BoardComponent: React.FC<BoardComponentProps> = ({
@@ -25,7 +24,6 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
   board,
   availableCellCodes,
   onCellClick,
-  setOutputText,
 }) => {
   const gameState = useAppSelector((state) => state.game);
 
@@ -46,7 +44,6 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
                 cell={cell}
                 onCellClick={onCellClick}
                 isAvailable={isAvailable}
-                setOutputText={setOutputText}
                 currentTurn={currentTurn}
                 cellType={cellType}
                 colonySet={colonySet}

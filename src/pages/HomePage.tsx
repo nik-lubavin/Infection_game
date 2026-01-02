@@ -12,26 +12,12 @@ const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 const HomePage: React.FC = () => {
-  const { sidebarCollapsed, setSidebarCollapsed, outputText, setOutputText } =
-    useGameContext();
+  const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
 
   const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
-  const { redColonySets, blueColonySets, availableCellCodes } = useAppSelector(
+  const { availableCellCodes } = useAppSelector(
     (state) => state.game
   );
-
-  // Transform colony data for UI
-  const redColoniesData = redColonySets.map((colonySet, index) => ({
-    id: index,
-    activated: colonySet.activated,
-    cellsCodes: colonySet.getCellCodes(),
-  }));
-
-  const blueColoniesData = blueColonySets.map((colonySet, index) => ({
-    id: index,
-    activated: colonySet.activated,
-    cellsCodes: colonySet.getCellCodes(),
-  }));
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;
@@ -74,8 +60,6 @@ const HomePage: React.FC = () => {
           currentPlayer={currentPlayer}
           movesLeft={movesLeft}
           availableCellCodes={availableCellCodes}
-          redColonySets={redColoniesData}
-          blueColonySets={blueColoniesData}
           collapsed={sidebarCollapsed}
         />
         <Content
@@ -108,31 +92,10 @@ const HomePage: React.FC = () => {
               onCellClick={onCellClick}
               board={board}
               availableCellCodes={availableCellCodes}
-              setOutputText={setOutputText}
             />
           </div>
         </Content>
       </Layout>
-      <div
-        style={{
-          width: "100%",
-          textAlign: "center",
-          whiteSpace: "pre-wrap",
-          wordWrap: "break-word",
-          padding: "10px",
-          backgroundColor: "#f0f0f0",
-          borderTop: "1px solid #e0e0e0",
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <Typography.Text>
-          {outputText || "Hover over a cell to see details here."}
-        </Typography.Text>
-      </div>
       <Footer style={{ textAlign: "center" }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>

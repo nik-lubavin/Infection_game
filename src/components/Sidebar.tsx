@@ -8,8 +8,6 @@ interface SidebarProps {
   currentPlayer: PlayerType;
   movesLeft: number;
   availableCellCodes: string[];
-  redColonySets: any[];
-  blueColonySets: any[];
   collapsed: boolean;
 }
 
@@ -17,8 +15,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentPlayer,
   movesLeft,
   availableCellCodes,
-  redColonySets,
-  blueColonySets,
   collapsed,
 }) => {
   const [width, setWidth] = useState(300);
@@ -131,39 +127,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </Col>
               </Row>
             )}
-          </Card>
-
-          <Card title="Colony Sets (JSON)" bordered={false}>
-            <div
-              style={{
-                backgroundColor: "#f5f5f5",
-                padding: "10px",
-                borderRadius: "4px",
-                maxHeight: "400px",
-                overflow: "auto",
-                fontSize: "12px",
-                fontFamily: "monospace",
-              }}
-            >
-              <pre
-                style={{
-                  margin: 0,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                RED: {JSON.stringify(redColonySets, null, 2)}
-              </pre>
-              <pre
-                style={{
-                  margin: 0,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                BLUE: {JSON.stringify(blueColonySets, null, 2)}
-              </pre>
-            </div>
           </Card>
         </>
       )}

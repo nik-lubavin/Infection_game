@@ -10,7 +10,6 @@ interface CellProps {
   currentTurn: PlayerType;
   onCellClick?: (cell: ICell) => void;
   isAvailable: boolean;
-  setOutputText: React.Dispatch<React.SetStateAction<string>>;
   colonySet: ColonySet | null;
   cellType: CellType | null;
 }
@@ -21,7 +20,6 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     onCellClick: onClick,
     isAvailable,
     currentTurn,
-    setOutputText,
     colonySet,
     cellType,
   } = props;
@@ -118,24 +116,10 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    const cellData = {
-      cellCode: cell.code,
-      cellType,
-      isAvailable,
-      colonySet: colonySet
-        ? {
-            activated: colonySet.activated,
-            id: colonySet.id,
-            cellsLength: colonySet?.getCellCodes().length,
-          }
-        : null,
-    };
-    setOutputText(JSON.stringify(cellData, null, 2));
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    setOutputText("");
   };
 
   const handleClick = () => {
