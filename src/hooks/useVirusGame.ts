@@ -9,14 +9,13 @@ import {
   decrementMoves,
   resetMoves,
 } from "../store/gameSlice";
-import { useAvailableCellCodes } from "./useAvailableCellCodesFromContext";
-import { useCells } from "./useCells";
+import { isCellAvailable } from "../state/helpers/cellsGetters";
+import { getCellType } from "../state/helpers/cellsGetters";
 
 export function useVirusGame() {
   const dispatch = useAppDispatch();
-  const { board, currentPlayer, movesLeft } = useAppSelector((state) => state.game);
-  const { availableCellCodes } = useAvailableCellCodes(currentPlayer);
-  const { getCellType } = useCells();
+  const gameState = useAppSelector((state) => state.game);
+  const { board, currentPlayer, movesLeft } = gameState;
 
   // Initialize game on mount
   useEffect(() => {
@@ -24,17 +23,17 @@ export function useVirusGame() {
   }, [dispatch]);
 
   const handleCellClick = (cell: ICell) => {
-    const isAvailable = availableCellCodes.indexOf(cell.code) !== -1;
+    const isAvailable = isCellAvailable(cell.code, gameState);
 
     if (!isAvailable) return;
 
-    const cellType = getCellType(cell.code);
+    const cellType = getCellType(cell.code, gameState);
 
     if (cellType == null) {
-      dispatch(addVirusCell({ cellCode: cell.code, player: currentPlayer }));
+      dispatch(addVirusCell({ cellCode: cell.code }));
     } else {
       // ENEMY VIRUS - create or add to colony
-      dispatch(addCellToColony({ cellCode: cell.code, player: currentPlayer }));
+      dispatch(addCellToColony({ cellCode: cell.code }));
     }
 
     if (movesLeft > 1) {
@@ -49,7 +48,6 @@ export function useVirusGame() {
     board,
     currentPlayer,
     movesLeft,
-    availableCellCodes,
     onCellClick: handleCellClick,
   };
 }

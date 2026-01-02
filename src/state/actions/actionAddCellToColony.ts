@@ -1,17 +1,16 @@
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
-import { getAdjacentCellCodes } from "../helpers/getAdjacentCellCodes";
 import { ColonySet } from "../../classes/ColonySet";
-import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
+import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
 import { checkColonyIsActive } from "../helpers/checkColonyActivation";
 import {
   addNewDeleteOldColonies,
   substituteColonySets,
 } from "../helpers/partiallyUpdateColonySets";
+import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
 
 export function actionAddCellToColony(
   cellCode: string,
-  player: PlayerType,
   state: GameState
 ): GameState {
   // 0 Prepare new state
@@ -20,7 +19,7 @@ export function actionAddCellToColony(
   };
 
   // 1. Enemy - remove virus cell
-  if (player === PlayerType.RED) {
+  if (state.currentPlayer === PlayerType.RED) {
     const updatedEnemyVirusCodes = state.blueVirusCellCodes.filter(
       (code: string) => code !== cellCode
     );
@@ -33,30 +32,21 @@ export function actionAddCellToColony(
   }
 
   // 2. Gather adjacent colonies data
-  const allAdjacentCellCodes = getAdjacentCellCodes(cellCode);
-  const adjacentRedColonies: ColonySet[] = [];
-  const adjacentBlueColonies: ColonySet[] = [];
-  allAdjacentCellCodes.forEach((adjacentCellCode) => {
-    const foundRedColonySet = state.redColonySets.find((item: ColonySet) =>
-      item.colonyCellsCodes.has(adjacentCellCode)
-    );
-    if (foundRedColonySet) {
-      adjacentRedColonies.push(foundRedColonySet);
-    }
+  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
+    cellCode,
+    state
+  );
 
-    const foundBlueColonySet = state.blueColonySets.find((item: ColonySet) =>
-      item.colonyCellsCodes.has(adjacentCellCode)
-    );
-    if (foundBlueColonySet) {
-      adjacentBlueColonies.push(foundBlueColonySet);
-    }
-  });
   const adjacentEnemyColonies =
-    player === PlayerType.RED ? adjacentBlueColonies : adjacentRedColonies;
+    state.currentPlayer === PlayerType.RED
+      ? adjacentBlueColonies
+      : adjacentRedColonies;
   const adjacentTargetColonies =
-    player === PlayerType.RED ? adjacentRedColonies : adjacentBlueColonies;
+    state.currentPlayer === PlayerType.RED
+      ? adjacentRedColonies
+      : adjacentBlueColonies;
   const enemyVirusCellCodes =
-    player === PlayerType.RED
+    state.currentPlayer === PlayerType.RED
       ? newState.blueVirusCellCodes
       : newState.redVirusCellCodes;
 
@@ -71,14 +61,18 @@ export function actionAddCellToColony(
       }
     }
   });
-  substituteColonySets(newState, toUpdateColonies, player);
+  substituteColonySets(newState, toUpdateColonies);
 
   // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
   if (adjacentTargetColonies.length === 0) {
-    const newColonySet = new ColonySet(new Set([cellCode]), player, true);
+    const newColonySet = new ColonySet(
+      new Set([cellCode]),
+      state.currentPlayer,
+      true
+    );
     // TODO is this new colony mergeable?
 
-    if (player === PlayerType.RED) {
+    if (state.currentPlayer === PlayerType.RED) {
       newState.redColonySets = [...newState.redColonySets, newColonySet];
     } else {
       newState.blueColonySets = [...newState.blueColonySets, newColonySet];
@@ -90,7 +84,7 @@ export function actionAddCellToColony(
     const mainSet = adjacentTargetColonies[0];
     mainSet.addCellCodes([cellCode]);
     mainSet.activated = true;
-    substituteColonySets(newState, [mainSet], player);
+    substituteColonySets(newState, [mainSet]);
 
     // 6. If there are more than one adjacent colonies - merge them into main one
   } else {
@@ -106,9 +100,9 @@ export function actionAddCellToColony(
       newState,
       adjacentTargetColonies,
       [mainColony],
-      player
+      state.currentPlayer
     );
   }
-  newState.availableCellCodes = getAvailableCellCodes(newState);
+  newState.availableCellCodes = calculateAvailableCellCodes(newState);
   return newState;
 }

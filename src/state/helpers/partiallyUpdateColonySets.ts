@@ -4,11 +4,10 @@ import { GameState } from "../gameState";
 
 export function substituteColonySets(
   gameState: GameState,
-  toUpdateColonies: ColonySet[],
-  player: PlayerType
+  toUpdateColonies: ColonySet[]
 ) {
   const toUpdateIds = toUpdateColonies.map((colony: ColonySet) => colony.id);
-  if (player === PlayerType.RED) {
+  if (gameState.currentPlayer === PlayerType.RED) {
     const upd = gameState.redColonySets.filter(
       (colony: ColonySet) => !toUpdateIds.includes(colony.id)
     );

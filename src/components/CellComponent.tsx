@@ -118,11 +118,10 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    const { rowIdx, colIdx } = cell;
     const cellData = {
-      rowIdx,
-      colIdx,
-      content: cellType,
+      cellCode: cell.code,
+      cellType,
+      isAvailable,
       colonySet: colonySet
         ? {
             activated: colonySet.activated,

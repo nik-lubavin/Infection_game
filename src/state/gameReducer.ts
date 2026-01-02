@@ -12,8 +12,6 @@ export type { GameState, GameAction };
 const initialRedViruses = ["0-0", "1-1", "2-2", "3-3", "4-4", "5-5"];
 const initialBlueViruses = ["9-9", "8-8", "7-7", "6-6", "5-6", "6-5"];
 
-
-
 // Main reducer function
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -28,13 +26,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "ADD_VIRUS_CELL": {
-      const { cellCode, player } = action.payload;
-      return actionAddVirusCell(cellCode, player, state);
+      const { cellCode } = action.payload;
+      return actionAddVirusCell(cellCode, state);
     }
 
     case "ADD_CELL_TO_COLONY": {
-      const { cellCode, player } = action.payload;
-      return actionAddCellToColony(cellCode, player, state);
+      const { cellCode } = action.payload;
+      return actionAddCellToColony(cellCode, state);
     }
 
     case "SWITCH_PLAYER": {

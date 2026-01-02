@@ -15,9 +15,8 @@ const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed, outputText, setOutputText } =
     useGameContext();
 
-  const { board, currentPlayer, movesLeft, availableCellCodes, onCellClick } =
-    useVirusGame();
-  const { redColonySets, blueColonySets } = useAppSelector(
+  const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
+  const { redColonySets, blueColonySets, availableCellCodes } = useAppSelector(
     (state) => state.game
   );
 

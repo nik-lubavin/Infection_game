@@ -4,7 +4,12 @@ import CellComponent from "./CellComponent";
 import "../styles/Board.css";
 import { ICell } from "../classes/Cell";
 import { Board } from "../classes/Board";
-import { useCells } from "../hooks/useCells";
+import { useAppSelector } from "../store/hooks";
+import { getCellType } from "../state/helpers/cellsGetters";
+import {
+  getCellColonySet,
+  isCellAvailable,
+} from "../state/helpers/cellsGetters";
 
 export interface BoardComponentProps {
   size: number;
@@ -15,10 +20,6 @@ export interface BoardComponentProps {
   setOutputText: React.Dispatch<React.SetStateAction<string>>;
 }
 
-function isCellAvailable(cell: ICell, availableCellCodes: string[]): boolean {
-  return availableCellCodes.some((cellCode) => cellCode === cell.code);
-}
-
 const BoardComponent: React.FC<BoardComponentProps> = ({
   currentTurn,
   board,
@@ -26,15 +27,15 @@ const BoardComponent: React.FC<BoardComponentProps> = ({
   onCellClick,
   setOutputText,
 }) => {
-  const { getCellType, getCellColonySet } = useCells();
+  const gameState = useAppSelector((state) => state.game);
 
   return (
     <div className="virus-grid-container">
       {board.cells.map((row: ICell[]) => {
         const rowComponent = row.map((cell: ICell) => {
-          const isAvailable = isCellAvailable(cell, availableCellCodes);
-          const cellType = getCellType(cell.code);
-          const colonySet = getCellColonySet(cell.code);
+          const isAvailable = isCellAvailable(cell.code, gameState);
+          const cellType = getCellType(cell.code, gameState);
+          const colonySet = getCellColonySet(cell.code, gameState);
 
           return (
             <div

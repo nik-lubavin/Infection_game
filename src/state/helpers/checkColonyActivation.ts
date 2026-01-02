@@ -5,6 +5,7 @@ import { ColonySet } from "../../classes/ColonySet";
  * Checks if a colony has any adjacent virus cells of the same player
  * A colony is active if at least one of its cells has an adjacent virus cell
  */
+// TODO refactor
 export function checkColonyIsActive(
   colonySet: ColonySet,
   playerVirusCellCodes: string[]

@@ -1,35 +1,47 @@
+import { ColonySet } from "../../classes/ColonySet";
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
-import { getAvailableCellCodes } from "../helpers/getAvailableCellCodes";
-import { updateColonyActivations } from "../helpers/checkColonyActivation";
+import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
+import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
+import { substituteColonySets as refreshColonySets } from "../helpers/partiallyUpdateColonySets";
+// import { updateColonyActivations } from "../helpers/checkColonyActivation";
 
 export function actionAddVirusCell(
   cellCode: string,
-  player: PlayerType,
   state: GameState
 ): GameState {
-  const key =
-    player === PlayerType.RED ? "redVirusCellCodes" : "blueVirusCellCodes";
-  const existingArray = state[key];
-  const value = existingArray.includes(cellCode) 
-    ? existingArray 
-    : [...existingArray, cellCode];
-  const newState = {
+  // 0. Prepare new state
+  const newState: GameState = {
     ...state,
-    [key]: value,
   };
 
-  // Update colony activations after adding virus (might reactivate colonies)
-  const updatedColonies = updateColonyActivations(
-    newState.redColonySets,
-    newState.blueColonySets,
-    newState.redVirusCellCodes,
-    newState.blueVirusCellCodes
-  );
-  newState.redColonySets = updatedColonies.redColonySets;
-  newState.blueColonySets = updatedColonies.blueColonySets;
+  // 1. Add virus cell to player
+  if (state.currentPlayer === PlayerType.RED) {
+    newState.redVirusCellCodes = [...newState.redVirusCellCodes, cellCode];
+  } else {
+    newState.blueVirusCellCodes = [...newState.blueVirusCellCodes, cellCode];
+  }
 
-  newState.availableCellCodes = getAvailableCellCodes(newState);
+  // 2. Check possible colony activation (for inactive)
+  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
+    cellCode,
+    state
+  );
+  const adjacentFriendlyColonies =
+    state.currentPlayer === PlayerType.RED
+      ? adjacentRedColonies
+      : adjacentBlueColonies;
+  const inactive = adjacentFriendlyColonies.filter((colon) => !colon.activated);
+  if (inactive.length > 0) {
+    const toUpdate: ColonySet[] = [];
+    inactive.forEach((colony) => {
+      colony.activated = true;
+      toUpdate.push(colony);
+    });
+    refreshColonySets(newState, toUpdate);
+  }
+
+  newState.availableCellCodes = calculateAvailableCellCodes(newState);
 
   return newState;
 }
