@@ -5,8 +5,8 @@ import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
 import { checkColonyIsActive } from "../helpers/checkColonyActivation";
 import {
   addNewDeleteOldColonies,
-  substituteColonySets,
-} from "../helpers/partiallyUpdateColonySets";
+  refreshColonySets,
+} from "../helpers/cellsUpdater";
 import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
 
 export function actionAddCellToColony(
@@ -61,7 +61,7 @@ export function actionAddCellToColony(
       }
     }
   });
-  substituteColonySets(newState, toUpdateColonies);
+  refreshColonySets(newState, toUpdateColonies);
 
   // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
   if (adjacentTargetColonies.length === 0) {
@@ -83,7 +83,7 @@ export function actionAddCellToColony(
     const mainSet = adjacentTargetColonies[0];
     mainSet.addCellCodes([cellCode]);
     mainSet.activated = true;
-    substituteColonySets(newState, [mainSet]);
+    refreshColonySets(newState, [mainSet]);
 
     // 6. If there are more than one adjacent colonies - merge them into main one
   } else {

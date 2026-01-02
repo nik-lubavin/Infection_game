@@ -2,7 +2,7 @@ import { ColonySet } from "../../classes/ColonySet";
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
 
-export function substituteColonySets(
+export function refreshColonySets(
   gameState: GameState,
   toUpdateColonies: ColonySet[]
 ) {
