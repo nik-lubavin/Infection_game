@@ -13,7 +13,15 @@ export class ColonySet {
   }
 
   clone() {
-    return new ColonySet(this.colonyCellsCodes, this.activated, this.owner);
+    // Create a new Set to avoid mutating the original
+    const cloned = new ColonySet(
+      new Set(this.colonyCellsCodes),
+      this.activated,
+      this.owner
+    );
+    // Preserve the original ID so refreshColonySets can find and replace it
+    cloned.id = this.id;
+    return cloned;
   }
 
   addCellCodes(cellCodes: string[]) {

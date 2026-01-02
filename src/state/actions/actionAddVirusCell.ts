@@ -9,17 +9,18 @@ export function actionAddVirusCell(
   cellCode: string,
   state: GameState
 ): GameState {
-  // 0. Prepare new state
-  const newState: GameState = {
-    ...state,
-  };
-
   // 1. Add virus cell to player
-  if (state.currentPlayer === PlayerType.RED) {
-    newState.redVirusCellCodes = [...newState.redVirusCellCodes, cellCode];
-  } else {
-    newState.blueVirusCellCodes = [...newState.blueVirusCellCodes, cellCode];
-  }
+  let newState: GameState = {
+    ...state,
+    redVirusCellCodes:
+      state.currentPlayer === PlayerType.RED
+        ? [...state.redVirusCellCodes, cellCode]
+        : state.redVirusCellCodes,
+    blueVirusCellCodes:
+      state.currentPlayer === PlayerType.BLUE
+        ? [...state.blueVirusCellCodes, cellCode]
+        : state.blueVirusCellCodes,
+  };
 
   // 2. Check possible colony activation (for inactive)
   const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
@@ -32,15 +33,19 @@ export function actionAddVirusCell(
       : adjacentBlueColonies;
   const inactive = adjacentFriendlyColonies.filter((colon) => !colon.activated);
   if (inactive.length > 0) {
-    const toUpdate: ColonySet[] = [];
-    inactive.forEach((colony) => {
-      colony.activated = true;
-      toUpdate.push(colony);
+    // Clone colonies before modifying to avoid mutating original state
+    const toUpdate: ColonySet[] = inactive.map((colony) => {
+      const cloned = colony.clone();
+      cloned.activated = true;
+      return cloned;
     });
-    refreshColonySets(newState, toUpdate);
+    newState = refreshColonySets(newState, toUpdate);
   }
 
-  newState.availableCellCodes = calculateAvailableCellCodes(newState);
+  newState = {
+    ...newState,
+    availableCellCodes: calculateAvailableCellCodes(newState),
+  };
 
   return newState;
 }

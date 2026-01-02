@@ -13,10 +13,6 @@ export function actionAddCellToColony(
   cellCode: string,
   state: GameState
 ): GameState {
-  // 1. Prepare new state
-  const newState: GameState = {
-    ...state,
-  };
   const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
     cellCode,
     state
@@ -29,38 +25,43 @@ export function actionAddCellToColony(
     state.currentPlayer === PlayerType.RED
       ? adjacentRedColonies
       : adjacentBlueColonies;
+
+  // 1. Enemy - remove virus cell
+  let newState: GameState = {
+    ...state,
+    blueVirusCellCodes:
+      state.currentPlayer === PlayerType.RED
+        ? state.blueVirusCellCodes.filter((code: string) => code !== cellCode)
+        : state.blueVirusCellCodes,
+    redVirusCellCodes:
+      state.currentPlayer === PlayerType.BLUE
+        ? state.redVirusCellCodes.filter((code: string) => code !== cellCode)
+        : state.redVirusCellCodes,
+  };
+
   const enemyVirusCellCodes =
     state.currentPlayer === PlayerType.RED
       ? newState.blueVirusCellCodes
       : newState.redVirusCellCodes;
 
-  // 2. Enemy - remove virus cell
-  if (state.currentPlayer === PlayerType.RED) {
-    const updatedEnemyVirusCodes = state.blueVirusCellCodes.filter(
-      (code: string) => code !== cellCode
-    );
-    newState.blueVirusCellCodes = updatedEnemyVirusCodes;
-  } else {
-    const updatedEnemyVirusCodes = state.redVirusCellCodes.filter(
-      (code: string) => code !== cellCode
-    );
-    newState.redVirusCellCodes = updatedEnemyVirusCodes;
-  }
-
-  // 3. Enemy adjacent colonies - check for deactivation and update if needed
+  // 2. Enemy adjacent colonies - check for deactivation and update if needed
   const toUpdateColonies: ColonySet[] = [];
   adjacentEnemyColonies.forEach((colony) => {
     if (colony.activated) {
       const active = checkColonyIsActive(colony, enemyVirusCellCodes);
       if (!active) {
-        colony.activated = false;
-        toUpdateColonies.push(colony);
+        // Clone and modify - refreshColonySets will handle replacing it
+        const clonedColony = colony.clone();
+        clonedColony.activated = false;
+        toUpdateColonies.push(clonedColony);
       }
     }
   });
-  refreshColonySets(newState, toUpdateColonies);
+  if (toUpdateColonies.length > 0) {
+    newState = refreshColonySets(newState, toUpdateColonies);
+  }
 
-  // 4. Target adjacent colonies - if there is no adjacent colony, create a new one
+  // 3. Friendly adjacent colonies - if there is no adjacent colony, create a new one
   if (adjacentFriendlyColonies.length === 0) {
     const newColonySet = new ColonySet(
       new Set([cellCode]),
@@ -68,37 +69,46 @@ export function actionAddCellToColony(
       state.currentPlayer
     );
 
-    if (state.currentPlayer === PlayerType.RED) {
-      newState.redColonySets = [...newState.redColonySets, newColonySet];
-    } else {
-      newState.blueColonySets = [...newState.blueColonySets, newColonySet];
-    }
+    newState = {
+      ...newState,
+      redColonySets:
+        state.currentPlayer === PlayerType.RED
+          ? [...newState.redColonySets, newColonySet]
+          : newState.redColonySets,
+      blueColonySets:
+        state.currentPlayer === PlayerType.BLUE
+          ? [...newState.blueColonySets, newColonySet]
+          : newState.blueColonySets,
+    };
 
-    // 5. If there is one adjacent colony - add cell to it
+    // 4. If there is one adjacent colony - add cell to it
   } else if (adjacentFriendlyColonies.length === 1) {
-    // Add to existing colony
-    const mainSet = adjacentFriendlyColonies[0];
+    // Clone, modify, and update - refreshColonySets will handle replacing it
+    const mainSet = adjacentFriendlyColonies[0].clone();
     mainSet.addCellCodes([cellCode]);
     mainSet.activated = true;
-    refreshColonySets(newState, [mainSet]);
+    newState = refreshColonySets(newState, [mainSet]);
 
-    // 6. If there are more than one adjacent colonies - merge them into main one
+    // 5. If there are more than one adjacent colonies - merge them into main one
   } else {
-    // Merge colonies
-    const mainColony = adjacentFriendlyColonies[0];
+    // Merge colonies - clone, modify, and update
+    const mainColony = adjacentFriendlyColonies[0].clone();
     mainColony.addCellCodes([cellCode]);
     mainColony.activated = true;
     for (let i = 1; i < adjacentFriendlyColonies.length; i++) {
       const adjColony = adjacentFriendlyColonies[i];
       mainColony.addCellCodes(adjColony.getCellCodes());
     }
-    addNewDeleteOldColonies(
+    newState = addNewDeleteOldColonies(
       newState,
       adjacentFriendlyColonies,
       [mainColony],
-      state.currentPlayer
     );
   }
-  newState.availableCellCodes = calculateAvailableCellCodes(newState);
+
+  newState = {
+    ...newState,
+    availableCellCodes: calculateAvailableCellCodes(newState),
+  };
   return newState;
 }
