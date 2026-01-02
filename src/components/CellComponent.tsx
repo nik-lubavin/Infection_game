@@ -1,4 +1,4 @@
-import React, { useState, CSSProperties } from "react";
+import React, { useState, useEffect, useRef, CSSProperties } from "react";
 import { PlayerType } from "../interfaces/Board";
 import { CELL_SIZE } from "../constants/board";
 import { ICell } from "../classes/Cell";
@@ -24,6 +24,42 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
   } = props;
 
   const [isHovered, setIsHovered] = useState(false);
+  const [animationClass, setAnimationClass] = useState<string>("");
+  const prevCellTypeRef = useRef<CellType | null>(null);
+
+  // Detect colony activation/deactivation changes
+  useEffect(() => {
+    const prevCellType = prevCellTypeRef.current;
+
+    if (prevCellType !== null && cellType !== null) {
+      const wasInactive =
+        prevCellType === CellType.RED_COLONY_INACTIVE ||
+        prevCellType === CellType.BLUE_COLONY_INACTIVE;
+      const isActive =
+        cellType === CellType.RED_COLONY_ACTIVE ||
+        cellType === CellType.BLUE_COLONY_ACTIVE;
+      const wasActive =
+        prevCellType === CellType.RED_COLONY_ACTIVE ||
+        prevCellType === CellType.BLUE_COLONY_ACTIVE;
+      const isInactive =
+        cellType === CellType.RED_COLONY_INACTIVE ||
+        cellType === CellType.BLUE_COLONY_INACTIVE;
+
+      if (wasInactive && isActive) {
+        // Colony activated
+        setAnimationClass("colony-activating");
+        const timer = setTimeout(() => setAnimationClass(""), 600);
+        return () => clearTimeout(timer);
+      } else if (wasActive && isInactive) {
+        // Colony deactivated
+        setAnimationClass("colony-deactivating");
+        const timer = setTimeout(() => setAnimationClass(""), 600);
+        return () => clearTimeout(timer);
+      }
+    }
+
+    prevCellTypeRef.current = cellType;
+  }, [cellType]);
 
   // Base color for all cells
   const baseColor = "#f0f0f0";
@@ -146,7 +182,12 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {cellType && <div style={{ ...contentStyle, pointerEvents: "none" }} />}
+      {cellType && (
+        <div
+          className={animationClass}
+          style={{ ...contentStyle, pointerEvents: "none" }}
+        />
+      )}
     </div>
   );
 };

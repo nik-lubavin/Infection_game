@@ -45,3 +45,42 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* Colony activation/deactivation animations */
+@keyframes colonyActivate {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes colonyDeactivate {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.colony-activating {
+  animation: colonyActivate 0.6s ease-out;
+}
+
+.colony-deactivating {
+  animation: colonyDeactivate 0.6s ease-out;
+}
