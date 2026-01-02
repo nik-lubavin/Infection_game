@@ -23,24 +23,14 @@ const HomePage: React.FC = () => {
   // Transform colony data for UI
   const redColoniesData = redColonySets.map((colonySet, index) => ({
     id: index,
-    playerType: colonySet.playerType,
     activated: colonySet.activated,
-    cells: colonySet.getColonyCells().map((cell) => ({
-      rowIdx: cell.rowIdx,
-      colIdx: cell.colIdx,
-      code: cell.code,
-    })),
+    cellsCodes: colonySet.getCellCodes(),
   }));
 
   const blueColoniesData = blueColonySets.map((colonySet, index) => ({
     id: index,
-    playerType: colonySet.playerType,
     activated: colonySet.activated,
-    cells: colonySet.getColonyCells().map((cell) => ({
-      rowIdx: cell.rowIdx,
-      colIdx: cell.colIdx,
-      code: cell.code,
-    })),
+    cellsCodes: colonySet.getCellCodes(),
   }));
 
   // Calculate exact dimensions based on cell size and grid size

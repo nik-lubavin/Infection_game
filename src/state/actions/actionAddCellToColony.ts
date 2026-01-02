@@ -67,7 +67,6 @@ export function actionAddCellToColony(
   if (adjacentTargetColonies.length === 0) {
     const newColonySet = new ColonySet(
       new Set([cellCode]),
-      state.currentPlayer,
       true
     );
     // TODO is this new colony mergeable?

@@ -4,7 +4,6 @@ import { GameState } from "../gameState";
 import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
 import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
 import { substituteColonySets as refreshColonySets } from "../helpers/partiallyUpdateColonySets";
-// import { updateColonyActivations } from "../helpers/checkColonyActivation";
 
 export function actionAddVirusCell(
   cellCode: string,

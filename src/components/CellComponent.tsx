@@ -125,7 +125,6 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       colonySet: colonySet
         ? {
             activated: colonySet.activated,
-            playerType: colonySet.playerType,
             id: colonySet.id,
             cellsLength: colonySet?.getCellCodes().length,
           }
@@ -165,6 +164,22 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {cellType && <div style={{ ...contentStyle, pointerEvents: "none" }} />}
+      {colonySet && (
+        <div
+          style={{
+            position: "absolute",
+            top: "2px",
+            left: "2px",
+            fontSize: "10px",
+            fontWeight: "bold",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          {colonySet.id}
+        </div>
+      )}
     </div>
   );
 };

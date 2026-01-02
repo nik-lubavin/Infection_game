@@ -1,11 +1,6 @@
 import { GRID_SIZE } from "../../constants/board";
 import { ColonySet } from "../../classes/ColonySet";
 
-/**
- * Checks if a colony has any adjacent virus cells of the same player
- * A colony is active if at least one of its cells has an adjacent virus cell
- */
-// TODO refactor
 export function checkColonyIsActive(
   colonySet: ColonySet,
   playerVirusCellCodes: string[]
@@ -43,45 +38,3 @@ export function checkColonyIsActive(
 
   return false; // No adjacent virus cells found
 }
-
-/**
- * Updates the activation status of all colonies based on whether they have adjacent virus cells
- */
-export function updateColonyActivations(
-  redColonySets: ColonySet[],
-  blueColonySets: ColonySet[],
-  redVirusCellCodes: string[],
-  blueVirusCellCodes: string[]
-): { redColonySets: ColonySet[]; blueColonySets: ColonySet[] } {
-  // Update red colonies
-  const updatedRedColonies = redColonySets.map((colony) => {
-    const hasAdjacentVirus = checkColonyIsActive(colony, redVirusCellCodes);
-    if (colony.activated !== hasAdjacentVirus) {
-      return new ColonySet(
-        new Set(colony.colonyCellsCodes),
-        colony.playerType,
-        hasAdjacentVirus
-      );
-    }
-    return colony;
-  });
-
-  // Update blue colonies
-  const updatedBlueColonies = blueColonySets.map((colony) => {
-    const hasAdjacentVirus = checkColonyIsActive(colony, blueVirusCellCodes);
-    if (colony.activated !== hasAdjacentVirus) {
-      return new ColonySet(
-        new Set(colony.colonyCellsCodes),
-        colony.playerType,
-        hasAdjacentVirus
-      );
-    }
-    return colony;
-  });
-
-  return {
-    redColonySets: updatedRedColonies,
-    blueColonySets: updatedBlueColonies,
-  };
-}
-

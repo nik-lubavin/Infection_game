@@ -6,18 +6,32 @@ export function substituteColonySets(
   gameState: GameState,
   toUpdateColonies: ColonySet[]
 ) {
-  const toUpdateIds = toUpdateColonies.map((colony: ColonySet) => colony.id);
-  if (gameState.currentPlayer === PlayerType.RED) {
+  // Determine which colonies belong to red and which to blue
+  const redColonyIds = new Set(gameState.redColonySets.map((c) => c.id));
+  const blueColonyIds = new Set(gameState.blueColonySets.map((c) => c.id));
+
+  const redColoniesToUpdate = toUpdateColonies.filter((c) =>
+    redColonyIds.has(c.id)
+  );
+  const blueColoniesToUpdate = toUpdateColonies.filter((c) =>
+    blueColonyIds.has(c.id)
+  );
+
+  if (redColoniesToUpdate.length > 0) {
+    const redIds = redColoniesToUpdate.map((c) => c.id);
     const upd = gameState.redColonySets.filter(
-      (colony: ColonySet) => !toUpdateIds.includes(colony.id)
+      (colony: ColonySet) => !redIds.includes(colony.id)
     );
-    upd.push(...toUpdateColonies.map((c: ColonySet) => c.clone()));
+    upd.push(...redColoniesToUpdate.map((c: ColonySet) => c.clone()));
     gameState.redColonySets = upd;
-  } else {
+  }
+
+  if (blueColoniesToUpdate.length > 0) {
+    const blueIds = blueColoniesToUpdate.map((c) => c.id);
     const upd = gameState.blueColonySets.filter(
-      (colony: ColonySet) => !toUpdateIds.includes(colony.id)
+      (colony: ColonySet) => !blueIds.includes(colony.id)
     );
-    upd.push(...toUpdateColonies.map((c: ColonySet) => c.clone()));
+    upd.push(...blueColoniesToUpdate.map((c: ColonySet) => c.clone()));
     gameState.blueColonySets = upd;
   }
 }
