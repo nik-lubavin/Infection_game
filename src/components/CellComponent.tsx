@@ -20,7 +20,6 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
     onCellClick: onClick,
     isAvailable,
     currentTurn,
-    colonySet,
     cellType,
   } = props;
 
@@ -83,29 +82,29 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       return {
         ...commonStyle,
         borderRadius: "10%",
-        backgroundColor: "#ff6666",
-        border: "2px solid #ff0000",
+        backgroundColor: "#ff3333",
+        // border: "2px solid #ff3333",
       };
     } else if (cellType === CellType.RED_COLONY_INACTIVE) {
       return {
         ...commonStyle,
         borderRadius: "10%",
-        backgroundColor: "#ff3333",
-        border: "2px solidrgb(91, 12, 12)",
+        backgroundColor: "rgb(249, 166, 166)",
+        // border: "2px solid rgb(249, 166, 166)",
       };
     } else if (cellType === CellType.BLUE_COLONY_ACTIVE) {
       return {
         ...commonStyle,
         borderRadius: "10%",
-        backgroundColor: "#6666ff",
-        border: "2px solid #0000ff",
+        backgroundColor: "#3333ff",
+        // border: "2px solid #3333ff",
       };
     } else if (cellType === CellType.BLUE_COLONY_INACTIVE) {
       return {
         ...commonStyle,
         borderRadius: "10%",
-        backgroundColor: "#3333ff",
-        border: "2px solid #0000cc",
+        backgroundColor: "rgb(152, 152, 248)",
+        // border: "2px solid rgb(152, 152, 248)",
       };
     } else {
       return undefined;
@@ -148,22 +147,6 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {cellType && <div style={{ ...contentStyle, pointerEvents: "none" }} />}
-      {colonySet && (
-        <div
-          style={{
-            position: "absolute",
-            top: "2px",
-            left: "2px",
-            fontSize: "10px",
-            fontWeight: "bold",
-            textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
-            pointerEvents: "none",
-            zIndex: 10,
-          }}
-        >
-          {colonySet.id}
-        </div>
-      )}
     </div>
   );
 };

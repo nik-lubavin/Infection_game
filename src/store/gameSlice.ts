@@ -20,6 +20,7 @@ const initialState: GameState = {
   redColonySets: [],
   blueColonySets: [],
   availableCellCodes: [],
+  loser: null,
 };
 
 const gameSlice = createSlice({
@@ -31,6 +32,7 @@ const gameSlice = createSlice({
       state.redVirusCellCodes = [...initialRedViruses];
       state.blueVirusCellCodes = [...initialBlueViruses];
       state.availableCellCodes = calculateAvailableCellCodes(state);
+      state.loser = null;
     },
     addVirusCell: (state, action: PayloadAction<{ cellCode: string }>) => {
       const plainState = current(state) as GameState;
@@ -50,6 +52,9 @@ const gameSlice = createSlice({
           ? PlayerType.BLUE
           : PlayerType.RED;
       state.availableCellCodes = calculateAvailableCellCodes(state);
+      if (!state.availableCellCodes.length) {
+        state.loser = state.currentPlayer;
+      }
     },
     decrementMoves: (state) => {
       state.movesLeft = Math.max(0, state.movesLeft - 1);

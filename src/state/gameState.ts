@@ -12,6 +12,7 @@ export interface GameState {
   redColonySets: ColonySet[];
   blueColonySets: ColonySet[];
   availableCellCodes: string[];
+  loser: PlayerType | null;
 }
 
 export type GameAction =
@@ -37,4 +38,5 @@ export const initialGameState: GameState = {
   redColonySets: [],
   blueColonySets: [],
   availableCellCodes: [],
+  loser: null,
 };

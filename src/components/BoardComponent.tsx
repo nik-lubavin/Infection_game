@@ -16,13 +16,11 @@ export interface BoardComponentProps {
   currentTurn: PlayerType;
   onCellClick: (cell: ICell) => void;
   board: Board;
-  availableCellCodes: string[];
 }
 
 const BoardComponent: React.FC<BoardComponentProps> = ({
   currentTurn,
   board,
-  availableCellCodes,
   onCellClick,
 }) => {
   const gameState = useAppSelector((state) => state.game);

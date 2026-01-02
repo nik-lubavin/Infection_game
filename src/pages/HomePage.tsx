@@ -1,5 +1,5 @@
 import React from "react";
-import { Layout, Typography, Button } from "antd";
+import { Layout, Typography, Button, Modal } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import BoardComponent from "../components/BoardComponent";
 import Sidebar from "../components/Sidebar";
@@ -15,9 +15,7 @@ const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
 
   const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
-  const { availableCellCodes } = useAppSelector(
-    (state) => state.game
-  );
+  const { availableCellCodes, loser } = useAppSelector((state) => state.game);
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;
@@ -91,7 +89,6 @@ const HomePage: React.FC = () => {
               currentTurn={currentPlayer}
               onCellClick={onCellClick}
               board={board}
-              availableCellCodes={availableCellCodes}
             />
           </div>
         </Content>
@@ -99,6 +96,17 @@ const HomePage: React.FC = () => {
       <Footer style={{ textAlign: "center" }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>
+      <Modal
+        open={loser !== null}
+        title="Game Over"
+        footer={null}
+        closable={false}
+        maskClosable={false}
+      >
+        <Typography.Text style={{ fontSize: "18px" }}>
+          Player {loser?.toUpperCase()} lost
+        </Typography.Text>
+      </Modal>
     </Layout>
   );
 };
