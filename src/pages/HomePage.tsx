@@ -6,16 +6,25 @@ import Sidebar from "../components/Sidebar";
 import { GRID_SIZE, CELL_SIZE } from "../constants/board";
 import { useVirusGame } from "../hooks/useVirusGame";
 import { useGameContext } from "../contexts/GameContext";
-import { useAppSelector } from "../store/hooks";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
+import { PlayerType } from "../interfaces/Board";
+import { initializeNewGame, clearLoser } from "../store/gameSlice";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
+  const dispatch = useAppDispatch();
 
-  const { board, currentPlayer, movesLeft, onCellClick } = useVirusGame();
+  const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
   const { availableCellCodes, loser } = useAppSelector((state) => state.game);
+
+  // Convert GamePhase to PlayerType for components
+  const currentPlayerType: PlayerType =
+    gamePhase === PlayerType.RED || gamePhase === PlayerType.BLUE
+      ? gamePhase
+      : PlayerType.RED; // Default to RED if game not started or over
 
   // Calculate exact dimensions based on cell size and grid size
   const gridWidth = CELL_SIZE * GRID_SIZE;
@@ -51,11 +60,17 @@ const HomePage: React.FC = () => {
         <Title level={2} style={{ margin: 0 }}>
           Virus Infection Game
         </Title>
-        <div style={{ width: 64 }}></div>
+        <Button
+          type="primary"
+          onClick={() => dispatch(initializeNewGame())}
+          style={{ marginRight: 16 }}
+        >
+          Start New Game
+        </Button>
       </Header>
       <Layout style={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
         <Sidebar
-          currentPlayer={currentPlayer}
+          currentPlayer={currentPlayerType}
           movesLeft={movesLeft}
           availableCellCodes={availableCellCodes}
           collapsed={sidebarCollapsed}
@@ -86,7 +101,7 @@ const HomePage: React.FC = () => {
           >
             <BoardComponent
               size={GRID_SIZE}
-              currentTurn={currentPlayer}
+              currentTurn={currentPlayerType}
               onCellClick={onCellClick}
               board={board}
             />
@@ -100,8 +115,9 @@ const HomePage: React.FC = () => {
         open={loser !== null}
         title="Game Over"
         footer={null}
-        closable={false}
-        maskClosable={false}
+        closable={true}
+        maskClosable={true}
+        onCancel={() => dispatch(clearLoser())}
       >
         <Typography.Text style={{ fontSize: "18px" }}>
           Player {loser?.toUpperCase()} lost

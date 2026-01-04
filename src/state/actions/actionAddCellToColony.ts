@@ -18,11 +18,11 @@ export function actionAddCellToColony(
     state
   );
   const adjacentEnemyColonies =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? adjacentBlueColonies
       : adjacentRedColonies;
   const adjacentFriendlyColonies =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? adjacentRedColonies
       : adjacentBlueColonies;
 
@@ -30,17 +30,17 @@ export function actionAddCellToColony(
   let newState: GameState = {
     ...state,
     blueVirusCellCodes:
-      state.currentPlayer === PlayerType.RED
+      state.gamePhase === PlayerType.RED
         ? state.blueVirusCellCodes.filter((code: string) => code !== cellCode)
         : state.blueVirusCellCodes,
     redVirusCellCodes:
-      state.currentPlayer === PlayerType.BLUE
+      state.gamePhase === PlayerType.BLUE
         ? state.redVirusCellCodes.filter((code: string) => code !== cellCode)
         : state.redVirusCellCodes,
   };
 
   const enemyVirusCellCodes =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? newState.blueVirusCellCodes
       : newState.redVirusCellCodes;
 
@@ -66,17 +66,17 @@ export function actionAddCellToColony(
     const newColonySet = new ColonySet(
       new Set([cellCode]),
       true,
-      state.currentPlayer
+      state.gamePhase as PlayerType
     );
 
     newState = {
       ...newState,
       redColonySets:
-        state.currentPlayer === PlayerType.RED
+        state.gamePhase === PlayerType.RED
           ? [...newState.redColonySets, newColonySet]
           : newState.redColonySets,
       blueColonySets:
-        state.currentPlayer === PlayerType.BLUE
+        state.gamePhase === PlayerType.BLUE
           ? [...newState.blueColonySets, newColonySet]
           : newState.blueColonySets,
     };

@@ -1,4 +1,5 @@
 import { ColonySet } from "../../classes/ColonySet";
+import { GRID_SIZE } from "../../constants/board";
 import { CellType } from "../../enums/CellType";
 import { PlayerType } from "../../interfaces/Board";
 import { GameState } from "../gameState";
@@ -6,22 +7,32 @@ import { getAdjacentCellCodes } from "./getAdjacentCellCodes";
 
 export function calculateAvailableCellCodes(state: GameState): string[] {
   const virusContainer =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? state.redVirusCellCodes
       : state.blueVirusCellCodes;
 
   const colonyContainer =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? state.redColonySets
       : state.blueColonySets;
   const enemyVirusType =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? CellType.BLUE_VIRUS
       : CellType.RED_VIRUS;
 
   const result: Set<string> = new Set();
 
   // Check virus cells
+  if (!virusContainer.length) {
+    if (state.gamePhase === PlayerType.RED) {
+      result.add("0-0");
+    } else {
+      result.add(`${GRID_SIZE - 1}-${GRID_SIZE - 1}`);
+    }
+
+    return Array.from(result);
+  }
+
   virusContainer.forEach((virusCellCode: string) => {
     const adjacentVirusCellCodes = getAdjacentCellCodes(virusCellCode);
     adjacentVirusCellCodes.forEach((cellCode: string) => {

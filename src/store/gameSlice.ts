@@ -6,13 +6,10 @@ import { actionAddVirusCell } from "../state/actions/actionAddVirusCell";
 import { actionAddCellToColony } from "../state/actions/actionAddCellToColony";
 import { GameState } from "../state/gameState";
 import { calculateAvailableCellCodes } from "../state/helpers/cellsGetters";
-
-// Initial virus positions
-const initialRedViruses = ["0-0", "1-1", "2-2", "3-3", "4-4", "5-5"];
-const initialBlueViruses = ["9-9", "8-8", "7-7", "6-6", "5-6", "6-5"];
+import { testInitialViruses } from "../state/helpers/testInitialViruses";
 
 const initialState: GameState = {
-  currentPlayer: PlayerType.RED,
+  gamePhase: "not_started",
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
   redVirusCellCodes: [],
@@ -27,10 +24,18 @@ const gameSlice = createSlice({
   name: "game",
   initialState,
   reducers: {
-    initializeGame: (state) => {
+    initializeNewGame: (state) => {
       state.board = new Board(GRID_SIZE, GRID_SIZE);
-      state.redVirusCellCodes = [...initialRedViruses];
-      state.blueVirusCellCodes = [...initialBlueViruses];
+      state.redVirusCellCodes = [];
+      state.blueVirusCellCodes = [];
+      state.gamePhase = PlayerType.RED;
+      state.availableCellCodes = calculateAvailableCellCodes(state);
+      state.loser = null;
+    },
+    initializeTestGame: (state) => {
+      state.board = new Board(GRID_SIZE, GRID_SIZE);
+      state.redVirusCellCodes = [...testInitialViruses.red];
+      state.blueVirusCellCodes = [...testInitialViruses.blue];
       state.availableCellCodes = calculateAvailableCellCodes(state);
       state.loser = null;
     },
@@ -47,13 +52,11 @@ const gameSlice = createSlice({
       return newState;
     },
     switchPlayer: (state) => {
-      state.currentPlayer =
-        state.currentPlayer === PlayerType.RED
-          ? PlayerType.BLUE
-          : PlayerType.RED;
+      state.gamePhase =
+        state.gamePhase === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
       state.availableCellCodes = calculateAvailableCellCodes(state);
       if (!state.availableCellCodes.length) {
-        state.loser = state.currentPlayer;
+        state.loser = state.gamePhase;
       }
     },
     decrementMoves: (state) => {
@@ -62,16 +65,20 @@ const gameSlice = createSlice({
     resetMoves: (state) => {
       state.movesLeft = 3;
     },
+    clearLoser: (state) => {
+      state.loser = null;
+    },
   },
 });
 
 export const {
-  initializeGame,
+  initializeNewGame,
   addVirusCell,
   addCellToColony,
   switchPlayer,
   decrementMoves,
   resetMoves,
+  clearLoser,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

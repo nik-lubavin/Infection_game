@@ -1,5 +1,6 @@
 import { Board } from "../classes/Board";
 import { ICell } from "../classes/Cell";
+import { GamePhase } from "../state/gameState";
 
 export enum PlayerType {
   RED = "red",
@@ -7,7 +8,7 @@ export enum PlayerType {
 }
 
 export interface GameState {
-  currentPlayer: PlayerType;
+  gamePhase: GamePhase;
   movesLeft: number;
   board: Board;
   availableCells: ICell[];

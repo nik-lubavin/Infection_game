@@ -13,11 +13,11 @@ export function actionAddVirusCell(
   let newState: GameState = {
     ...state,
     redVirusCellCodes:
-      state.currentPlayer === PlayerType.RED
+      state.gamePhase === PlayerType.RED
         ? [...state.redVirusCellCodes, cellCode]
         : state.redVirusCellCodes,
     blueVirusCellCodes:
-      state.currentPlayer === PlayerType.BLUE
+      state.gamePhase === PlayerType.BLUE
         ? [...state.blueVirusCellCodes, cellCode]
         : state.blueVirusCellCodes,
   };
@@ -28,7 +28,7 @@ export function actionAddVirusCell(
     state
   );
   const adjacentFriendlyColonies =
-    state.currentPlayer === PlayerType.RED
+    state.gamePhase === PlayerType.RED
       ? adjacentRedColonies
       : adjacentBlueColonies;
   const inactive = adjacentFriendlyColonies.filter((colon) => !colon.activated);

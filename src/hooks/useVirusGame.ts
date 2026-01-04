@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ICell } from "../classes/Cell";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
-  initializeGame,
+  initializeNewGame,
   addVirusCell,
   addCellToColony,
   switchPlayer,
@@ -15,11 +15,11 @@ import { getCellType } from "../state/helpers/cellsGetters";
 export function useVirusGame() {
   const dispatch = useAppDispatch();
   const gameState = useAppSelector((state) => state.game);
-  const { board, currentPlayer, movesLeft } = gameState;
+  const { board, gamePhase, movesLeft } = gameState;
 
   // Initialize game on mount
   useEffect(() => {
-    dispatch(initializeGame());
+    dispatch(initializeNewGame());
   }, [dispatch]);
 
   const handleCellClick = (cell: ICell) => {
@@ -46,7 +46,7 @@ export function useVirusGame() {
 
   return {
     board,
-    currentPlayer,
+    gamePhase,
     movesLeft,
     onCellClick: handleCellClick,
   };

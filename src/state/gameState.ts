@@ -3,8 +3,14 @@ import { ColonySet } from "../classes/ColonySet";
 import { GRID_SIZE } from "../constants/board";
 import { PlayerType } from "../interfaces/Board";
 
+export type GamePhase =
+  | PlayerType.RED
+  | PlayerType.BLUE
+  | "game_over"
+  | "not_started";
+
 export interface GameState {
-  currentPlayer: PlayerType;
+  gamePhase: GamePhase;
   movesLeft: number;
   board: Board;
   redVirusCellCodes: string[];
@@ -30,7 +36,7 @@ export type GameAction =
   | { type: "RESET_MOVES" };
 
 export const initialGameState: GameState = {
-  currentPlayer: PlayerType.RED,
+  gamePhase: PlayerType.RED,
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
   redVirusCellCodes: [],
