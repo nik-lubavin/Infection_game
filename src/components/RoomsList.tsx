@@ -1,11 +1,12 @@
-import React from "react";
-import { Typography, Card, Row, Col, Button, List, Tag } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import React from 'react';
+import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { GameRoom } from '../hooks/useRoomsList';
 
 const { Text } = Typography;
 
 export interface RoomsListProps {
-  roomCodes: string[];
+  roomData: GameRoom[];
   socketConnected: boolean;
   connectionError: string | null;
   refreshRooms: () => void;
@@ -13,7 +14,7 @@ export interface RoomsListProps {
 }
 
 const RoomsList: React.FC<RoomsListProps> = ({
-  roomCodes,
+  roomData,
   socketConnected,
   connectionError,
   refreshRooms,
@@ -32,38 +33,34 @@ const RoomsList: React.FC<RoomsListProps> = ({
           aria-label="Refresh room list"
         />
       }
-      style={{ marginBottom: "20px" }}
+      style={{ marginBottom: '20px' }}
     >
       <Row style={{ marginBottom: 8 }} gutter={[8, 8]}>
         <Col span={24}>
-          <Text type={socketConnected ? "success" : "secondary"}>
+          <Text type={socketConnected ? 'success' : 'secondary'}>
             {connectionError
               ? `Error: ${connectionError}`
               : socketConnected
-                ? "Connected"
-                : "Connecting…"}
+                ? 'Connected'
+                : 'Connecting…'}
           </Text>
         </Col>
         <Col span={24}>
-          <Button
-            type="primary"
-            block
-            disabled={!socketConnected}
-            onClick={createRoom}
-          >
+          <Button type="primary" block disabled={!socketConnected} onClick={createRoom}>
             Create room
           </Button>
         </Col>
       </Row>
-      {roomCodes.length === 0 ? (
+      {roomData.length === 0 ? (
         <Text type="secondary">No open rooms</Text>
       ) : (
         <List
           size="small"
-          dataSource={roomCodes}
-          renderItem={(code) => (
+          dataSource={roomData}
+          renderItem={(item) => (
             <List.Item>
-              <Tag color="blue">{code}</Tag>
+              <Tag color="blue">{item.id}</Tag>
+              <Tag color="blue">{item.hostName}</Tag>
             </List.Item>
           )}
         />

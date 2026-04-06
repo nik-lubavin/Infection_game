@@ -8,8 +8,10 @@ import {
   getRoom,
   listRooms,
   setRoom,
+  GameRoom,
 } from './game/roomService.js';
 import { createRoomHandler } from './game/eventHandlers/createRoom.js';
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,8 +29,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, () => {
-    const roomCodes = listRooms().map((r) => r.id);
-    socket.emit(SERVER_EVENTS.ROOMS_LISTED, { roomCodes });
+    const data: GameRoom[] = listRooms();
+    socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data });
   });
 
   socket.on(CLIENT_REQUEST_EVENTS.JOIN_GAME, (payload: { roomCode: string }) => {

@@ -1,8 +1,8 @@
-import React, { useState, useRef } from "react";
-import { Typography, Card, Row, Col, Badge } from "antd";
-import { PlayerType } from "../interfaces/Board";
-import { useRoomsList } from "../hooks/useRoomsList";
-import RoomsList from "./RoomsList";
+import React, { useState, useRef } from 'react';
+import { Typography, Card, Row, Col, Badge } from 'antd';
+import { PlayerType } from '../interfaces/Board';
+import { useRoomsList } from '../hooks/useRoomsList';
+import RoomsList from './RoomsList';
 
 const { Text } = Typography;
 
@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [width, setWidth] = useState(300);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
-  const roomsList = useRoomsList();
+  const { roomData, socketConnected, connectionError, refreshRooms, createRoom } = useRoomsList();
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -30,8 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isResizing.current && sidebarRef.current) {
-      const newWidth =
-        e.clientX - sidebarRef.current.getBoundingClientRect().left;
+      const newWidth = e.clientX - sidebarRef.current.getBoundingClientRect().left;
       if (newWidth > 80 && newWidth < 600) {
         // Set min and max width
         setWidth(newWidth);
@@ -44,11 +43,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   React.useEffect(() => {
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
 
@@ -57,22 +56,22 @@ const Sidebar: React.FC<SidebarProps> = ({
       ref={sidebarRef}
       style={{
         width: collapsed ? 80 : width,
-        height: "100vh",
-        backgroundColor: "#fff",
-        borderRight: "1px solid #f0f0f0",
-        padding: collapsed ? "20px 10px" : "20px",
-        transition: "width 0.2s ease",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
+        height: '100vh',
+        backgroundColor: '#fff',
+        borderRight: '1px solid #f0f0f0',
+        padding: collapsed ? '20px 10px' : '20px',
+        transition: 'width 0.2s ease',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
       }}
     >
       <div
         style={{
-          width: "5px",
-          cursor: "col-resize",
-          position: "absolute",
+          width: '5px',
+          cursor: 'col-resize',
+          position: 'absolute',
           top: 0,
           right: 0,
           bottom: 0,
@@ -82,18 +81,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       />
       {!collapsed && (
         <>
-          <Card
-            title="Game Status"
-            bordered={false}
-            style={{ marginBottom: "20px" }}
-          >
+          <Card title="Game Status" bordered={false} style={{ marginBottom: '20px' }}>
             <Row>
               <Col span={24}>
                 <Text
                   strong
                   style={{
-                    color: currentPlayer === "red" ? "red" : "blue",
-                    fontSize: "16px",
+                    color: currentPlayer === 'red' ? 'red' : 'blue',
+                    fontSize: '16px',
                   }}
                 >
                   Current Turn: {currentPlayer.toUpperCase()} PLAYER
@@ -104,16 +99,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               <Col span={24}>
                 <Badge
                   count={movesLeft}
-                  color={currentPlayer === "red" ? "red" : "blue"}
-                  style={{ fontSize: "16px" }}
+                  color={currentPlayer === 'red' ? 'red' : 'blue'}
+                  style={{ fontSize: '16px' }}
                 >
-                  <Text style={{ fontSize: "14px" }}>Moves Remaining</Text>
+                  <Text style={{ fontSize: '14px' }}>Moves Remaining</Text>
                 </Badge>
               </Col>
             </Row>
             <Row style={{ marginTop: 16 }}>
               <Col span={24}>
-                <Text style={{ fontSize: "14px" }}>
+                <Text style={{ fontSize: '14px' }}>
                   Available Cells: {availableCellCodes.length}
                 </Text>
               </Col>
@@ -121,26 +116,30 @@ const Sidebar: React.FC<SidebarProps> = ({
             {availableCellCodes.length > 0 && (
               <Row style={{ marginTop: 16 }}>
                 <Col span={24}>
-                  <Text type="warning" style={{ fontSize: "14px" }}>
+                  <Text type="warning" style={{ fontSize: '14px' }}>
                     First move must be at your base!
-                    {currentPlayer === "red"
-                      ? " (Top right)"
-                      : " (Bottom left)"}
+                    {currentPlayer === 'red' ? ' (Top right)' : ' (Bottom left)'}
                   </Text>
                 </Col>
               </Row>
             )}
           </Card>
-          <RoomsList {...roomsList} />
+          <RoomsList
+            roomData={roomData}
+            socketConnected={socketConnected}
+            connectionError={connectionError}
+            refreshRooms={refreshRooms}
+            createRoom={createRoom}
+          />
         </>
       )}
 
       {collapsed && (
-        <div style={{ textAlign: "center", color: "#666" }}>
-          <div style={{ fontSize: "12px", marginBottom: "8px" }}>
-            {currentPlayer === "red" ? "🔴" : "🔵"}
+        <div style={{ textAlign: 'center', color: '#666' }}>
+          <div style={{ fontSize: '12px', marginBottom: '8px' }}>
+            {currentPlayer === 'red' ? '🔴' : '🔵'}
           </div>
-          <div style={{ fontSize: "10px" }}>{movesLeft}</div>
+          <div style={{ fontSize: '10px' }}>{movesLeft}</div>
         </div>
       )}
     </div>
