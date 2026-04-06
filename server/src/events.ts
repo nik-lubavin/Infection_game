@@ -4,7 +4,7 @@
 
 // Client → Server
 export const CLIENT_EVENTS = {
-  REQUEST_CREATE_GAME: 'request_create_game',
+  REQUEST_CREATE_ROOM: 'request_create_room',
   LIST_ROOMS: 'list_rooms',
   JOIN_GAME: 'join_game',
   GAME_ACTION: 'game_action',

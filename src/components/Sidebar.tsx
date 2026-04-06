@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Typography, Card, Row, Col, Badge } from "antd";
 import { PlayerType } from "../interfaces/Board";
+import RoomsList from "./RoomsList";
 
 const { Text } = Typography;
 
@@ -128,6 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </Row>
             )}
           </Card>
+          <RoomsList />
         </>
       )}
 

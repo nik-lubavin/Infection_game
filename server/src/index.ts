@@ -29,7 +29,7 @@ function generateRoomCode(): string {
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on(CLIENT_EVENTS.REQUEST_CREATE_GAME, () => {
+  socket.on(CLIENT_EVENTS.REQUEST_CREATE_ROOM, () => {
     console.log('create game event');
     const roomCode = generateRoomCode();
     const room = createRoomInstance({ roomCode, redSocketId: socket.id });
