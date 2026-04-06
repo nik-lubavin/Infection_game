@@ -10,5 +10,5 @@ export const SERVER_EVENTS = {
   ROOMS_LISTED: "rooms_listed",
 } as const;
 
-export const SOCKET_URL =
+export const SOCKET_SERVER_URL =
   process.env.REACT_APP_SOCKET_URL ?? "http://localhost:3001";

@@ -1,14 +1,24 @@
 import React from "react";
 import { Typography, Card, Row, Col, Button, List, Tag } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import { useRoomsList } from "../hooks/useRoomsList";
 
 const { Text } = Typography;
 
-const RoomsList: React.FC = () => {
-  const { roomCodes, socketConnected, refreshRooms, createRoom } =
-    useRoomsList();
+export interface RoomsListProps {
+  roomCodes: string[];
+  socketConnected: boolean;
+  connectionError: string | null;
+  refreshRooms: () => void;
+  createRoom: () => void;
+}
 
+const RoomsList: React.FC<RoomsListProps> = ({
+  roomCodes,
+  socketConnected,
+  connectionError,
+  refreshRooms,
+  createRoom,
+}) => {
   return (
     <Card
       title="Server rooms"
@@ -27,7 +37,11 @@ const RoomsList: React.FC = () => {
       <Row style={{ marginBottom: 8 }} gutter={[8, 8]}>
         <Col span={24}>
           <Text type={socketConnected ? "success" : "secondary"}>
-            {socketConnected ? "Connected" : "Connecting…"}
+            {connectionError
+              ? `Error: ${connectionError}`
+              : socketConnected
+                ? "Connected"
+                : "Connecting…"}
           </Text>
         </Col>
         <Col span={24}>

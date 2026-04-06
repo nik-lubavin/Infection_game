@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { CLIENT_EVENTS, SERVER_EVENTS } from './events.js';
+import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS } from './events.js';
 import { createRoom as createRoomInstance, assignBluePlayer, type GameRoom, type PlayerType } from './game/GameRoom.js';
 
 const app = express();
@@ -29,7 +29,7 @@ function generateRoomCode(): string {
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on(CLIENT_EVENTS.REQUEST_CREATE_ROOM, () => {
+  socket.on(CLIENT_REQUEST_EVENTS.REQUEST_CREATE_ROOM, () => {
     console.log('create game event');
     const roomCode = generateRoomCode();
     const room = createRoomInstance({ roomCode, redSocketId: socket.id });
@@ -43,12 +43,12 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on(CLIENT_EVENTS.LIST_ROOMS, () => {
+  socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, () => {
     const roomCodes = Array.from(rooms.keys());
     socket.emit(SERVER_EVENTS.ROOMS_LISTED, { roomCodes });
    })
 
-  socket.on(CLIENT_EVENTS.JOIN_GAME, (payload: { roomCode: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.JOIN_GAME, (payload: { roomCode: string }) => {
     console.log('join game event', payload);
     const roomCode = payload?.roomCode;
     if (!roomCode) {
@@ -82,7 +82,7 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on(CLIENT_EVENTS.GAME_ACTION, (payload: { roomCode: string; action: unknown }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.GAME_ACTION, (payload: { roomCode: string; action: unknown }) => {
     // TODO: validate, apply action, broadcast state_update
   });
 
