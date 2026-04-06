@@ -8,7 +8,7 @@
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "lint": "eslint .",
-    "format": "prettier-eslint \"src/**/*.ts\" --write"
+    "format": "npm exec --prefix .. -- prettier --write \"src/**/*.ts\""
   },
   "engines": {
     "node": ">=22"
@@ -26,8 +26,6 @@
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.15.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.4.0",
-    "prettier-eslint": "^16.3.0"
+    "eslint-config-prettier": "^9.1.0"
   }
 }
