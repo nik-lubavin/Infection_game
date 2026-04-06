@@ -11,5 +11,6 @@ export const createRoomHandler = ({ socket, userName }: { socket: Socket; userNa
   socket.emit(SERVER_EVENTS.ROOM_CREATED, {
     roomCode: gameRoom.id,
     player: 'red' as PlayerType,
+    hostName: gameRoom.hostName,
   });
 };
