@@ -6,6 +6,7 @@ import Sidebar from "../components/Sidebar";
 import { GRID_SIZE, CELL_SIZE } from "../constants/board";
 import { useVirusGame } from "../hooks/useVirusGame";
 import { useGameContext } from "../contexts/GameContext";
+import { useSocketContext } from "../contexts/SocketContext";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { PlayerType } from "../interfaces/Board";
 import { initializeNewGame, clearLoser } from "../store/gameSlice";
@@ -15,6 +16,7 @@ const { Title } = Typography;
 
 const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
+  const { currentRoomId } = useSocketContext();
   const dispatch = useAppDispatch();
 
   const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
@@ -104,6 +106,7 @@ const HomePage: React.FC = () => {
               currentTurn={currentPlayerType}
               onCellClick={onCellClick}
               board={board}
+              currentRoomId={currentRoomId}
             />
           </div>
         </Content>

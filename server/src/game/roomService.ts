@@ -26,7 +26,7 @@ export interface GameRoom {
     red: string | null; // socketId
     blue: string | null;
   };
-  gameState: unknown; // SerializedGameState (placeholder until serialization)
+  gameState: string;
   createdAt: number;
   hostName: string;
 }
@@ -43,7 +43,7 @@ export function createGameRoomInstance({
     id: roomCode,
     status: 'waiting',
     players: { red: redSocketId, blue: null },
-    gameState: null,
+    gameState: '',
     createdAt: Date.now(),
     hostName: userName,
   };

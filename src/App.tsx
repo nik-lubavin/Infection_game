@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import HomePage from "./pages/HomePage";
 import { GameProvider } from "./contexts/GameContext";
+import { SocketProvider } from "./contexts/SocketContext";
 import PlayerSessionBadge from "./components/PlayerSessionBadge";
 
 // Import Ant Design styles
@@ -11,8 +12,10 @@ function App() {
   return (
     <div className="App">
       <GameProvider>
-        <PlayerSessionBadge />
-        <HomePage />
+        <SocketProvider>
+          <PlayerSessionBadge />
+          <HomePage />
+        </SocketProvider>
       </GameProvider>
     </div>
   );

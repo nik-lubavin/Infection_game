@@ -24,7 +24,7 @@ const PORT = Number(process.env.PORT) || 3001;
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on(CLIENT_REQUEST_EVENTS.REQUEST_CREATE_ROOM, (payload: { userName: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.CREATE_ROOM, (payload: { userName: string }) => {
     createRoomHandler({ socket, userName: payload.userName });
   });
 
@@ -55,12 +55,13 @@ io.on('connection', (socket) => {
     socket.join(roomCode);
     console.log('socket joined', roomCode);
     const redSocketId = room.players.red!;
+    const blueSocketId = socket.id;
     io.to(redSocketId).emit(SERVER_EVENTS.GAME_START, {
       roomCode,
       serializedState: room.gameState,
       yourPlayer: 'red' as PlayerType,
     });
-    socket.emit(SERVER_EVENTS.GAME_START, {
+    io.to(blueSocketId).emit(SERVER_EVENTS.GAME_START, {
       roomCode,
       serializedState: room.gameState,
       yourPlayer: 'blue' as PlayerType,

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Typography, Card, Row, Col, Badge } from 'antd';
 import { PlayerType } from '../interfaces/Board';
-import { useRoomsList } from '../hooks/useRoomsList';
+import { useSocketContext } from '../contexts/SocketContext';
 import RoomsList from './RoomsList';
 
 const { Text } = Typography;
@@ -22,7 +22,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [width, setWidth] = useState(300);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
-  const { roomData, socketConnected, connectionError, refreshRooms, createRoom } = useRoomsList();
+  const { roomData, socketConnected, connectionError, refreshRooms, createRoom } =
+    useSocketContext();
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;

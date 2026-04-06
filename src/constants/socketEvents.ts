@@ -8,6 +8,7 @@ export const CLIENT_EVENTS = {
 export const SERVER_EVENTS = {
   ROOM_CREATED: "room_created",
   ROOMS_LISTED: "rooms_listed",
+  GAME_START: "game_start",
 } as const;
 
 export const SOCKET_SERVER_URL =

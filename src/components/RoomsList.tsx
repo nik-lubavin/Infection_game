@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import { GameRoom } from '../hooks/useRoomsList';
+import type { GameRoom } from '../types/gameRoom';
 
 const { Text } = Typography;
 
@@ -59,8 +59,10 @@ const RoomsList: React.FC<RoomsListProps> = ({
           dataSource={roomData}
           renderItem={(item) => (
             <List.Item>
-              <Tag color="blue">{item.id}</Tag>
-              <Tag color="blue">{item.hostName}</Tag>
+              <Tag color="gray">{item.id}</Tag>
+              <Tag color="red">{item.players.red}</Tag>
+              <Tag color="blue">{item.players.blue}</Tag>
+              <Tag color="gray">{item.hostName}</Tag>
             </List.Item>
           )}
         />

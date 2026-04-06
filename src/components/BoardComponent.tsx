@@ -16,14 +16,24 @@ export interface BoardComponentProps {
   currentTurn: PlayerType;
   onCellClick: (cell: ICell) => void;
   board: Board;
+  currentRoomId: string | null;
 }
 
 const BoardComponent: React.FC<BoardComponentProps> = ({
   currentTurn,
   board,
   onCellClick,
+  currentRoomId,
 }) => {
   const gameState = useAppSelector((state) => state.game);
+
+  if (currentRoomId == null) {
+    return (
+      <div className="virus-grid-container virus-grid-container--placeholder">
+        <p className="virus-grid-placeholder-text">Join or create a room to see the board.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="virus-grid-container">

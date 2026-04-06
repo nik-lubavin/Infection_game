@@ -20,17 +20,19 @@ function createSocket(): Socket {
   return io(SOCKET_SERVER_URL);
 }
 
-export function useRoomsList(): {
+export function useSocketEvents(): {
   roomData: GameRoom[];
-  socketConnected: boolean;
-  connectionError: string | null;
+  currentRoomId: string | null;
   refreshRooms: () => void;
   createRoom: () => void;
+  socketConnected: boolean;
+  connectionError: string | null;
 } {
   const [roomData, setRoomData] = useState<GameRoom[]>([]);
   const [socketConnected, setSocketConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
 
   const refreshRooms = useCallback(() => {
     socketRef.current?.emit(CLIENT_EVENTS.LIST_ROOMS);
@@ -58,9 +60,17 @@ export function useRoomsList(): {
     socket.on(SERVER_EVENTS.ROOMS_LISTED, (payload: { data: GameRoom[] }) => {
       setRoomData(payload.data ?? []);
     });
-    socket.on(SERVER_EVENTS.ROOM_CREATED, (_payload: { roomCode: string; player: PlayerType }) => {
+    socket.on(SERVER_EVENTS.ROOM_CREATED, (payload: { roomCode: string; player: PlayerType }) => {
+      setCurrentRoomId(payload.roomCode);
       refreshRooms();
     });
+    socket.on(
+      SERVER_EVENTS.GAME_START,
+      (payload: { roomCode: string; serializedState: string; yourPlayer: PlayerType }) => {
+        console.log('game start event', payload);
+        setCurrentRoomId(payload.roomCode);
+      }
+    );
 
     return () => {
       socket.disconnect();
@@ -74,5 +84,5 @@ export function useRoomsList(): {
     }
   }, [socketConnected, refreshRooms]);
 
-  return { roomData, socketConnected, connectionError, refreshRooms, createRoom };
+  return { roomData, socketConnected, connectionError, refreshRooms, createRoom, currentRoomId };
 }
