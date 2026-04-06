@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlayerType } from '../interfaces/Board';
 import { io, type Socket } from 'socket.io-client';
-import { CLIENT_EVENTS, SERVER_EVENTS, SOCKET_SERVER_URL } from '../constants/socketEvents';
+import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS } from '@infection-game/shared';
+import { SOCKET_SERVER_URL } from '../constants/socketEvents';
 import { getOrCreateSessionName } from '../utils/playerSession';
 
 export interface GameRoom {
@@ -23,25 +24,34 @@ function createSocket(): Socket {
 export function useSocketEvents(): {
   roomData: GameRoom[];
   currentRoomId: string | null;
+  socketId: string | null;
   refreshRooms: () => void;
   createRoom: () => void;
+  disconnectRoom: (roomCode: string) => void;
   socketConnected: boolean;
   connectionError: string | null;
 } {
-  const [roomData, setRoomData] = useState<GameRoom[]>([]);
+  const socketRef = useRef<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const [socketId, setSocketId] = useState<string | null>(null);
+
+  const [roomData, setRoomData] = useState<GameRoom[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
 
   const refreshRooms = useCallback(() => {
-    socketRef.current?.emit(CLIENT_EVENTS.LIST_ROOMS);
+    socketRef.current?.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS);
   }, []);
 
   const createRoom = useCallback(() => {
-    socketRef.current?.emit(CLIENT_EVENTS.REQUEST_CREATE_ROOM, {
+    socketRef.current?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, {
       userName: getOrCreateSessionName(),
     });
+  }, []);
+
+  const disconnectRoom = useCallback((roomCode: string) => {
+    socketRef.current?.emit(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, { roomCode });
+    setCurrentRoomId((id) => (id === roomCode ? null : id));
   }, []);
 
   useEffect(() => {
@@ -51,8 +61,12 @@ export function useSocketEvents(): {
     socket.on('connect', () => {
       setConnectionError(null);
       setSocketConnected(true);
+      setSocketId(socket.id ?? null);
     });
-    socket.on('disconnect', () => setSocketConnected(false));
+    socket.on('disconnect', () => {
+      setSocketConnected(false);
+      setSocketId(null);
+    });
     socket.on('connect_error', (err: Error) => {
       setConnectionError(err.message || 'Connection failed');
       setSocketConnected(false);
@@ -71,6 +85,9 @@ export function useSocketEvents(): {
         setCurrentRoomId(payload.roomCode);
       }
     );
+    socket.on(SERVER_EVENTS.PLAYER_LEFT, (payload: { roomCode: string }) => {
+      setCurrentRoomId((id) => (id === payload.roomCode ? null : id));
+    });
 
     return () => {
       socket.disconnect();
@@ -84,5 +101,14 @@ export function useSocketEvents(): {
     }
   }, [socketConnected, refreshRooms]);
 
-  return { roomData, socketConnected, connectionError, refreshRooms, createRoom, currentRoomId };
+  return {
+    roomData,
+    socketConnected,
+    connectionError,
+    refreshRooms,
+    createRoom,
+    disconnectRoom,
+    socketId,
+    currentRoomId,
+  };
 }

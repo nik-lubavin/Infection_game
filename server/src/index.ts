@@ -9,7 +9,7 @@ import {
 } from '@infection-game/shared';
 import { assignBluePlayer, getRoom, listRooms, setRoom } from './game/roomService.js';
 import { createRoomHandler } from './game/eventHandlers/createRoom.js';
-
+import { leaveRoomHandler } from './game/eventHandlers/leaveRoom.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -64,6 +64,10 @@ io.on('connection', (socket) => {
       serializedState: room.gameState,
       yourPlayer: 'blue' as RoomPlayerSide,
     });
+  });
+
+  socket.on(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, (payload: { roomCode: string }) => {
+    leaveRoomHandler({ socket, payload });
   });
 
   socket.on(CLIENT_REQUEST_EVENTS.GAME_ACTION, (payload: { roomCode: string; action: unknown }) => {

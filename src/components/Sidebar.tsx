@@ -22,8 +22,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [width, setWidth] = useState(300);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
-  const { roomData, socketConnected, connectionError, refreshRooms, createRoom } =
-    useSocketContext();
+  const {
+    roomData,
+    socketConnected,
+    connectionError,
+    refreshRooms,
+    createRoom,
+    disconnectRoom,
+    socketId,
+  } = useSocketContext();
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -131,6 +138,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             connectionError={connectionError}
             refreshRooms={refreshRooms}
             createRoom={createRoom}
+            disconnectRoom={disconnectRoom}
+            socketId={socketId}
           />
         </>
       )}

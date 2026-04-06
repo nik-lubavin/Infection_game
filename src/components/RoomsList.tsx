@@ -11,6 +11,8 @@ export interface RoomsListProps {
   connectionError: string | null;
   refreshRooms: () => void;
   createRoom: () => void;
+  disconnectRoom: (roomCode: string) => void;
+  socketId: string | null;
 }
 
 const RoomsList: React.FC<RoomsListProps> = ({
@@ -19,6 +21,8 @@ const RoomsList: React.FC<RoomsListProps> = ({
   connectionError,
   refreshRooms,
   createRoom,
+  disconnectRoom,
+  socketId,
 }) => {
   return (
     <Card
@@ -57,14 +61,36 @@ const RoomsList: React.FC<RoomsListProps> = ({
         <List
           size="small"
           dataSource={roomData}
-          renderItem={(item) => (
-            <List.Item>
-              <Tag color="gray">{item.id}</Tag>
-              <Tag color="red">{item.players.red}</Tag>
-              <Tag color="blue">{item.players.blue}</Tag>
-              <Tag color="gray">{item.hostName}</Tag>
-            </List.Item>
-          )}
+          renderItem={(item) => {
+            const inThisRoom =
+              socketId != null &&
+              (item.players.red === socketId || item.players.blue === socketId);
+            return (
+              <List.Item
+                actions={
+                  socketConnected && inThisRoom
+                    ? [
+                        <Button
+                          key="disconnect-room"
+                          type="link"
+                          danger
+                          size="small"
+                          onClick={() => disconnectRoom(item.id)}
+                          aria-label={`Disconnect from room ${item.id}`}
+                        >
+                          Disconnect room
+                        </Button>,
+                      ]
+                    : undefined
+                }
+              >
+                <Tag color="gray">{item.id}</Tag>
+                <Tag color="red">{item.players.red}</Tag>
+                <Tag color="blue">{item.players.blue}</Tag>
+                <Tag color="gray">{item.hostName}</Tag>
+              </List.Item>
+            );
+          }}
         />
       )}
     </Card>

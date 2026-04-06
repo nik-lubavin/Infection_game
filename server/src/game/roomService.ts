@@ -63,3 +63,11 @@ export function assignBluePlayer({
     players: { ...room.players, blue: blueSocketId },
   };
 }
+
+export function removeSocketFromRoom(room: GameRoom, socketId: string): GameRoom {
+  return {
+    ...room,
+    status: 'waiting' as RoomStatus,
+    players: { ...room.players, blue: null },
+  };
+}

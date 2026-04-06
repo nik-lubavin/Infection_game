@@ -7,6 +7,7 @@ export const CLIENT_REQUEST_EVENTS = {
   CREATE_ROOM: 'request_create_room',
   LIST_ROOMS: 'list_rooms',
   JOIN_GAME: 'join_game',
+  LEAVE_ROOM: 'leave_room',
   GAME_ACTION: 'game_action',
 } as const;
 
