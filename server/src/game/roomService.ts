@@ -2,9 +2,7 @@
  * Game room state: players, game state, status
  */
 
-export type PlayerType = 'red' | 'blue';
-
-export type RoomStatus = 'waiting' | 'playing' | 'finished';
+import type { GameRoom, RoomStatus } from '@infection-game/shared';
 
 const rooms = new Map<string, GameRoom>();
 
@@ -17,18 +15,6 @@ function generateRoomCode(): string {
   // return rooms.has(code) ? generateRoomCode() : code;
 
   return '123456_' + Math.random().toString(36).substring(2, 4);
-}
-
-export interface GameRoom {
-  id: string;
-  status: RoomStatus;
-  players: {
-    red: string | null; // socketId
-    blue: string | null;
-  };
-  gameState: string;
-  createdAt: number;
-  hostName: string;
 }
 
 export function createGameRoomInstance({
@@ -73,7 +59,7 @@ export function assignBluePlayer({
 }): GameRoom {
   return {
     ...room,
-    status: 'playing',
+    status: 'playing' as RoomStatus,
     players: { ...room.players, blue: blueSocketId },
   };
 }

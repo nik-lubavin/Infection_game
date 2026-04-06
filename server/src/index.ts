@@ -1,15 +1,13 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS } from './events.js';
 import {
-  assignBluePlayer,
-  type PlayerType,
-  getRoom,
-  listRooms,
-  setRoom,
-  GameRoom,
-} from './game/roomService.js';
+  CLIENT_REQUEST_EVENTS,
+  SERVER_EVENTS,
+  type GameRoom,
+  type RoomPlayerSide,
+} from '@infection-game/shared';
+import { assignBluePlayer, getRoom, listRooms, setRoom } from './game/roomService.js';
 import { createRoomHandler } from './game/eventHandlers/createRoom.js';
 
 
@@ -59,12 +57,12 @@ io.on('connection', (socket) => {
     io.to(redSocketId).emit(SERVER_EVENTS.GAME_START, {
       roomCode,
       serializedState: room.gameState,
-      yourPlayer: 'red' as PlayerType,
+      yourPlayer: 'red' as RoomPlayerSide,
     });
     io.to(blueSocketId).emit(SERVER_EVENTS.GAME_START, {
       roomCode,
       serializedState: room.gameState,
-      yourPlayer: 'blue' as PlayerType,
+      yourPlayer: 'blue' as RoomPlayerSide,
     });
   });
 

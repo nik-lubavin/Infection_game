@@ -2,28 +2,40 @@
   "name": "infection-game",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "shared"
+  ],
   "dependencies": {
+    "@infection-game/shared": "workspace:*",
     "@reduxjs/toolkit": "^2.10.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "antd": "^5.25.3",
+    "express": "^4.21.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
     "react-scripts": "5.0.1",
+    "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.3",
-    "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "build:shared": "npm run build:shared -w @infection-game/shared",
+    "build:server": "tsc -p server",
+    "build:all": "npm run build:shared && npm run build:server && npm run build",
     "start": "react-scripts start",
-    "server": "npm run dev --prefix server",
+    "server": "tsx server/src/index.ts",
+    "server:start": "node server/dist/index.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -31,7 +43,11 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "prettier": "^3.4.2"
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
   },
   "eslintConfig": {
     "extends": [

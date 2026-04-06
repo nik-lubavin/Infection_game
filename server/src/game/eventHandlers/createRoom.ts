@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { createGameRoomInstance, type GameRoom, type PlayerType } from '../roomService.js';
-import { SERVER_EVENTS } from '../../events.js';
+import { SERVER_EVENTS, type RoomPlayerSide } from '@infection-game/shared';
+import { createGameRoomInstance } from '../roomService.js';
 
 export const createRoomHandler = ({ socket, userName }: { socket: Socket; userName: string }) => {
   console.log('create game event');
@@ -10,7 +10,7 @@ export const createRoomHandler = ({ socket, userName }: { socket: Socket; userNa
   console.log('socket joined, room code:', gameRoom.id);
   socket.emit(SERVER_EVENTS.ROOM_CREATED, {
     roomCode: gameRoom.id,
-    player: 'red' as PlayerType,
+    player: 'red' as RoomPlayerSide,
     hostName: gameRoom.hostName,
   });
 };
