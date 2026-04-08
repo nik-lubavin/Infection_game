@@ -1,6 +1,6 @@
 import type { Socket } from 'socket.io';
 import { SERVER_EVENTS } from '@infection-game/shared';
-import { getRoom, listRooms, removeSocketFromRoom, setRoom } from '../roomService.js';
+import { roomService } from '../services/roomService.js';
 
 export function leaveRoomHandler({
   socket,
@@ -11,14 +11,14 @@ export function leaveRoomHandler({
 }): void {
   const roomCode = payload?.roomCode;
   if (!roomCode) return;
-  const room = getRoom(roomCode);
-  if (!room) return;
-  if (room.players.red !== socket.id && room.players.blue !== socket.id) return;
+
+  const result = roomService.disconnectPlayerFromRoom(roomCode, socket.id);
+  if (!result.success) {
+    socket.emit(SERVER_EVENTS.LEAVE_ROOM_FAILED, { reason: result.reason });
+    return;
+  }
 
   socket.leave(roomCode);
-  const updroom = removeSocketFromRoom(room, socket.id);
-  setRoom(updroom);
-
   socket.emit(SERVER_EVENTS.PLAYER_LEFT, { roomCode });
-  socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data: listRooms() });
+  socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data: roomService.listRooms() });
 }

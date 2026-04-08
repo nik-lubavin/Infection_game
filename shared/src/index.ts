@@ -6,7 +6,7 @@
 export const CLIENT_REQUEST_EVENTS = {
   CREATE_ROOM: 'request_create_room',
   LIST_ROOMS: 'list_rooms',
-  JOIN_GAME: 'join_game',
+  JOIN_ROOM: 'join_room',
   LEAVE_ROOM: 'leave_room',
   GAME_ACTION: 'game_action',
 } as const;
@@ -20,6 +20,7 @@ export const SERVER_EVENTS = {
   STATE_UPDATE: 'state_update',
   PLAYER_LEFT: 'player_left',
   ACTION_REJECTED: 'action_rejected',
+  LEAVE_ROOM_FAILED: 'leave_room_failed',
 } as const;
 
 /** Player slot in room / payloads (lowercase strings on the wire). */
