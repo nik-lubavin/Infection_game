@@ -1,14 +1,15 @@
 import React from 'react';
 import { Layout, Typography, Modal } from 'antd';
-import HeaderSection from '../components/sections/HeaderSection';
-import MainLayoutSection from '../components/sections/MainLayoutSection';
-import { useVirusGame } from '../hooks/useVirusGame';
-import { useGameContext } from '../contexts/GameContext';
-import { useSocketContext } from '../contexts/SocketContext';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { PlayerType } from '../interfaces/Board';
-import { clearLoser } from '../store/gameSlice';
-import { Board } from '../classes/Board';
+
+import HeaderSection from '../sections/HeaderSection';
+import MainLayoutSection from '../sections/MainLayoutSection';
+import { useVirusGame } from '../../hooks/useVirusGame';
+import { useGameContext } from '../../contexts/GameContext';
+import { useSocketContext } from '../../contexts/SocketContext';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { PlayerType } from '../../interfaces/Board';
+import { clearLoser } from '../../store/gameSlice';
+import { Board } from '../../classes/Board';
 
 const { Footer } = Layout;
 
