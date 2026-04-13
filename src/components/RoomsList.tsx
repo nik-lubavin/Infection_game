@@ -6,7 +6,7 @@ import type { GameRoom } from '../types/gameRoom';
 const { Text } = Typography;
 
 export interface RoomsListProps {
-  roomData: GameRoom[];
+  roomList: GameRoom[];
   socketConnected: boolean;
   connectionError: string | null;
   refreshRooms: () => void;
@@ -16,7 +16,7 @@ export interface RoomsListProps {
 }
 
 const RoomsList: React.FC<RoomsListProps> = ({
-  roomData,
+  roomList,
   socketConnected,
   connectionError,
   refreshRooms,
@@ -55,12 +55,12 @@ const RoomsList: React.FC<RoomsListProps> = ({
           </Button>
         </Col>
       </Row>
-      {roomData.length === 0 ? (
+      {roomList.length === 0 ? (
         <Text type="secondary">No open rooms</Text>
       ) : (
         <List
           size="small"
-          dataSource={roomData}
+          dataSource={roomList}
           renderItem={(item) => {
             const inThisRoom =
               socketId != null &&

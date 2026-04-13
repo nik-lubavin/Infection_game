@@ -11,7 +11,7 @@ export type SocketContextValue = {
   currentRoomId: string | null;
   createRoom: () => void;
   disconnectRoom: (roomCode: string) => void;
-  roomData: GameRoom[];
+  roomList: GameRoom[];
   refreshRooms: () => void;
 };
 
@@ -20,10 +20,7 @@ const SocketContext = createContext<SocketContextValue | null>(null);
 export function SocketProvider({ children }: { children: ReactNode }) {
   const connection = useSocketConnection();
   const roomActions = useSocketEvents(connection.socket, connection.socketRef);
-  const lobby = useRoomList({
-    socket: connection.socket,
-    socketConnected: connection.socketConnected,
-  });
+  const lobby = useRoomList(connection.socket, connection.socketConnected);
 
   const value: SocketContextValue = {
     socketConnected: connection.socketConnected,
@@ -32,7 +29,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     currentRoomId: roomActions.currentRoomId,
     createRoom: roomActions.createRoom,
     disconnectRoom: roomActions.disconnectRoom,
-    roomData: lobby.roomList,
+    roomList: lobby.roomList,
     refreshRooms: lobby.refreshRooms,
   };
 

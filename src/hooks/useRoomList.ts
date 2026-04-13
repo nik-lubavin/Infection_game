@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, GameRoom } from '@infection-game/shared';
+import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS } from '@infection-game/shared';
+import type { GameRoom } from '../types/gameRoom';
 
-export function useRoomList({
-  socket,
-  socketConnected,
-}: {
-  socket: Socket | null;
-  socketConnected: boolean;
-}): {
+export function useRoomList(
+  socket: Socket | null,
+  socketConnected: boolean
+): {
   roomList: GameRoom[];
   refreshRooms: () => void;
 } {
