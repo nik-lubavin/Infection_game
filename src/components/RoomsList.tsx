@@ -3,6 +3,7 @@ import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
 import type { IGameRoom } from '@infection-game/shared';
+import SocketConnectionStatus from './SocketConnectionStatus';
 const { Text } = Typography;
 
 export interface RoomsListProps {
@@ -42,13 +43,10 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
     >
       <Row style={{ marginBottom: 8 }} gutter={[8, 8]}>
         <Col span={24}>
-          <Text type={socketConnected ? 'success' : 'secondary'}>
-            {connectionError
-              ? `Error: ${connectionError}`
-              : socketConnected
-                ? 'Connected'
-                : 'Connecting…'}
-          </Text>
+          <SocketConnectionStatus
+            socketConnected={socketConnected}
+            connectionError={connectionError}
+          />
         </Col>
         <Col span={24}>
           <Button type="primary" block disabled={!socketConnected} onClick={actionCreateRoom}>
