@@ -2,8 +2,6 @@ import type { Socket } from 'socket.io';
 import type { GameRoom, RoomStatus } from '@infection-game/shared';
 import { SERVER_EVENTS } from '../../events.js';
 
-const rooms = new Map<string, GameRoom>();
-
 function generateRoomCode(): string {
   // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   // let code = '';
@@ -34,7 +32,7 @@ export class RoomService {
       createdAt: Date.now(),
       hostName: userName,
     };
-    rooms.set(roomCode, newRoom);
+    this.rooms.set(roomCode, newRoom);
     console.log(`room created ${roomCode} by ${redSocketId}`);
     return newRoom;
   }

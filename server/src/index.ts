@@ -23,7 +23,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, () => {
+    console.log('list rooms');
     const data: GameRoom[] = roomService.listRooms();
+    console.log('list rooms data', data);
     socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data });
   });
 
