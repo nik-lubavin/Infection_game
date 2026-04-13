@@ -1,33 +1,20 @@
-import { PlayerType } from "../../interfaces/Board";
-import { GameState } from "../gameState";
-import { ColonySet } from "../../classes/ColonySet";
-import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
-import { checkColonyIsActive } from "../helpers/checkColonyActivation";
-import {
-  addNewDeleteOldColonies,
-  refreshColonySets,
-} from "../helpers/cellsUpdater";
-import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
+import { PlayerType } from '../../interfaces/Board';
+import { IGameState } from '@infection-game/shared';
+import { ColonySet } from '../../classes/ColonySet';
+import { calculateAvailableCellCodes } from '../helpers/cellsGetters';
+import { checkColonyIsActive } from '../helpers/checkColonyActivation';
+import { addNewDeleteOldColonies, refreshColonySets } from '../helpers/cellsUpdater';
+import { getAdjacentColonies } from '../helpers/getAdjacentColonies';
 
-export function actionAddCellToColony(
-  cellCode: string,
-  state: GameState
-): GameState {
-  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
-    cellCode,
-    state
-  );
+export function actionAddCellToColony(cellCode: string, state: IGameState): IGameState {
+  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(cellCode, state);
   const adjacentEnemyColonies =
-    state.gamePhase === PlayerType.RED
-      ? adjacentBlueColonies
-      : adjacentRedColonies;
+    state.gamePhase === PlayerType.RED ? adjacentBlueColonies : adjacentRedColonies;
   const adjacentFriendlyColonies =
-    state.gamePhase === PlayerType.RED
-      ? adjacentRedColonies
-      : adjacentBlueColonies;
+    state.gamePhase === PlayerType.RED ? adjacentRedColonies : adjacentBlueColonies;
 
   // 1. Enemy - remove virus cell
-  let newState: GameState = {
+  let newState: IGameState = {
     ...state,
     blueVirusCellCodes:
       state.gamePhase === PlayerType.RED
@@ -40,9 +27,7 @@ export function actionAddCellToColony(
   };
 
   const enemyVirusCellCodes =
-    state.gamePhase === PlayerType.RED
-      ? newState.blueVirusCellCodes
-      : newState.redVirusCellCodes;
+    state.gamePhase === PlayerType.RED ? newState.blueVirusCellCodes : newState.redVirusCellCodes;
 
   // 2. Enemy adjacent colonies - check for deactivation and update if needed
   const toUpdateColonies: ColonySet[] = [];
@@ -63,11 +48,7 @@ export function actionAddCellToColony(
 
   // 3. Friendly adjacent colonies - if there is no adjacent colony, create a new one
   if (adjacentFriendlyColonies.length === 0) {
-    const newColonySet = new ColonySet(
-      new Set([cellCode]),
-      true,
-      state.gamePhase as PlayerType
-    );
+    const newColonySet = new ColonySet(new Set([cellCode]), true, state.gamePhase as PlayerType);
 
     newState = {
       ...newState,
@@ -99,11 +80,7 @@ export function actionAddCellToColony(
       const adjColony = adjacentFriendlyColonies[i];
       mainColony.addCellCodes(adjColony.getCellCodes());
     }
-    newState = addNewDeleteOldColonies(
-      newState,
-      adjacentFriendlyColonies,
-      [mainColony],
-    );
+    newState = addNewDeleteOldColonies(newState, adjacentFriendlyColonies, [mainColony]);
   }
 
   newState = {

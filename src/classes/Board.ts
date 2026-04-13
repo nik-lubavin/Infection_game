@@ -1,4 +1,5 @@
-import { Cell, ICell } from "./Cell";
+import { Cell, ICell } from './Cell';
+import { IBoard } from '@infection-game/shared';
 
 function generateNewEmptyBoard(rowsNum: number, colsNum: number): ICell[][] {
   const cells: ICell[][] = [];
@@ -11,20 +12,15 @@ function generateNewEmptyBoard(rowsNum: number, colsNum: number): ICell[][] {
   return cells;
 }
 
-export interface IBoard {
-  rows: number;
-  cols: number;
-  // cells: ICell[][];
-  version: number;
-  clone(): IBoard;
-}
-
 let versionCounter = 0;
 export class Board implements IBoard {
   version: number;
   cells: ICell[][];
 
-  constructor(public rows: number, public cols: number) {
+  constructor(
+    public rows: number,
+    public cols: number
+  ) {
     this.version = versionCounter++;
     this.cells = generateNewEmptyBoard(rows, cols);
   }

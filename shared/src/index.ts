@@ -28,7 +28,7 @@ export type RoomPlayerSide = 'red' | 'blue';
 
 export type RoomStatus = 'waiting' | 'playing' | 'finished';
 
-export interface GameRoom {
+export interface IGameRoom {
   id: string;
   status: RoomStatus;
   players: {
@@ -38,4 +38,32 @@ export interface GameRoom {
   gameState: string;
   createdAt: number;
   hostName: string;
+}
+
+export enum PlayerType {
+  RED = 'red',
+  BLUE = 'blue',
+}
+
+export type GamePhase = PlayerType.RED | PlayerType.BLUE | 'game_over' | 'not_started';
+
+export interface IBoard {
+  rows: number;
+  cols: number;
+}
+
+export interface IColonySet {
+  id: number;
+}
+
+export interface IGameState {
+  gamePhase: GamePhase;
+  movesLeft: number;
+  board: IBoard;
+  redVirusCellCodes: string[];
+  blueVirusCellCodes: string[];
+  redColonySets: IColonySet[];
+  blueColonySets: IColonySet[];
+  availableCellCodes: string[];
+  loser: PlayerType | null;
 }

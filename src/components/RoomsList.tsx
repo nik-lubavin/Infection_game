@@ -2,28 +2,29 @@ import React from 'react';
 import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
-import type { GameRoom } from '@infection-game/shared';
+import type { IGameRoom } from '@infection-game/shared';
 const { Text } = Typography;
 
 export interface RoomsListProps {
-  roomList: GameRoom[];
-  socketConnected: boolean;
-  connectionError: string | null;
-  refreshRooms: () => void;
-  createRoom: () => void;
-  disconnectRoom: (roomCode: string) => void;
   socketId: string | null;
+  connectionError: string | null;
+  stateRoomList: IGameRoom[];
+  socketConnected: boolean;
+  actionListRooms: () => void;
+  actionCreateRoom: () => void;
+  actionLeaveRoom: (roomCode: string) => void;
 }
 
-const RoomsList: React.FC<RoomsListProps> = ({
-  roomList,
-  socketConnected,
-  connectionError,
-  refreshRooms,
-  createRoom,
-  disconnectRoom,
-  socketId,
-}) => {
+const RoomsList: React.FC<RoomsListProps> = (props) => {
+  const {
+    socketId,
+    connectionError,
+    stateRoomList,
+    socketConnected,
+    actionListRooms,
+    actionCreateRoom,
+    actionLeaveRoom,
+  } = props;
   return (
     <Card
       title="Server rooms"
@@ -33,7 +34,7 @@ const RoomsList: React.FC<RoomsListProps> = ({
           type="text"
           size="small"
           icon={<ReloadOutlined />}
-          onClick={refreshRooms}
+          onClick={actionListRooms}
           aria-label="Refresh room list"
         />
       }
@@ -50,17 +51,17 @@ const RoomsList: React.FC<RoomsListProps> = ({
           </Text>
         </Col>
         <Col span={24}>
-          <Button type="primary" block disabled={!socketConnected} onClick={createRoom}>
+          <Button type="primary" block disabled={!socketConnected} onClick={actionCreateRoom}>
             Create room
           </Button>
         </Col>
       </Row>
-      {roomList.length === 0 ? (
+      {stateRoomList.length === 0 ? (
         <Text type="secondary">No open rooms</Text>
       ) : (
         <List
           size="small"
-          dataSource={roomList}
+          dataSource={stateRoomList}
           renderItem={(item) => {
             const inThisRoom =
               socketId != null && (item.players.red === socketId || item.players.blue === socketId);
@@ -74,7 +75,7 @@ const RoomsList: React.FC<RoomsListProps> = ({
                           type="link"
                           danger
                           size="small"
-                          onClick={() => disconnectRoom(item.id)}
+                          onClick={() => actionLeaveRoom(item.id)}
                           aria-label={`Disconnect from room ${item.id}`}
                         >
                           Disconnect room

@@ -2,6 +2,7 @@ import React from 'react';
 import { Layout, Typography, Button, Modal } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import BoardComponent from '../components/BoardComponent';
+import JoinedRoom from '../components/JoinedRoom';
 import Sidebar from '../components/Sidebar';
 import { useVirusGame } from '../hooks/useVirusGame';
 import { useGameContext } from '../contexts/GameContext';
@@ -9,17 +10,20 @@ import { useSocketContext } from '../contexts/SocketContext';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { PlayerType } from '../interfaces/Board';
 import { initializeNewGame, clearLoser } from '../store/gameSlice';
+import { Board } from '../classes/Board';
 
 const { Header, Footer } = Layout;
 const { Title } = Typography;
 
 const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
-  const { joinedRoom } = useSocketContext();
   const dispatch = useAppDispatch();
-
   const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
   const { availableCellCodes, loser } = useAppSelector((state) => state.game);
+
+  const { stateJoinedRoom, actionLeaveRoom } = useSocketContext();
+  const stateActiveRoom = null;
+  const gameState = null;
 
   // Convert GamePhase to PlayerType for components
   const currentPlayerType: PlayerType =
@@ -67,13 +71,18 @@ const HomePage: React.FC = () => {
           availableCellCodes={availableCellCodes}
           collapsed={sidebarCollapsed}
         />
-
-        <BoardComponent
-          currentTurn={currentPlayerType}
-          onCellClick={onCellClick}
-          board={board}
-          joinedRoom={joinedRoom}
-        />
+        {stateJoinedRoom && (
+          <JoinedRoom stateJoinedRoom={stateJoinedRoom} actionLeaveRoom={actionLeaveRoom} />
+        )}
+        {stateActiveRoom && gameState && (
+          <BoardComponent
+            currentTurn={currentPlayerType}
+            onCellClick={onCellClick}
+            board={board as Board}
+            stateActiveRoom={stateActiveRoom}
+            gameState={gameState}
+          />
+        )}
       </Layout>
       <Footer style={{ textAlign: 'center' }}>
         Virus Infection Game ©{new Date().getFullYear()}

@@ -21,12 +21,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const {
-    roomList,
+    stateRoomList,
     socketConnected,
     connectionError,
-    refreshRooms,
-    createRoom,
-    disconnectRoom,
+    actionListRooms,
+    actionCreateRoom,
+    actionLeaveRoom,
     socketId,
   } = useSocketContext();
 
@@ -93,12 +93,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             availableCellCodes={availableCellCodes}
           />
           <RoomsList
-            roomList={roomList}
+            stateRoomList={stateRoomList}
             socketConnected={socketConnected}
             connectionError={connectionError}
-            refreshRooms={refreshRooms}
-            createRoom={createRoom}
-            disconnectRoom={disconnectRoom}
+            actionListRooms={actionListRooms}
+            actionCreateRoom={actionCreateRoom}
+            actionLeaveRoom={actionLeaveRoom}
             socketId={socketId}
           />
         </>

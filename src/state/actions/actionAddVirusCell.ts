@@ -1,16 +1,13 @@
-import { ColonySet } from "../../classes/ColonySet";
-import { PlayerType } from "../../interfaces/Board";
-import { GameState } from "../gameState";
-import { getAdjacentColonies } from "../helpers/getAdjacentColonies";
-import { calculateAvailableCellCodes } from "../helpers/cellsGetters";
-import { refreshColonySets } from "../helpers/cellsUpdater";
+import { ColonySet } from '../../classes/ColonySet';
+import { PlayerType } from '../../interfaces/Board';
+import { IGameState } from '@infection-game/shared';
+import { getAdjacentColonies } from '../helpers/getAdjacentColonies';
+import { calculateAvailableCellCodes } from '../helpers/cellsGetters';
+import { refreshColonySets } from '../helpers/cellsUpdater';
 
-export function actionAddVirusCell(
-  cellCode: string,
-  state: GameState
-): GameState {
+export function actionAddVirusCell(cellCode: string, state: IGameState): IGameState {
   // 1. Add virus cell to player
-  let newState: GameState = {
+  let newState: IGameState = {
     ...state,
     redVirusCellCodes:
       state.gamePhase === PlayerType.RED
@@ -23,14 +20,9 @@ export function actionAddVirusCell(
   };
 
   // 2. Check possible colony activation (for inactive)
-  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(
-    cellCode,
-    state
-  );
+  const { adjacentRedColonies, adjacentBlueColonies } = getAdjacentColonies(cellCode, state);
   const adjacentFriendlyColonies =
-    state.gamePhase === PlayerType.RED
-      ? adjacentRedColonies
-      : adjacentBlueColonies;
+    state.gamePhase === PlayerType.RED ? adjacentRedColonies : adjacentBlueColonies;
   const inactive = adjacentFriendlyColonies.filter((colon) => !colon.activated);
   if (inactive.length > 0) {
     // Clone colonies before modifying to avoid mutating original state

@@ -1,15 +1,15 @@
-import { createSlice, PayloadAction, current } from "@reduxjs/toolkit";
-import { Board } from "../classes/Board";
-import { GRID_SIZE } from "../constants/board";
-import { PlayerType } from "../interfaces/Board";
-import { actionAddVirusCell } from "../state/actions/actionAddVirusCell";
-import { actionAddCellToColony } from "../state/actions/actionAddCellToColony";
-import { GameState } from "../state/gameState";
-import { calculateAvailableCellCodes } from "../state/helpers/cellsGetters";
-import { testInitialViruses } from "../state/helpers/testInitialViruses";
+import { createSlice, PayloadAction, current } from '@reduxjs/toolkit';
+import { Board } from '../classes/Board';
+import { GRID_SIZE } from '../constants/board';
+import { PlayerType } from '../interfaces/Board';
+import { actionAddVirusCell } from '../state/actions/actionAddVirusCell';
+import { actionAddCellToColony } from '../state/actions/actionAddCellToColony';
+import { IGameState } from '@infection-game/shared';
+import { calculateAvailableCellCodes } from '../state/helpers/cellsGetters';
+import { testInitialViruses } from '../state/helpers/testInitialViruses';
 
-const initialState: GameState = {
-  gamePhase: "not_started",
+const initialState: IGameState = {
+  gamePhase: 'not_started',
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
   redVirusCellCodes: [],
@@ -21,7 +21,7 @@ const initialState: GameState = {
 };
 
 const gameSlice = createSlice({
-  name: "game",
+  name: 'game',
   initialState,
   reducers: {
     initializeNewGame: (state) => {
@@ -40,20 +40,16 @@ const gameSlice = createSlice({
       state.loser = null;
     },
     addVirusCell: (state, action: PayloadAction<{ cellCode: string }>) => {
-      const plainState = current(state) as GameState;
+      const plainState = current(state) as IGameState;
       return actionAddVirusCell(action.payload.cellCode, plainState);
     },
     addCellToColony: (state, action: PayloadAction<{ cellCode: string }>) => {
-      const plainState = current(state) as GameState;
-      const newState = actionAddCellToColony(
-        action.payload.cellCode,
-        plainState
-      );
+      const plainState = current(state) as IGameState;
+      const newState = actionAddCellToColony(action.payload.cellCode, plainState);
       return newState;
     },
     switchPlayer: (state) => {
-      state.gamePhase =
-        state.gamePhase === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+      state.gamePhase = state.gamePhase === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
       state.availableCellCodes = calculateAvailableCellCodes(state);
       if (!state.availableCellCodes.length) {
         state.loser = state.gamePhase;

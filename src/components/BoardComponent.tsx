@@ -9,7 +9,9 @@ import { useAppSelector } from '../store/hooks';
 import { getCellType } from '../state/helpers/cellsGetters';
 import { getCellColonySet, isCellAvailable } from '../state/helpers/cellsGetters';
 import { CELL_SIZE, GRID_SIZE } from '../constants/board';
-import { GameRoom } from '@infection-game/shared';
+import { IGameRoom, IGameState } from '@infection-game/shared';
+
+// import { GameState } from '../state/gameState';
 
 const { Content } = Layout;
 
@@ -19,51 +21,55 @@ export interface BoardComponentProps {
   currentTurn: PlayerType;
   onCellClick: (cell: ICell) => void;
   board: Board;
-  joinedRoom: GameRoom | null;
+
+  stateActiveRoom: IGameRoom | null;
+  gameState: IGameState | null;
 }
 
-const BoardComponent: React.FC<BoardComponentProps> = ({
-  currentTurn,
-  board,
-  onCellClick,
-  joinedRoom,
-}) => {
+const BoardComponent: React.FC<BoardComponentProps> = (props) => {
+  const { currentTurn, onCellClick, board, stateActiveRoom } = props;
+
   const gameState = useAppSelector((state) => state.game);
   const gridWidth = CELL_SIZE * GRID_SIZE;
   const gridHeight = CELL_SIZE * GRID_SIZE;
 
-  const boardInner = joinedRoom && (
-    <div className="virus-grid-container">
-      {board.cells.map((row: ICell[]) => {
-        const rowComponent = row.map((cell: ICell) => {
-          const isAvailable = isCellAvailable(cell.code, gameState);
-          const cellType = getCellType(cell.code, gameState);
-          const colonySet = getCellColonySet(cell.code, gameState);
+  const boardInner =
+    stateActiveRoom != null ? (
+      <div className="virus-grid-container">
+        {board.cells.map((row: ICell[]) => {
+          const rowComponent = row.map((cell: ICell) => {
+            const isAvailable = isCellAvailable(cell.code, gameState);
+            const cellType = getCellType(cell.code, gameState);
+            const colonySet = getCellColonySet(cell.code, gameState);
+
+            return (
+              <div key={`cell-${cell.rowIdx}-${cell.colIdx}`} className="grid-cell-wrapper">
+                <CellComponent
+                  cell={cell}
+                  onCellClick={onCellClick}
+                  isAvailable={isAvailable}
+                  currentTurn={currentTurn}
+                  cellType={cellType}
+                  colonySet={colonySet}
+                />
+              </div>
+            );
+          });
+
+          const rowIdx = row[0].rowIdx;
 
           return (
-            <div key={`cell-${cell.rowIdx}-${cell.colIdx}`} className="grid-cell-wrapper">
-              <CellComponent
-                cell={cell}
-                onCellClick={onCellClick}
-                isAvailable={isAvailable}
-                currentTurn={currentTurn}
-                cellType={cellType}
-                colonySet={colonySet}
-              />
+            <div key={`row-${rowIdx}`} className="grid-row">
+              {rowComponent}
             </div>
           );
-        });
-
-        const rowIdx = row[0].rowIdx;
-
-        return (
-          <div key={`row-${rowIdx}`} className="grid-row">
-            {rowComponent}
-          </div>
-        );
-      })}
-    </div>
-  );
+        })}
+      </div>
+    ) : (
+      <div className="virus-grid-container virus-grid-container--placeholder">
+        <p className="virus-grid-placeholder-text">Join or create a room to see the board.</p>
+      </div>
+    );
 
   return (
     <Content

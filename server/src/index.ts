@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, type GameRoom } from '@infection-game/shared';
+import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, type IGameRoom } from '@infection-game/shared';
 import { roomService } from './game/services/roomService.js';
 import { createRoomHandler } from './game/eventHandlers/createRoom.js';
 import { joinRoomHandler } from './game/eventHandlers/joinRoom.js';
@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
 
   socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, () => {
     console.log('list rooms');
-    const data: GameRoom[] = roomService.listRooms();
+    const data: IGameRoom[] = roomService.listRooms();
     console.log('list rooms data', data);
     socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data });
   });

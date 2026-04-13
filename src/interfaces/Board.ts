@@ -1,6 +1,6 @@
 import { Board } from "../classes/Board";
 import { ICell } from "../classes/Cell";
-import { GamePhase } from "../state/gameState";
+import { GamePhase } from "@infection-game/shared";
 
 export enum PlayerType {
   RED = "red",

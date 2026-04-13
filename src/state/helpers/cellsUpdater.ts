@@ -1,45 +1,39 @@
-import { ColonySet } from "../../classes/ColonySet";
-import { PlayerType } from "../../interfaces/Board";
-import { GameState } from "../gameState";
+import { ColonySet } from '../../classes/ColonySet';
+import { PlayerType } from '../../interfaces/Board';
+import { IGameState } from '@infection-game/shared';
 
 /**
  * Returns a new GameState with updated colonies.
  * Does not mutate the input state.
  */
 export function refreshColonySets(
-  gameState: GameState,
+  gameState: IGameState,
   toUpdateColonies: ColonySet[]
-): GameState {
-  const redColoniesToUpdate = toUpdateColonies.filter(
-    (c) => c.owner === PlayerType.RED
-  );
-  const blueColoniesToUpdate = toUpdateColonies.filter(
-    (c) => c.owner === PlayerType.BLUE
-  );
+): IGameState {
+  const redColoniesToUpdate = toUpdateColonies.filter((c) => c.owner === PlayerType.RED);
+  const blueColoniesToUpdate = toUpdateColonies.filter((c) => c.owner === PlayerType.BLUE);
 
   let updatedRedColonies = gameState.redColonySets;
   let updatedBlueColonies = gameState.blueColonySets;
 
   if (redColoniesToUpdate.length > 0) {
     const redColonyIDsToUpdate = redColoniesToUpdate.map((c) => c.id);
-    updatedRedColonies = [
-      ...gameState.redColonySets.filter(
-        (colony: ColonySet) => !redColonyIDsToUpdate.includes(colony.id)
-      ),
-      // Colonies are already cloned in action functions, so use them directly
-      ...redColoniesToUpdate,
-    ];
+    // updatedRedColonies = [
+    //   ...gameState.redColonySets.filter(
+    //     (colony: ColonySet) => !redColonyIDsToUpdate.includes(colony.id)
+    //   ),
+    //   // Colonies are already cloned in action functions, so use them directly
+    //   ...redColoniesToUpdate,
+    // ];
   }
 
   if (blueColoniesToUpdate.length > 0) {
     const blueIds = blueColoniesToUpdate.map((c) => c.id);
-    updatedBlueColonies = [
-      ...gameState.blueColonySets.filter(
-        (colony: ColonySet) => !blueIds.includes(colony.id)
-      ),
-      // Colonies are already cloned in action functions, so use them directly
-      ...blueColoniesToUpdate,
-    ];
+    // updatedBlueColonies = [
+    //   ...gameState.blueColonySets.filter((colony: ColonySet) => !blueIds.includes(colony.id)),
+    //   // Colonies are already cloned in action functions, so use them directly
+    //   ...blueColoniesToUpdate,
+    // ];
   }
 
   return {
@@ -54,10 +48,10 @@ export function refreshColonySets(
  * Does not mutate the input state.
  */
 export function addNewDeleteOldColonies(
-  gameState: GameState,
+  gameState: IGameState,
   toDeleteColonies: ColonySet[],
   toAddColonies: ColonySet[]
-): GameState {
+): IGameState {
   const toDeleteRedIds = toDeleteColonies
     .filter((colony: ColonySet) => colony.owner === PlayerType.RED)
     .map((colony: ColonySet) => colony.id);
@@ -77,26 +71,24 @@ export function addNewDeleteOldColonies(
 
   // Handle red colonies deletion and addition
   if (toDeleteRedIds.length > 0 || redColoniesToAdd.length > 0) {
-    updatedRedColonies = [
-      // remove colonies to delete
-      ...gameState.redColonySets.filter(
-        (colony: ColonySet) => !toDeleteRedIds.includes(colony.id)
-      ),
-      // Colonies are already cloned in action functions, so use them directly
-      ...redColoniesToAdd,
-    ];
+    // updatedRedColonies = [
+    //   // remove colonies to delete
+    //   ...gameState.redColonySets.filter((colony: ColonySet) => !toDeleteRedIds.includes(colony.id)),
+    //   // Colonies are already cloned in action functions, so use them directly
+    //   ...redColoniesToAdd,
+    // ];
   }
 
   // Handle blue colonies deletion and addition
   if (toDeleteBlueIds.length > 0 || blueColoniesToAdd.length > 0) {
-    updatedBlueColonies = [
-      // remove colonies to delete
-      ...gameState.blueColonySets.filter(
-        (colony: ColonySet) => !toDeleteBlueIds.includes(colony.id)
-      ),
-      // Colonies are already cloned in action functions, so use them directly
-      ...blueColoniesToAdd,
-    ];
+    // updatedBlueColonies = [
+    //   // remove colonies to delete
+    //   ...gameState.blueColonySets.filter(
+    //     (colony: ColonySet) => !toDeleteBlueIds.includes(colony.id)
+    //   ),
+    //   // Colonies are already cloned in action functions, so use them directly
+    //   ...blueColoniesToAdd,
+    // ];
   }
 
   if (

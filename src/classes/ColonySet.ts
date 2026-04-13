@@ -1,7 +1,8 @@
-import { PlayerType } from "../interfaces/Board";
+import { IColonySet } from '@infection-game/shared';
+import { PlayerType } from '../interfaces/Board';
 
 let idCounter = 1;
-export class ColonySet {
+export class ColonySet implements IColonySet {
   public id: number;
 
   constructor(
@@ -14,11 +15,7 @@ export class ColonySet {
 
   clone() {
     // Create a new Set to avoid mutating the original
-    const cloned = new ColonySet(
-      new Set(this.colonyCellsCodes),
-      this.activated,
-      this.owner
-    );
+    const cloned = new ColonySet(new Set(this.colonyCellsCodes), this.activated, this.owner);
     // Preserve the original ID so refreshColonySets can find and replace it
     cloned.id = this.id;
     return cloned;
