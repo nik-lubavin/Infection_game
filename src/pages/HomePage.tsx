@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout, Typography, Button, Modal } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import HomePageContent from '../components/HomePageContent';
+import BoardComponent from '../components/BoardComponent';
 import Sidebar from '../components/Sidebar';
 import { useVirusGame } from '../hooks/useVirusGame';
 import { useGameContext } from '../contexts/GameContext';
@@ -15,7 +15,7 @@ const { Title } = Typography;
 
 const HomePage: React.FC = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useGameContext();
-  const { currentRoomId } = useSocketContext();
+  const { joinedRoom } = useSocketContext();
   const dispatch = useAppDispatch();
 
   const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
@@ -68,11 +68,11 @@ const HomePage: React.FC = () => {
           collapsed={sidebarCollapsed}
         />
 
-        <HomePageContent
+        <BoardComponent
           currentTurn={currentPlayerType}
           onCellClick={onCellClick}
           board={board}
-          currentRoomId={currentRoomId}
+          joinedRoom={joinedRoom}
         />
       </Layout>
       <Footer style={{ textAlign: 'center' }}>

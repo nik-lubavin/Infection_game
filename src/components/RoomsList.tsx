@@ -1,8 +1,8 @@
 import React from 'react';
 import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import type { GameRoom } from '../types/gameRoom';
 
+import type { GameRoom } from '@infection-game/shared';
 const { Text } = Typography;
 
 export interface RoomsListProps {
@@ -63,8 +63,7 @@ const RoomsList: React.FC<RoomsListProps> = ({
           dataSource={roomList}
           renderItem={(item) => {
             const inThisRoom =
-              socketId != null &&
-              (item.players.red === socketId || item.players.blue === socketId);
+              socketId != null && (item.players.red === socketId || item.players.blue === socketId);
             return (
               <List.Item
                 actions={
