@@ -21,6 +21,7 @@ export const SERVER_EVENTS = {
   PLAYER_LEFT: 'player_left',
   ACTION_REJECTED: 'action_rejected',
   LEAVE_ROOM_FAILED: 'leave_room_failed',
+  GAME_STATE_UPDATE: 'game_state_update',
 } as const;
 
 /** Player slot in room / payloads (lowercase strings on the wire). */
@@ -45,7 +46,12 @@ export enum PlayerType {
   BLUE = 'blue',
 }
 
-export type GamePhase = PlayerType.RED | PlayerType.BLUE | 'game_over' | 'not_started';
+export enum GamePhase {
+  RED_TURN = 'red_turn',
+  BLUE_TURN = 'blue_turn',
+  GAME_OVER = 'game_over',
+  NOT_STARTED = 'not_started',
+}
 
 export interface IBoard {
   rows: number;
@@ -54,16 +60,20 @@ export interface IBoard {
 
 export interface IColonySet {
   id: number;
+  colonyCellsCodes: Set<string>;
+  activated: boolean;
+  owner: PlayerType;
 }
 
 export interface IGameState {
   gamePhase: GamePhase;
   movesLeft: number;
-  board: IBoard;
   redVirusCellCodes: string[];
   blueVirusCellCodes: string[];
   redColonySets: IColonySet[];
   blueColonySets: IColonySet[];
-  availableCellCodes: string[];
-  loser: PlayerType | null;
+  availableCellCodes?: string[];
+  gridSize: number;
+  loser?: PlayerType | null;
+  board?: IBoard;
 }

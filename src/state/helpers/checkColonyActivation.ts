@@ -1,14 +1,14 @@
-import { GRID_SIZE } from "../../constants/board";
-import { ColonySet } from "../../classes/ColonySet";
+import { GRID_SIZE } from '../../constants/board';
+import { IColonySet } from '@infection-game/shared';
 
 export function checkColonyIsActive(
-  colonySet: ColonySet,
+  colonySet: IColonySet,
   playerVirusCellCodes: string[]
 ): boolean {
   const virusSet = new Set(playerVirusCellCodes);
 
   for (const cellCode of Array.from(colonySet.colonyCellsCodes)) {
-    const [rowStr, colStr] = cellCode.split("-");
+    const [rowStr, colStr] = cellCode.split('-');
     const row = parseInt(rowStr);
     const col = parseInt(colStr);
 
@@ -21,12 +21,7 @@ export function checkColonyIsActive(
         const newCol = col + dc;
 
         // Check bounds
-        if (
-          newRow >= 0 &&
-          newRow < GRID_SIZE &&
-          newCol >= 0 &&
-          newCol < GRID_SIZE
-        ) {
+        if (newRow >= 0 && newRow < GRID_SIZE && newCol >= 0 && newCol < GRID_SIZE) {
           const adjacentCellCode = `${newRow}-${newCol}`;
           if (virusSet.has(adjacentCellCode)) {
             return true; // Found an adjacent virus cell

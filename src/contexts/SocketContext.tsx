@@ -1,8 +1,9 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
-import type { IGameRoom } from '@infection-game/shared';
+import type { IGameRoom, IGameState } from '@infection-game/shared';
 
 import { useRoomEvents } from '../hooks/useRoomEvents';
 import { useSocketConnection } from '../hooks/useSocketConnection';
+import { useGameState } from '../hooks/useGameState';
 
 export type SocketContextValue = {
   socketConnected: boolean;
@@ -11,6 +12,7 @@ export type SocketContextValue = {
 
   stateRoomList: IGameRoom[];
   stateJoinedRoom: IGameRoom | null;
+  stateGame: IGameState | null;
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
@@ -22,7 +24,7 @@ const SocketContext = createContext<SocketContextValue | null>(null);
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const connection = useSocketConnection();
-  // const roomActions = useSocketEvents(connection.socket, connection.socketRef);
+
   const {
     stateRoomList,
     stateJoinedRoom,
@@ -32,10 +34,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     actionLeaveRoom,
   } = useRoomEvents(connection.socket, connection.socketConnected);
 
+  const { stateGame } = useGameState(connection.socket);
+
   const value: SocketContextValue = {
     socketConnected: connection.socketConnected,
     connectionError: connection.connectionError,
     socketId: connection.socketId,
+    stateGame,
 
     stateRoomList,
     stateJoinedRoom,

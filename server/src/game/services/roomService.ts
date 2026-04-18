@@ -1,6 +1,4 @@
-import type { Socket } from 'socket.io';
-import type { GameRoom, RoomStatus } from '@infection-game/shared';
-import { SERVER_EVENTS } from '../../events.js';
+import type { IGameRoom, RoomStatus } from '@infection-game/shared';
 
 function generateRoomCode(): string {
   // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -14,7 +12,7 @@ function generateRoomCode(): string {
 }
 
 export class RoomService {
-  private rooms = new Map<string, GameRoom>();
+  private _rooms = new Map<string, IGameRoom>();
 
   createGameRoomInstance({
     redSocketId,
@@ -22,9 +20,9 @@ export class RoomService {
   }: {
     redSocketId: string;
     userName: string;
-  }): GameRoom {
+  }): IGameRoom {
     const roomCode = generateRoomCode();
-    const newRoom: GameRoom = {
+    const newRoom: IGameRoom = {
       id: roomCode,
       status: 'waiting',
       players: { red: redSocketId, blue: null },
@@ -32,23 +30,23 @@ export class RoomService {
       createdAt: Date.now(),
       hostName: userName,
     };
-    this.rooms.set(roomCode, newRoom);
+    this._rooms.set(roomCode, newRoom);
     console.log(`room created ${roomCode} by ${redSocketId}`);
     return newRoom;
   }
 
-  listRooms(): GameRoom[] {
-    return Array.from(this.rooms.values());
+  listRooms(): IGameRoom[] {
+    return Array.from(this._rooms.values());
   }
 
-  getRoom(roomCode: string): GameRoom | undefined {
-    return this.rooms.get(roomCode);
+  getRoom(roomCode: string): IGameRoom | undefined {
+    return this._rooms.get(roomCode);
   }
 
   assignBluePlayerToRoom(
     roomCode: string,
     socketId: string
-  ): { success: boolean; reason?: string; data?: GameRoom } {
+  ): { success: boolean; reason?: string; data?: IGameRoom } {
     const room = roomService.getRoom(roomCode);
     if (!room) {
       // socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Room not found' });
@@ -65,14 +63,14 @@ export class RoomService {
     return { success: true, data: room };
   }
 
-  private setRoom(room: GameRoom): void {
-    this.rooms.set(room.id, room);
+  private setRoom(room: IGameRoom): void {
+    this._rooms.set(room.id, room);
   }
 
   disconnectPlayerFromRoom(
     roomCode: string,
     socketId: string
-  ): { success: boolean; reason?: string; data?: GameRoom } {
+  ): { success: boolean; reason?: string; data?: IGameRoom } {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };
@@ -92,7 +90,7 @@ export class RoomService {
   }
 }
 
-export function removeSocketFromRoom(room: GameRoom, socketId: string): GameRoom {
+export function removeSocketFromRoom(room: IGameRoom, socketId: string): IGameRoom {
   return {
     ...room,
     status: 'waiting' as RoomStatus,

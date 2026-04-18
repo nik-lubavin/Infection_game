@@ -10,6 +10,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { PlayerType } from '../../interfaces/Board';
 import { clearLoser } from '../../store/gameSlice';
 import { Board } from '../../classes/Board';
+import { GamePhase } from '@infection-game/shared';
 
 const { Footer } = Layout;
 
@@ -25,7 +26,7 @@ const HomePage: React.FC = () => {
 
   // Convert GamePhase to PlayerType for components
   const currentPlayerType: PlayerType =
-    gamePhase === PlayerType.RED || gamePhase === PlayerType.BLUE ? gamePhase : PlayerType.RED; // Default to RED if game not started or over
+    gamePhase === GamePhase.RED_TURN ? PlayerType.RED : PlayerType.BLUE; // Default to RED if game not started or over
 
   return (
     <Layout
@@ -44,7 +45,7 @@ const HomePage: React.FC = () => {
         sidebarCollapsed={sidebarCollapsed}
         currentPlayer={currentPlayerType}
         movesLeft={movesLeft}
-        availableCellCodes={availableCellCodes}
+        availableCellCodes={availableCellCodes || []}
         stateJoinedRoom={stateJoinedRoom}
         actionLeaveRoom={actionLeaveRoom}
         stateActiveRoom={stateActiveRoom}

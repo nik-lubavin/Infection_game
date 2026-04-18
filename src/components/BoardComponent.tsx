@@ -5,13 +5,11 @@ import CellComponent from './CellComponent';
 import '../styles/Board.css';
 import { ICell } from '../classes/Cell';
 import { Board } from '../classes/Board';
-import { useAppSelector } from '../store/hooks';
 import { getCellType } from '../state/helpers/cellsGetters';
 import { getCellColonySet, isCellAvailable } from '../state/helpers/cellsGetters';
 import { CELL_SIZE, GRID_SIZE } from '../constants/board';
-import { IGameRoom, IGameState } from '@infection-game/shared';
-
-// import { GameState } from '../state/gameState';
+import { IColonySet, IGameRoom, IGameState } from '@infection-game/shared';
+import { useSocketContext } from '../contexts/SocketContext';
 
 const { Content } = Layout;
 
@@ -29,7 +27,8 @@ export interface BoardComponentProps {
 const BoardComponent: React.FC<BoardComponentProps> = (props) => {
   const { currentTurn, onCellClick, board, stateActiveRoom } = props;
 
-  const gameState = useAppSelector((state) => state.game);
+  const { stateGame } = useSocketContext();
+
   const gridWidth = CELL_SIZE * GRID_SIZE;
   const gridHeight = CELL_SIZE * GRID_SIZE;
 
@@ -38,9 +37,9 @@ const BoardComponent: React.FC<BoardComponentProps> = (props) => {
       <div className="virus-grid-container">
         {board.cells.map((row: ICell[]) => {
           const rowComponent = row.map((cell: ICell) => {
-            const isAvailable = isCellAvailable(cell.code, gameState);
-            const cellType = getCellType(cell.code, gameState);
-            const colonySet = getCellColonySet(cell.code, gameState);
+            const isAvailable = isCellAvailable(cell.code, stateGame!);
+            const cellType = getCellType(cell.code, stateGame!);
+            const colonySet = getCellColonySet(cell.code, stateGame!);
 
             return (
               <div key={`cell-${cell.rowIdx}-${cell.colIdx}`} className="grid-cell-wrapper">
@@ -50,7 +49,7 @@ const BoardComponent: React.FC<BoardComponentProps> = (props) => {
                   isAvailable={isAvailable}
                   currentTurn={currentTurn}
                   cellType={cellType}
-                  colonySet={colonySet}
+                  colonySet={colonySet as IColonySet | null}
                 />
               </div>
             );

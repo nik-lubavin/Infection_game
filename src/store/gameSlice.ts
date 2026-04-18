@@ -1,15 +1,14 @@
 import { createSlice, PayloadAction, current } from '@reduxjs/toolkit';
 import { Board } from '../classes/Board';
 import { GRID_SIZE } from '../constants/board';
-import { PlayerType } from '../interfaces/Board';
 import { actionAddVirusCell } from '../state/actions/actionAddVirusCell';
 import { actionAddCellToColony } from '../state/actions/actionAddCellToColony';
-import { IGameState } from '@infection-game/shared';
+import { GamePhase, IGameState } from '@infection-game/shared';
 import { calculateAvailableCellCodes } from '../state/helpers/cellsGetters';
 import { testInitialViruses } from '../state/helpers/testInitialViruses';
 
 const initialState: IGameState = {
-  gamePhase: 'not_started',
+  gamePhase: GamePhase.NOT_STARTED,
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
   redVirusCellCodes: [],
@@ -18,6 +17,7 @@ const initialState: IGameState = {
   blueColonySets: [],
   availableCellCodes: [],
   loser: null,
+  gridSize: GRID_SIZE,
 };
 
 const gameSlice = createSlice({
@@ -28,7 +28,7 @@ const gameSlice = createSlice({
       state.board = new Board(GRID_SIZE, GRID_SIZE);
       state.redVirusCellCodes = [];
       state.blueVirusCellCodes = [];
-      state.gamePhase = PlayerType.RED;
+      state.gamePhase = GamePhase.RED_TURN;
       state.availableCellCodes = calculateAvailableCellCodes(state);
       state.loser = null;
     },
@@ -49,11 +49,12 @@ const gameSlice = createSlice({
       return newState;
     },
     switchPlayer: (state) => {
-      state.gamePhase = state.gamePhase === PlayerType.RED ? PlayerType.BLUE : PlayerType.RED;
+      state.gamePhase =
+        state.gamePhase === GamePhase.RED_TURN ? GamePhase.BLUE_TURN : GamePhase.RED_TURN;
       state.availableCellCodes = calculateAvailableCellCodes(state);
-      if (!state.availableCellCodes.length) {
-        state.loser = state.gamePhase;
-      }
+      // if (!state.availableCellCodes.length) {
+      //   state.loser = state.gamePhase;
+      // }
     },
     decrementMoves: (state) => {
       state.movesLeft = Math.max(0, state.movesLeft - 1);

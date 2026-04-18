@@ -1,24 +1,23 @@
-import { ColonySet } from '../../classes/ColonySet';
+// import { ColonySet } from '../../classes/ColonySet';
 import { GRID_SIZE } from '../../constants/board';
 import { CellType } from '../../enums/CellType';
-import { PlayerType } from '../../interfaces/Board';
-import { IGameState } from '@infection-game/shared';
+import { GamePhase, IColonySet, IGameState } from '@infection-game/shared';
 import { getAdjacentCellCodes } from './getAdjacentCellCodes';
 
 export function calculateAvailableCellCodes(state: IGameState): string[] {
   const virusContainer =
-    state.gamePhase === PlayerType.RED ? state.redVirusCellCodes : state.blueVirusCellCodes;
+    state.gamePhase === GamePhase.RED_TURN ? state.redVirusCellCodes : state.blueVirusCellCodes;
 
   const colonyContainer =
-    state.gamePhase === PlayerType.RED ? state.redColonySets : state.blueColonySets;
+    state.gamePhase === GamePhase.RED_TURN ? state.redColonySets : state.blueColonySets;
   const enemyVirusType =
-    state.gamePhase === PlayerType.RED ? CellType.BLUE_VIRUS : CellType.RED_VIRUS;
+    state.gamePhase === GamePhase.RED_TURN ? CellType.BLUE_VIRUS : CellType.RED_VIRUS;
 
   const result: Set<string> = new Set();
 
   // Check virus cells
   if (!virusContainer.length) {
-    if (state.gamePhase === PlayerType.RED) {
+    if (state.gamePhase === GamePhase.RED_TURN) {
       result.add('0-0');
     } else {
       result.add(`${GRID_SIZE - 1}-${GRID_SIZE - 1}`);
@@ -38,24 +37,24 @@ export function calculateAvailableCellCodes(state: IGameState): string[] {
   });
 
   // Check colony cells
-  // colonyContainer
-  //   .filter((colonySet: ColonySet) => colonySet.activated)
-  //   .forEach((colonySet: ColonySet) => {
-  //     colonySet.getCellCodes().forEach((cellCode: string) => {
-  //       const adjacentColonyCellCodes = getAdjacentCellCodes(cellCode);
-  //       adjacentColonyCellCodes.forEach((cellCode: string) => {
-  //         const cellType = getCellType(cellCode, state);
-  //         if (!cellType || cellType === enemyVirusType) {
-  //           result.add(cellCode);
-  //         }
-  //       });
-  //     });
-  //   });
+  colonyContainer
+    .filter((colonySet: IColonySet) => colonySet.activated)
+    .forEach((colonySet: IColonySet) => {
+      colonySet.colonyCellsCodes.forEach((cellCode: string) => {
+        const adjacentColonyCellCodes = getAdjacentCellCodes(cellCode);
+        adjacentColonyCellCodes.forEach((cellCode: string) => {
+          const cellType = getCellType(cellCode, state);
+          if (!cellType || cellType === enemyVirusType) {
+            result.add(cellCode);
+          }
+        });
+      });
+    });
 
   return Array.from(result);
 }
 
-export function getCellColonySet(cellCode: string, state: IGameState): ColonySet | null {
+export function getCellColonySet(cellCode: string, state: IGameState): IColonySet | null {
   // const redColonySet = state.redColonySets.find((set: ColonySet) =>
   //   set.colonyCellsCodes.has(cellCode)
   // );
