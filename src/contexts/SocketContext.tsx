@@ -30,8 +30,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const { name: playerName, playerId } = usePlayerSession();
 
   const {
-    stateRoomList,
-    stateJoinedRoom,
+    roomList,
+    joinedRoom,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,
@@ -48,8 +48,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     playerName,
     stateGame,
 
-    stateRoomList,
-    stateJoinedRoom,
+    stateRoomList: roomList,
+    stateJoinedRoom: joinedRoom,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,

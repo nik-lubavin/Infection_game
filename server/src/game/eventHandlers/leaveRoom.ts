@@ -7,11 +7,13 @@ export function leaveRoomHandler({
   payload,
 }: {
   socket: Socket;
-  payload: { roomCode?: string; playerId?: string };
+  payload: { roomCode: string; playerId: string };
 }): void {
-  const roomCode = payload?.roomCode;
-  const playerId = payload?.playerId;
-  if (!roomCode || !playerId) return;
+  console.log('leave room handler', payload);
+  const { roomCode, playerId } = payload;
+  // const roomCode = payload?.roomCode;
+  // const playerId = payload?.playerId;
+  // if (!roomCode || !playerId) return;
 
   const result = roomService.disconnectPlayerFromRoom(roomCode, playerId);
   if (!result.success) {
@@ -19,7 +21,6 @@ export function leaveRoomHandler({
     return;
   }
 
-  socket.leave(roomCode);
-  socket.emit(SERVER_EVENTS.PLAYER_LEFT, { roomCode });
-  socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data: roomService.listRooms() });
+  socket.leave(roomCode); // socket disconnected from room
+  socket.emit(SERVER_EVENTS.PLAYER_LEFT, { roomList: roomService.listRooms() });
 }

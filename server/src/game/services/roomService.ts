@@ -81,21 +81,19 @@ export class RoomService {
 
     if (room.players.red === playerId) {
       room.players.red = null;
+      console.log(`player ${playerId} left room ${roomCode} (red)`);
     } else if (room.players.blue === playerId) {
+      console.log(`player ${playerId} left room ${roomCode} (blue)`);
       room.players.blue = null;
     }
 
-    this.setRoom(room);
-    return { success: true, data: room };
+    if (room.players.red === null && room.players.blue === null) {
+      this._rooms.delete(roomCode);
+    } else {
+      this.setRoom(room);
+    }
+    return { success: true };
   }
-}
-
-export function removeSocketFromRoom(room: IGameRoom, socketId: string): IGameRoom {
-  return {
-    ...room,
-    status: 'waiting' as RoomStatus,
-    players: { ...room.players, blue: null },
-  };
 }
 
 export const roomService = new RoomService();

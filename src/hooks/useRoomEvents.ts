@@ -4,15 +4,15 @@ import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, IGameRoom } from '@infection-game
 import { getOrCreatePlayerSession } from '../utils/playerSession';
 
 export function useRoomEvents(socket: Socket | null): {
-  stateRoomList: IGameRoom[];
-  stateJoinedRoom: IGameRoom | null;
+  roomList: IGameRoom[];
+  joinedRoom: IGameRoom | null;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
   actionJoinRoom: (roomCode: string) => void;
   actionLeaveRoom: (roomCode: string) => void;
 } {
-  const [stateRoomList, setStateRoomList] = useState<IGameRoom[]>([]);
-  const [stateJoinedRoom, setStateJoinedRoom] = useState<IGameRoom | null>(null);
+  const [roomList, setRoomList] = useState<IGameRoom[]>([]);
+  const [joinedRoom, setJoinedRoom] = useState<IGameRoom | null>(null);
   const { name: playerName, playerId } = getOrCreatePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
@@ -49,17 +49,17 @@ export function useRoomEvents(socket: Socket | null): {
   useEffect(() => {
     if (!socket) return;
 
-    const syncJoinedRoomFromList = (list: IGameRoom[]) => {
-      const mine = list.find(
+    const syncJoinedRoomFromRoomList = (list: IGameRoom[]) => {
+      const joined = list.find(
         (room) => room.players.red === playerId || room.players.blue === playerId
       );
-      setStateJoinedRoom(mine ?? null);
+      setJoinedRoom(joined ?? null);
     };
 
     const onListed = (payload: { data: IGameRoom[] }) => {
       const list = payload.data ?? [];
-      setStateRoomList(list);
-      syncJoinedRoomFromList(list);
+      setRoomList(list);
+      syncJoinedRoomFromRoomList(list);
     };
 
     const onRoomCreated = (payload: {
@@ -68,7 +68,7 @@ export function useRoomEvents(socket: Socket | null): {
       hostName: string;
       players: string[];
     }) => {
-      setStateJoinedRoom({
+      setJoinedRoom({
         id: payload.roomCode,
         status: 'waiting',
         players: {
@@ -81,12 +81,18 @@ export function useRoomEvents(socket: Socket | null): {
       });
     };
 
+    const onPlayerLeftRoom = (payload: { roomList: IGameRoom[] }) => {
+      setRoomList(payload.roomList);
+      setJoinedRoom(null);
+    };
+
     const onConnect = () => {
       socket.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS, { playerId });
     };
 
     socket.on(SERVER_EVENTS.ROOMS_LISTED, onListed);
     socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
+    socket.on(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
     socket.on('connect', onConnect);
     if (socket.connected) {
       onConnect();
@@ -100,8 +106,8 @@ export function useRoomEvents(socket: Socket | null): {
   }, [socket, playerId]);
 
   return {
-    stateRoomList: stateRoomList,
-    stateJoinedRoom: stateJoinedRoom,
+    roomList,
+    joinedRoom,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,
