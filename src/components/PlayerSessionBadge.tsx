@@ -2,15 +2,15 @@ import React from "react";
 import { usePlayerSession } from "../hooks/usePlayerSession";
 
 const PlayerSessionBadge: React.FC = () => {
-  const sessionName = usePlayerSession();
+  const { name } = usePlayerSession();
 
   return (
     <div
       className="player-session-badge"
       title="Your session name"
-      aria-label={`Session ${sessionName}`}
+      aria-label={`Session ${name}`}
     >
-      {sessionName}
+      {name}
     </div>
   );
 };

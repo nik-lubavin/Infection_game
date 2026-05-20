@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { getOrCreateSessionName } from "../utils/playerSession";
+import { useMemo } from 'react';
+import { getOrCreatePlayerSession } from '../utils/playerSession';
 
-export function usePlayerSession(): string {
-  return useMemo(() => getOrCreateSessionName(), []);
+export function usePlayerSession(): { name: string; playerId: string } {
+  return useMemo(() => getOrCreatePlayerSession(), []);
 }

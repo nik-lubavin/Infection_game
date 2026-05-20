@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     actionListRooms,
     actionCreateRoom,
     actionLeaveRoom,
-    socketId,
+    playerId,
   } = useSocketContext();
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             actionListRooms={actionListRooms}
             actionCreateRoom={actionCreateRoom}
             actionLeaveRoom={actionLeaveRoom}
-            socketId={socketId}
+            playerId={playerId}
           />
         </>
       )}

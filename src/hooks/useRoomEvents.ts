@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, IGameRoom } from '@infection-game/shared';
-import { getOrCreateSessionName } from '../utils/playerSession';
+import { getOrCreatePlayerSession } from '../utils/playerSession';
 
-export function useRoomEvents(
-  socket: Socket | null,
-  socketConnected: boolean
-): {
+export function useRoomEvents(socket: Socket | null): {
   stateRoomList: IGameRoom[];
   stateJoinedRoom: IGameRoom | null;
   actionListRooms: () => void;
@@ -16,72 +13,91 @@ export function useRoomEvents(
 } {
   const [stateRoomList, setStateRoomList] = useState<IGameRoom[]>([]);
   const [stateJoinedRoom, setStateJoinedRoom] = useState<IGameRoom | null>(null);
+  const { name: playerName, playerId } = getOrCreatePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
     socket?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, {
-      userName: getOrCreateSessionName(),
-      userId: socket?.id,
+      userName: playerName,
+      playerId,
     });
-  }, [socket]);
+  }, [socket, playerName, playerId]);
 
   const actionListRooms = useCallback(() => {
-    socket?.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS);
-  }, [socket]);
+    socket?.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS, { playerId });
+  }, [socket, playerId]);
 
   const actionJoinRoom = useCallback(
     (roomCode: string) => {
       socket?.emit(CLIENT_REQUEST_EVENTS.JOIN_ROOM, {
         roomCode,
-        userId: socket?.id,
+        playerId,
       });
     },
-    [socket]
+    [socket, playerId]
   );
 
   const actionLeaveRoom = useCallback(
     (roomCode: string) => {
       socket?.emit(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, {
         roomCode,
-        userId: socket?.id,
+        playerId,
       });
     },
-    [socket]
+    [socket, playerId]
   );
 
-  // assigning handlers on mount
   useEffect(() => {
     if (!socket) return;
 
-    const onListed = (payload: { data: IGameRoom[] }) => {
-      const list = payload.data ?? [];
-      setStateRoomList(list);
-      const sid = socket.id;
+    const syncJoinedRoomFromList = (list: IGameRoom[]) => {
       const mine = list.find(
-        (room: IGameRoom) => room.players.red === sid || room.players.blue === sid
+        (room) => room.players.red === playerId || room.players.blue === playerId
       );
       setStateJoinedRoom(mine ?? null);
     };
 
-    const onRoomCreated = (payload: { data: IGameRoom }) => {
-      console.log('room created', payload);
-      setStateJoinedRoom(payload.data);
-      // socket.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS);
+    const onListed = (payload: { data: IGameRoom[] }) => {
+      const list = payload.data ?? [];
+      setStateRoomList(list);
+      syncJoinedRoomFromList(list);
     };
+
+    const onRoomCreated = (payload: {
+      roomCode: string;
+      player: 'red' | 'blue';
+      hostName: string;
+      players: string[];
+    }) => {
+      setStateJoinedRoom({
+        id: payload.roomCode,
+        status: 'waiting',
+        players: {
+          red: payload.players.includes(playerId) ? 'red' : null,
+          blue: payload.players.includes(playerId) ? 'blue' : null,
+        },
+        gameState: '',
+        createdAt: Date.now(),
+        hostName: payload.hostName,
+      });
+    };
+
+    const onConnect = () => {
+      socket.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS, { playerId });
+    };
+
     socket.on(SERVER_EVENTS.ROOMS_LISTED, onListed);
     socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
+    socket.on('connect', onConnect);
+    if (socket.connected) {
+      onConnect();
+    }
 
     return () => {
       socket.off(SERVER_EVENTS.ROOMS_LISTED, onListed);
       socket.off(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
+      socket.off('connect', onConnect);
     };
-  }, [socket]);
-
-  // refreshing rooms on socket connect
-  useEffect(() => {
-    if (socketConnected) {
-      actionListRooms();
-    }
-  }, [socketConnected, actionListRooms]);
+  }, [socket, playerId]);
 
   return {
     stateRoomList: stateRoomList,

@@ -5,7 +5,6 @@ import type { PlayerType } from '../../interfaces/Board';
 import type { ICell } from '../../classes/Cell';
 import { Board } from '../../classes/Board';
 import Sidebar from '../Sidebar';
-import JoinedRoom from '../JoinedRoom';
 import BoardComponent from '../BoardComponent';
 
 export interface MainLayoutSectionProps {
@@ -26,8 +25,6 @@ const MainLayoutSection: React.FC<MainLayoutSectionProps> = ({
   currentPlayer,
   movesLeft,
   availableCellCodes,
-  stateJoinedRoom,
-  actionLeaveRoom,
   stateActiveRoom,
   gameState,
   board,
@@ -40,9 +37,6 @@ const MainLayoutSection: React.FC<MainLayoutSectionProps> = ({
       availableCellCodes={availableCellCodes}
       collapsed={sidebarCollapsed}
     />
-    {stateJoinedRoom && (
-      <JoinedRoom stateJoinedRoom={stateJoinedRoom} actionLeaveRoom={actionLeaveRoom} />
-    )}
     {stateActiveRoom && gameState && (
       <BoardComponent
         currentTurn={currentPlayer}

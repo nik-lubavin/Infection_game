@@ -7,7 +7,7 @@ import SocketConnectionStatus from './SocketConnectionStatus';
 const { Text } = Typography;
 
 export interface RoomsListProps {
-  socketId: string | null;
+  playerId: string;
   connectionError: string | null;
   stateRoomList: IGameRoom[];
   socketConnected: boolean;
@@ -18,7 +18,7 @@ export interface RoomsListProps {
 
 const RoomsList: React.FC<RoomsListProps> = (props) => {
   const {
-    socketId,
+    playerId,
     connectionError,
     stateRoomList,
     socketConnected,
@@ -62,7 +62,7 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
           dataSource={stateRoomList}
           renderItem={(item) => {
             const inThisRoom =
-              socketId != null && (item.players.red === socketId || item.players.blue === socketId);
+              item.players.red === playerId || item.players.blue === playerId;
             return (
               <List.Item
                 actions={

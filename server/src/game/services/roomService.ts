@@ -15,23 +15,23 @@ export class RoomService {
   private _rooms = new Map<string, IGameRoom>();
 
   createGameRoomInstance({
-    redSocketId,
+    redPlayerId,
     userName,
   }: {
-    redSocketId: string;
+    redPlayerId: string;
     userName: string;
   }): IGameRoom {
     const roomCode = generateRoomCode();
     const newRoom: IGameRoom = {
       id: roomCode,
       status: 'waiting',
-      players: { red: redSocketId, blue: null },
+      players: { red: redPlayerId, blue: null },
       gameState: '',
       createdAt: Date.now(),
       hostName: userName,
     };
     this._rooms.set(roomCode, newRoom);
-    console.log(`room created ${roomCode} by ${redSocketId}`);
+    console.log(`room created ${roomCode} by ${redPlayerId}`);
     return newRoom;
   }
 
@@ -45,7 +45,7 @@ export class RoomService {
 
   assignBluePlayerToRoom(
     roomCode: string,
-    socketId: string
+    playerId: string
   ): { success: boolean; reason?: string; data?: IGameRoom } {
     const room = roomService.getRoom(roomCode);
     if (!room) {
@@ -57,7 +57,7 @@ export class RoomService {
       return { success: false, reason: 'Room is full' };
     }
 
-    room.players.blue = socketId;
+    room.players.blue = playerId;
     room.status = 'playing' as RoomStatus;
     this.setRoom(room);
     return { success: true, data: room };
@@ -69,19 +69,19 @@ export class RoomService {
 
   disconnectPlayerFromRoom(
     roomCode: string,
-    socketId: string
+    playerId: string
   ): { success: boolean; reason?: string; data?: IGameRoom } {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };
     }
-    if (room.players.red !== socketId && room.players.blue !== socketId) {
+    if (room.players.red !== playerId && room.players.blue !== playerId) {
       return { success: false, reason: 'You are not in this room' };
     }
 
-    if (room.players.red === socketId) {
+    if (room.players.red === playerId) {
       room.players.red = null;
-    } else if (room.players.blue === socketId) {
+    } else if (room.players.blue === playerId) {
       room.players.blue = null;
     }
 

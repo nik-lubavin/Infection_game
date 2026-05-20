@@ -18,22 +18,32 @@ const PORT = Number(process.env.PORT) || 3001;
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on(CLIENT_REQUEST_EVENTS.CREATE_ROOM, (payload: { userName: string }) => {
-    createRoomHandler({ socket, userName: payload.userName });
-  });
+  socket.on(
+    CLIENT_REQUEST_EVENTS.CREATE_ROOM,
+    (payload: { userName: string; playerId: string }) => {
+      createRoomHandler({ socket, userName: payload.userName, playerId: payload.playerId });
+    }
+  );
 
-  socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, () => {
-    console.log('list rooms');
+  socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, (payload?: { playerId?: string }) => {
+    const playerId = payload?.playerId;
+    if (playerId) {
+      socket.data.playerId = playerId;
+      for (const room of roomService.listRooms()) {
+        if (room.players.red === playerId || room.players.blue === playerId) {
+          socket.join(room.id);
+        }
+      }
+    }
     const data: IGameRoom[] = roomService.listRooms();
-    console.log('list rooms data', data);
     socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.JOIN_ROOM, (payload: { roomCode: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.JOIN_ROOM, (payload: { roomCode: string; playerId: string }) => {
     joinRoomHandler({ socket, io, payload });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, (payload: { roomCode: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, (payload: { roomCode: string; playerId: string }) => {
     leaveRoomHandler({ socket, payload });
   });
 

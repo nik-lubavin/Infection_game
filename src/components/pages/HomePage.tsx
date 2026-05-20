@@ -11,6 +11,7 @@ import { PlayerType } from '../../interfaces/Board';
 import { clearLoser } from '../../store/gameSlice';
 import { Board } from '../../classes/Board';
 import { GamePhase } from '@infection-game/shared';
+import JoinedRoomModal from '../JoinedRoomModal';
 
 const { Footer } = Layout;
 
@@ -56,6 +57,10 @@ const HomePage: React.FC = () => {
       <Footer style={{ textAlign: 'center' }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>
+      <JoinedRoomModal
+        stateJoinedRoom={stateJoinedRoom}
+        actionLeaveRoom={actionLeaveRoom}
+      />
       <Modal
         open={loser !== null}
         title="Game Over"

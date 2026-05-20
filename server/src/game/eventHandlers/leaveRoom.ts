@@ -7,12 +7,13 @@ export function leaveRoomHandler({
   payload,
 }: {
   socket: Socket;
-  payload: { roomCode?: string };
+  payload: { roomCode?: string; playerId?: string };
 }): void {
   const roomCode = payload?.roomCode;
-  if (!roomCode) return;
+  const playerId = payload?.playerId;
+  if (!roomCode || !playerId) return;
 
-  const result = roomService.disconnectPlayerFromRoom(roomCode, socket.id);
+  const result = roomService.disconnectPlayerFromRoom(roomCode, playerId);
   if (!result.success) {
     socket.emit(SERVER_EVENTS.LEAVE_ROOM_FAILED, { reason: result.reason });
     return;
