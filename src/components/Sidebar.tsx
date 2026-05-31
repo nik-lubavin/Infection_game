@@ -26,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     connectionError,
     actionListRooms,
     actionCreateRoom,
+    actionJoinRoom,
     actionLeaveRoom,
     playerId,
   } = useSocketContext();
@@ -93,11 +94,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             availableCellCodes={availableCellCodes}
           />
           <RoomsList
-            stateRoomList={stateRoomList}
+            roomList={stateRoomList}
             socketConnected={socketConnected}
             connectionError={connectionError}
             actionListRooms={actionListRooms}
             actionCreateRoom={actionCreateRoom}
+            actionJoinRoom={actionJoinRoom}
             actionLeaveRoom={actionLeaveRoom}
             playerId={playerId}
           />

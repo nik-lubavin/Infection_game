@@ -16,7 +16,7 @@ const SocketConnectionStatus: React.FC<SocketConnectionStatusProps> = ({
     {connectionError
       ? `Error: ${connectionError}`
       : socketConnected
-        ? 'Connected'
+        ? 'Socket Connected'
         : 'Connecting…'}
   </Text>
 );

@@ -19,7 +19,7 @@ export type SocketContextValue = {
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
-  actionJoinRoom: (roomCode: string) => void;
+  actionJoinRoom: (room: IGameRoom) => void;
   actionLeaveRoom: (roomCode: string) => void;
 };
 

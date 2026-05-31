@@ -9,10 +9,11 @@ const { Text } = Typography;
 export interface RoomsListProps {
   playerId: string;
   connectionError: string | null;
-  stateRoomList: IGameRoom[];
+  roomList: IGameRoom[];
   socketConnected: boolean;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
+  actionJoinRoom: (room: IGameRoom) => void;
   actionLeaveRoom: (roomCode: string) => void;
 }
 
@@ -20,10 +21,11 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
   const {
     playerId,
     connectionError,
-    stateRoomList,
+    roomList,
     socketConnected,
     actionListRooms,
     actionCreateRoom,
+    actionJoinRoom,
     actionLeaveRoom,
   } = props;
   return (
@@ -54,38 +56,48 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
           </Button>
         </Col>
       </Row>
-      {stateRoomList.length === 0 ? (
+      {roomList.length === 0 ? (
         <Text type="secondary">No open rooms</Text>
       ) : (
         <List
           size="small"
-          dataSource={stateRoomList}
-          renderItem={(item) => {
-            const inThisRoom =
-              item.players.red === playerId || item.players.blue === playerId;
+          dataSource={roomList}
+          renderItem={(room: IGameRoom) => {
+            const inThisRoom = room.players.red === playerId || room.players.blue === playerId;
+            const canConnect = socketConnected;
             return (
               <List.Item
+                style={inThisRoom ? { backgroundColor: '#fffbe6' } : undefined}
                 actions={
-                  socketConnected && inThisRoom
+                  inThisRoom
                     ? [
                         <Button
                           key="disconnect-room"
                           type="link"
                           danger
                           size="small"
-                          onClick={() => actionLeaveRoom(item.id)}
-                          aria-label={`Disconnect from room ${item.id}`}
+                          onClick={() => actionLeaveRoom(room.id)}
+                          aria-label={`Disconnect from room ${room.id}`}
                         >
                           Disconnect room
                         </Button>,
                       ]
-                    : undefined
+                    : canConnect
+                      ? [
+                          <Button
+                            key="connect-room"
+                            type="link"
+                            size="small"
+                            onClick={() => actionJoinRoom(room)}
+                            aria-label={`Connect to room ${room.id}`}
+                          >
+                            Connect
+                          </Button>,
+                        ]
+                      : undefined
                 }
               >
-                <Tag color="gray">{item.id}</Tag>
-                <Tag color="red">{item.players.red}</Tag>
-                <Tag color="blue">{item.players.blue}</Tag>
-                <Tag color="gray">{item.hostName}</Tag>
+                <Tag color="gray">{room.id}</Tag>
               </List.Item>
             );
           }}

@@ -8,7 +8,7 @@ export function useRoomEvents(socket: Socket | null): {
   joinedRoom: IGameRoom | null;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
-  actionJoinRoom: (roomCode: string) => void;
+  actionJoinRoom: (room: IGameRoom) => void;
   actionLeaveRoom: (roomCode: string) => void;
 } {
   const [roomList, setRoomList] = useState<IGameRoom[]>([]);
@@ -27,9 +27,9 @@ export function useRoomEvents(socket: Socket | null): {
   }, [socket, playerId]);
 
   const actionJoinRoom = useCallback(
-    (roomCode: string) => {
+    (room: IGameRoom) => {
       socket?.emit(CLIENT_REQUEST_EVENTS.JOIN_ROOM, {
-        roomCode,
+        roomCode: room.id,
         playerId,
       });
     },

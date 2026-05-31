@@ -33,7 +33,7 @@ export function joinRoomHandler({
 
   socket.data.playerId = playerId;
   socket.join(roomCode);
-  console.log('socket joined', roomCode);
+  console.log(`player ${playerId} joined room ${roomCode}`);
 
   const notifyGameStart = async () => {
     const sockets = await io.in(roomCode).fetchSockets();
