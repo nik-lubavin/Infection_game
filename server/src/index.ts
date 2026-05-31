@@ -1,7 +1,12 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, type IGameRoom } from '@infection-game/shared';
+import {
+  CLIENT_REQUEST_EVENTS,
+  CreateRoomPayload,
+  SERVER_EVENTS,
+  type IGameRoom,
+} from '@infection-game/shared';
 import { roomService } from './game/services/roomService.js';
 import { createRoomHandler } from './game/eventHandlers/createRoom.js';
 import { joinRoomHandler } from './game/eventHandlers/joinRoom.js';
@@ -18,12 +23,9 @@ const PORT = Number(process.env.PORT) || 3001;
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on(
-    CLIENT_REQUEST_EVENTS.CREATE_ROOM,
-    (payload: { userName: string; playerId: string }) => {
-      createRoomHandler({ socket, userName: payload.userName, playerId: payload.playerId });
-    }
-  );
+  socket.on(CLIENT_REQUEST_EVENTS.CREATE_ROOM, (payload: CreateRoomPayload) => {
+    createRoomHandler({ socket, payload });
+  });
 
   socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, (payload?: { playerId?: string }) => {
     const playerId = payload?.playerId;

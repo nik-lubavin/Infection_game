@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS, IGameRoom } from '@infection-game/shared';
+import {
+  CLIENT_REQUEST_EVENTS,
+  CreateRoomPayload,
+  SERVER_EVENTS,
+  type IGameRoom,
+  type RoomCreatedPayload,
+} from '@infection-game/shared';
 import { getOrCreatePlayerSession } from '../utils/playerSession';
 
 export function useRoomEvents(socket: Socket | null): {
@@ -16,10 +22,8 @@ export function useRoomEvents(socket: Socket | null): {
   const { name: playerName, playerId } = getOrCreatePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
-    socket?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, {
-      userName: playerName,
-      playerId,
-    });
+    const payload: CreateRoomPayload = { userName: playerName, playerId };
+    socket?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, payload);
   }, [socket, playerName, playerId]);
 
   const actionListRooms = useCallback(() => {
@@ -62,23 +66,8 @@ export function useRoomEvents(socket: Socket | null): {
       syncJoinedRoomFromRoomList(list);
     };
 
-    const onRoomCreated = (payload: {
-      roomCode: string;
-      player: 'red' | 'blue';
-      hostName: string;
-      players: string[];
-    }) => {
-      setJoinedRoom({
-        id: payload.roomCode,
-        status: 'waiting',
-        players: {
-          red: payload.players.includes(playerId) ? 'red' : null,
-          blue: payload.players.includes(playerId) ? 'blue' : null,
-        },
-        gameState: '',
-        createdAt: Date.now(),
-        hostName: payload.hostName,
-      });
+    const onRoomCreated = (payload: RoomCreatedPayload) => {
+      setJoinedRoom(payload.room);
     };
 
     const onPlayerLeftRoom = (payload: { roomList: IGameRoom[] }) => {
