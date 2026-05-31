@@ -4,6 +4,10 @@ import { Server } from 'socket.io';
 import {
   CLIENT_REQUEST_EVENTS,
   CreateRoomPayload,
+  GameActionPayload,
+  JoinRoomPayload,
+  LeaveRoomPayload,
+  ListRoomsPayload,
   SERVER_EVENTS,
   type IGameRoom,
 } from '@infection-game/shared';
@@ -27,7 +31,7 @@ io.on('connection', (socket) => {
     createRoomHandler({ socket, payload });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, (payload?: { playerId?: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.LIST_ROOMS, (payload: ListRoomsPayload) => {
     const playerId = payload?.playerId;
     if (playerId) {
       socket.data.playerId = playerId;
@@ -41,15 +45,15 @@ io.on('connection', (socket) => {
     socket.emit(SERVER_EVENTS.ROOMS_LISTED, { data });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.JOIN_ROOM, (payload: { roomCode: string; playerId: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.JOIN_ROOM, (payload: JoinRoomPayload) => {
     joinRoomHandler({ socket, io, payload });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, (payload: { roomCode: string; playerId: string }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, (payload: LeaveRoomPayload) => {
     leaveRoomHandler({ socket, payload });
   });
 
-  socket.on(CLIENT_REQUEST_EVENTS.GAME_ACTION, (payload: { roomCode: string; action: unknown }) => {
+  socket.on(CLIENT_REQUEST_EVENTS.GAME_ACTION, (payload: GameActionPayload) => {
     // TODO: validate, apply action, broadcast state_update
   });
 

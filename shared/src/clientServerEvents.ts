@@ -22,12 +22,49 @@ export const SERVER_EVENTS = {
   GAME_STATE_UPDATE: 'game_state_update',
 } as const;
 
+// Client request payloads
 export interface CreateRoomPayload {
   userName: string;
   playerId: string;
 }
 
+export interface ListRoomsPayload {
+  playerId: string;
+}
+
+export interface JoinRoomPayload {
+  roomCode: string;
+  playerId: string;
+}
+
+export interface LeaveRoomPayload {
+  roomCode: string;
+  playerId: string;
+}
+
+export interface GameActionPayload {
+  roomCode: string;
+  action: unknown;
+}
+
+// Server events payloads
 export interface RoomCreatedPayload {
   room: IGameRoom;
   player: RoomPlayerSide;
+}
+
+export interface RoomsListedPayload {
+  data: IGameRoom[];
+}
+
+export interface JoinFailedPayload {
+  reason: string;
+}
+
+export interface LeaveRoomFailedPayload {
+  reason: string;
+}
+
+export interface PlayerLeftRoomPayload {
+  roomList: IGameRoom[];
 }

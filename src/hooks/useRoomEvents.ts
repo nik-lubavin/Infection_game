@@ -3,6 +3,8 @@ import type { Socket } from 'socket.io-client';
 import {
   CLIENT_REQUEST_EVENTS,
   CreateRoomPayload,
+  PlayerLeftRoomPayload,
+  RoomsListedPayload,
   SERVER_EVENTS,
   type IGameRoom,
   type RoomCreatedPayload,
@@ -60,7 +62,7 @@ export function useRoomEvents(socket: Socket | null): {
       setJoinedRoom(joined ?? null);
     };
 
-    const onListed = (payload: { data: IGameRoom[] }) => {
+    const onListed = (payload: RoomsListedPayload) => {
       const list = payload.data ?? [];
       setRoomList(list);
       syncJoinedRoomFromRoomList(list);
@@ -70,7 +72,7 @@ export function useRoomEvents(socket: Socket | null): {
       setJoinedRoom(payload.room);
     };
 
-    const onPlayerLeftRoom = (payload: { roomList: IGameRoom[] }) => {
+    const onPlayerLeftRoom = (payload: PlayerLeftRoomPayload) => {
       setRoomList(payload.roomList);
       setJoinedRoom(null);
     };
@@ -88,8 +90,9 @@ export function useRoomEvents(socket: Socket | null): {
     }
 
     return () => {
-      socket.off(SERVER_EVENTS.ROOMS_LISTED, onListed);
-      socket.off(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
+      socket.off(SERVER_EVENTS.ROOMS_LISTED);
+      socket.off(SERVER_EVENTS.ROOM_CREATED);
+      socket.off(SERVER_EVENTS.PLAYER_LEFT);
       socket.off('connect', onConnect);
     };
   }, [socket, playerId]);
