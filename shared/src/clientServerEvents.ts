@@ -1,4 +1,4 @@
-import { IGameRoom, RoomPlayerSide } from './index.js';
+import type { IGameRoom, IGameState, RoomPlayerSide } from './types.js';
 
 /** Client → server */
 export const CLIENT_REQUEST_EVENTS = {
@@ -67,4 +67,11 @@ export interface LeaveRoomFailedPayload {
 
 export interface PlayerLeftRoomPayload {
   roomList: IGameRoom[];
+}
+
+export interface GameStartPayload {
+  roomCode: string;
+  serializedState: IGameState;
+  yourPlayer: RoomPlayerSide;
+  turn: RoomPlayerSide;
 }

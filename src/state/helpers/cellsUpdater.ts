@@ -1,4 +1,4 @@
-import { ColonySet } from '../../classes/ColonySet';
+import { ColonySet } from '@infection-game/shared';
 import { PlayerType } from '../../interfaces/Board';
 import { IGameState } from '@infection-game/shared';
 

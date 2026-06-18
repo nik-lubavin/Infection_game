@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { PlayerType } from '../interfaces/Board';
 import { CELL_SIZE } from '../constants/board';
 import { ICell } from '../classes/Cell';
-import { CellType } from '../enums/CellType';
-import { IColonySet } from '@infection-game/shared';
+import { CellType, IColonySet } from '@infection-game/shared';
 
 interface CellProps {
   cell: ICell;

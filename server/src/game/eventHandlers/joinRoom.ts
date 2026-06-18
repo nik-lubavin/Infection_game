@@ -1,5 +1,5 @@
 import type { Server, Socket } from 'socket.io';
-import { SERVER_EVENTS, type RoomPlayerSide } from '@infection-game/shared';
+import { GameStartPayload, SERVER_EVENTS, type RoomPlayerSide } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
 
 export function joinRoomHandler({
@@ -42,11 +42,15 @@ export function joinRoomHandler({
       if (!sid) continue;
       const yourPlayer: RoomPlayerSide =
         room.players.red === sid ? 'red' : room.players.blue === sid ? 'blue' : 'red';
-      s.emit(SERVER_EVENTS.GAME_START, {
+
+      const gameStartPayload: GameStartPayload = {
         roomCode,
-        serializedState: room.gameState,
+        serializedState: room.state,
         yourPlayer,
-      });
+        turn: yourPlayer === 'red' ? 'blue' : 'red',
+      };
+
+      s.emit(SERVER_EVENTS.GAME_START, gameStartPayload);
     }
   };
   void notifyGameStart();

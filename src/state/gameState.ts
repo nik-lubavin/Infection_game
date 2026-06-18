@@ -1,5 +1,5 @@
 import { Board } from "../classes/Board";
-import { ColonySet } from "../classes/ColonySet";
+import { ColonySet } from '@infection-game/shared';
 import { GRID_SIZE } from "../constants/board";
 import { PlayerType } from "../interfaces/Board";
 

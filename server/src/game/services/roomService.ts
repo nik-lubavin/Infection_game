@@ -1,4 +1,4 @@
-import type { IGameRoom, RoomStatus } from '@infection-game/shared';
+import { GameState, type IGameRoom, RoomStatus } from '@infection-game/shared';
 
 function generateRoomCode(): string {
   // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -26,9 +26,9 @@ export class RoomService {
       id: roomCode,
       status: 'waiting',
       players: { red: redPlayerId, blue: null },
-      gameState: '',
       createdAt: Date.now(),
       hostName: userName,
+      state: GameState.newGameState().toIGameState(),
     };
     this._rooms.set(roomCode, newRoom);
     console.log(`room created ${roomCode} by ${redPlayerId}`);

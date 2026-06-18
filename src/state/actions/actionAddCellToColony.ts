@@ -1,6 +1,4 @@
-import { PlayerType } from '../../interfaces/Board';
-import { GamePhase, IGameState } from '@infection-game/shared';
-import { ColonySet } from '../../classes/ColonySet';
+import { ColonySet, GamePhase, IGameState, PlayerType } from '@infection-game/shared';
 import { calculateAvailableCellCodes } from '../helpers/cellsGetters';
 import { checkColonyIsActive } from '../helpers/checkColonyActivation';
 import { refreshColonySets } from '../helpers/cellsUpdater';

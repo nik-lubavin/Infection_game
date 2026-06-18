@@ -1,7 +1,6 @@
 // import { ColonySet } from '../../classes/ColonySet';
 import { GRID_SIZE } from '../../constants/board';
-import { CellType } from '../../enums/CellType';
-import { GamePhase, IColonySet, IGameState } from '@infection-game/shared';
+import { CellType, GamePhase, IColonySet, IGameState } from '@infection-game/shared';
 import { getAdjacentCellCodes } from './getAdjacentCellCodes';
 
 export function calculateAvailableCellCodes(state: IGameState): string[] {

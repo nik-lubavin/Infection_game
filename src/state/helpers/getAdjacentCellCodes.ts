@@ -1,5 +1,5 @@
 import { GRID_SIZE } from "../../constants/board";
-import { ColonySet } from "../../classes/ColonySet";
+import { ColonySet } from '@infection-game/shared';
 
 /**
  * Gets all 8 adjacent cell codes (including diagonals) without filtering
