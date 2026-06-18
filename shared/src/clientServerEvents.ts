@@ -1,4 +1,4 @@
-import type { IGameRoom, IGameState, RoomPlayerSide } from './types.js';
+import type { IGameRoom, IGameState, RoomPlayerSide } from './types/index.js';
 
 /** Client → server */
 export const CLIENT_REQUEST_EVENTS = {
