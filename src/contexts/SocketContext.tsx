@@ -16,6 +16,7 @@ export type SocketContextValue = {
   stateRoomList: IGameRoom[];
   stateJoinedRoom: IGameRoom | null;
   stateGame: IGameState | null;
+  isRoomCreator: boolean;
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
@@ -32,6 +33,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const {
     roomList,
     joinedRoom,
+    isRoomCreator,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,
@@ -48,6 +50,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     playerName,
     stateGame,
 
+    isRoomCreator,
     stateRoomList: roomList,
     stateJoinedRoom: joinedRoom,
     actionListRooms,

@@ -27,6 +27,7 @@ export class RoomService {
       status: 'waiting',
       players: { red: redPlayerId, blue: null },
       createdAt: Date.now(),
+      hostPlayerId: redPlayerId,
       hostName: userName,
       state: GameState.newGameState().toIGameState(),
     };

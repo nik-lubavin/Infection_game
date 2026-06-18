@@ -12,6 +12,7 @@ export interface IGameRoom {
   };
   state: IGameState;
   createdAt: number;
+  hostPlayerId: string;
   hostName: string;
 }
 

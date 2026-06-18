@@ -8,9 +8,10 @@ const { Text } = Typography;
 interface JoinedRoomModalProps {
   stateJoinedRoom: IGameRoom | null;
   actionLeaveRoom: (roomCode: string) => void;
+  isRoomCreator: boolean;
 }
 
-const JoinedRoomModal: React.FC<JoinedRoomModalProps> = ({ stateJoinedRoom, actionLeaveRoom }) => {
+const JoinedRoomModal: React.FC<JoinedRoomModalProps> = ({ stateJoinedRoom, actionLeaveRoom, isRoomCreator }) => {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const JoinedRoomModal: React.FC<JoinedRoomModalProps> = ({ stateJoinedRoom, acti
   return (
     <Modal
       open={room != null && !dismissed}
-      title="Joined room"
+      title={isRoomCreator ? 'Room Created' : 'Joined Room'}
       footer={null}
       closable
       maskClosable

@@ -14,6 +14,7 @@ import { getOrCreatePlayerSession } from '../utils/playerSession';
 export function useRoomEvents(socket: Socket | null): {
   roomList: IGameRoom[];
   joinedRoom: IGameRoom | null;
+  isRoomCreator: boolean;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
   actionJoinRoom: (room: IGameRoom) => void;
@@ -21,6 +22,7 @@ export function useRoomEvents(socket: Socket | null): {
 } {
   const [roomList, setRoomList] = useState<IGameRoom[]>([]);
   const [joinedRoom, setJoinedRoom] = useState<IGameRoom | null>(null);
+  const [isRoomCreator, setIsRoomCreator] = useState(false);
   const { name: playerName, playerId } = getOrCreatePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
@@ -60,6 +62,7 @@ export function useRoomEvents(socket: Socket | null): {
         (room) => room.players.red === playerId || room.players.blue === playerId
       );
       setJoinedRoom(joined ?? null);
+      setIsRoomCreator(joined?.hostPlayerId === playerId);
     };
 
     const onListed = (payload: RoomsListedPayload) => {
@@ -70,11 +73,18 @@ export function useRoomEvents(socket: Socket | null): {
 
     const onRoomCreated = (payload: RoomCreatedPayload) => {
       setJoinedRoom(payload.room);
+      setIsRoomCreator(true);
+      setIsRoomCreator(payload.room.hostPlayerId === playerId);
     };
 
     const onPlayerLeftRoom = (payload: PlayerLeftRoomPayload) => {
       setRoomList(payload.roomList);
       setJoinedRoom(null);
+      setIsRoomCreator(false);
+    };
+
+    const onJoinFailed = () => {
+      setIsRoomCreator(false);
     };
 
     const onConnect = () => {
@@ -84,6 +94,7 @@ export function useRoomEvents(socket: Socket | null): {
     socket.on(SERVER_EVENTS.ROOMS_LISTED, onListed);
     socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
     socket.on(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
+    socket.on(SERVER_EVENTS.JOIN_FAILED, onJoinFailed);
     socket.on('connect', onConnect);
     if (socket.connected) {
       onConnect();
@@ -93,6 +104,7 @@ export function useRoomEvents(socket: Socket | null): {
       socket.off(SERVER_EVENTS.ROOMS_LISTED);
       socket.off(SERVER_EVENTS.ROOM_CREATED);
       socket.off(SERVER_EVENTS.PLAYER_LEFT);
+      socket.off(SERVER_EVENTS.JOIN_FAILED);
       socket.off('connect', onConnect);
     };
   }, [socket, playerId]);
@@ -100,6 +112,7 @@ export function useRoomEvents(socket: Socket | null): {
   return {
     roomList,
     joinedRoom,
+    isRoomCreator,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,

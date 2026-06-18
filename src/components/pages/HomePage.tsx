@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
   const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
   const { availableCellCodes, loser } = useAppSelector((state) => state.game);
 
-  const { stateJoinedRoom, actionLeaveRoom } = useSocketContext();
+  const { stateJoinedRoom, actionLeaveRoom, isRoomCreator } = useSocketContext();
   const stateActiveRoom = null;
   const gameState = null;
 
@@ -60,6 +60,7 @@ const HomePage: React.FC = () => {
       <JoinedRoomModal
         stateJoinedRoom={stateJoinedRoom}
         actionLeaveRoom={actionLeaveRoom}
+        isRoomCreator={isRoomCreator}
       />
       <Modal
         open={loser !== null}
