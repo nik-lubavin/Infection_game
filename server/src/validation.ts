@@ -1,13 +1,10 @@
-import type {
-  CreateRoomPayload,
-  GameActionPayloadV2,
-  JoinRoomPayload,
-  LeaveRoomPayload,
-  ListRoomsPayload,
-} from '@infection-game/shared';
-
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; reason: string };
-export type Parser<T> = (raw: unknown) => ParseResult<T>;
+/**
+ * Parses a client payload of type `T`. The type is the contract; it is not guaranteed at
+ * runtime (Socket.IO delivers `any`), so a parser still checks every field and returns a
+ * fresh object.
+ */
+export type Parser<T> = (raw: T) => ParseResult<T>;
 
 export const MAX_NAME_LENGTH = 32;
 export const MAX_ROOM_CODE_LENGTH = 16;
@@ -27,34 +24,23 @@ export function isCellCode(value: unknown): value is string {
   return typeof value === 'string' && CELL_CODE_RE.test(value);
 }
 
-const invalid = (reason: string): { ok: false; reason: string } => ({ ok: false, reason });
-
-export const parseCreateRoom: Parser<CreateRoomPayload> = (raw) => {
-  if (!isRecord(raw)) return invalid('Invalid payload');
-  if (!isNonEmptyString(raw.userName, MAX_NAME_LENGTH)) return invalid('Invalid user name');
-  if (!isNonEmptyString(raw.playerId, MAX_PLAYER_ID_LENGTH)) return invalid('Invalid player id');
-  return { ok: true, value: { userName: raw.userName, playerId: raw.playerId } };
-};
-
-export const parseListRooms: Parser<ListRoomsPayload> = (raw) => {
-  if (!isRecord(raw)) return invalid('Invalid payload');
-  if (!isNonEmptyString(raw.playerId, MAX_PLAYER_ID_LENGTH)) return invalid('Invalid player id');
-  return { ok: true, value: { playerId: raw.playerId } };
-};
-
-function parseRoomAndPlayer(raw: unknown): ParseResult<{ roomCode: string; playerId: string }> {
-  if (!isRecord(raw)) return invalid('Invalid payload');
-  if (!isNonEmptyString(raw.roomCode, MAX_ROOM_CODE_LENGTH)) return invalid('Invalid room code');
-  if (!isNonEmptyString(raw.playerId, MAX_PLAYER_ID_LENGTH)) return invalid('Invalid player id');
-  return { ok: true, value: { roomCode: raw.roomCode, playerId: raw.playerId } };
+export function invalidResult(reason: string): { ok: false; reason: string } {
+  return { ok: false, reason };
 }
 
-export const parseJoinRoom: Parser<JoinRoomPayload> = parseRoomAndPlayer;
-export const parseLeaveRoom: Parser<LeaveRoomPayload> = parseRoomAndPlayer;
+interface RoomAndPlayer {
+  roomCode: string;
+  playerId: string;
+}
 
-export const parseGameAction: Parser<GameActionPayloadV2> = (raw) => {
-  if (!isRecord(raw)) return invalid('Invalid payload');
-  if (!isNonEmptyString(raw.roomCode, MAX_ROOM_CODE_LENGTH)) return invalid('Invalid room code');
-  if (!isCellCode(raw.cellCode)) return invalid('Invalid cell code');
-  return { ok: true, value: { roomCode: raw.roomCode, cellCode: raw.cellCode } };
-};
+/** Payload shape shared by the events that address a room on behalf of a player. */
+export function parseRoomAndPlayer(
+  raw: unknown
+): ParseResult<{ roomCode: string; playerId: string }> {
+  if (!isRecord(raw)) return invalidResult('Invalid payload');
+  if (!isNonEmptyString(raw.roomCode, MAX_ROOM_CODE_LENGTH))
+    return invalidResult('Invalid room code');
+  if (!isNonEmptyString(raw.playerId, MAX_PLAYER_ID_LENGTH))
+    return invalidResult('Invalid player id');
+  return { ok: true, value: { roomCode: raw.roomCode, playerId: raw.playerId } };
+}

@@ -1,53 +1,56 @@
-import type { Server, Socket } from 'socket.io';
 import {
-  GameStartPayload,
-  JoinRoomPayload,
+  CLIENT_REQUEST_EVENTS,
   SERVER_EVENTS,
+  type GameStartPayload,
+  type JoinFailedPayload,
+  type JoinRoomPayload,
   type RoomPlayerSide,
 } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
+import { onEvent, type EventContext } from '../../socketUtils.js';
+import { parseRoomAndPlayer, type ParseResult } from '../../validation.js';
 
-export async function joinRoomHandler({
-  socket,
-  io,
-  payload,
-}: {
-  socket: Socket;
-  io: Server;
-  payload: JoinRoomPayload;
-}): Promise<void> {
-  console.log('join game event', payload);
-  const { roomCode, playerId } = payload;
+export function parseJoinRoom(raw: JoinRoomPayload): ParseResult<JoinRoomPayload> {
+  return parseRoomAndPlayer(raw);
+}
 
-  const result = roomService.assignBluePlayerToRoom(roomCode, playerId);
-  if (!result.success) {
-    socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: result.reason });
-    return;
-  }
+export function registerJoinRoom({ socket, io }: EventContext): void {
+  onEvent(
+    socket,
+    CLIENT_REQUEST_EVENTS.JOIN_ROOM,
+    parseJoinRoom,
+    async ({ roomCode, playerId }) => {
+      console.log('join game event', { roomCode, playerId });
 
-  const room = result.data;
+      const result = roomService.assignBluePlayerToRoom(roomCode, playerId);
+      if (!result.success) {
+        const failed: JoinFailedPayload = { reason: result.reason };
+        socket.emit(SERVER_EVENTS.JOIN_FAILED, failed);
+        return;
+      }
 
-  socket.data.playerId = playerId;
-  socket.join(roomCode);
-  console.log(`player ${playerId} joined room ${roomCode}`);
+      const room = result.data;
 
-  const notifyGameStart = async () => {
-    const sockets = await io.in(roomCode).fetchSockets();
-    for (const s of sockets) {
-      const sid = s.data.playerId as string | undefined;
-      if (!sid) continue;
-      const yourPlayer: RoomPlayerSide =
-        room.players.red === sid ? 'red' : room.players.blue === sid ? 'blue' : 'red';
+      socket.data.playerId = playerId;
+      socket.join(roomCode);
+      console.log(`player ${playerId} joined room ${roomCode}`);
 
-      const gameStartPayload: GameStartPayload = {
-        roomCode,
-        serializedState: room.state,
-        yourPlayer,
-        turn: yourPlayer === 'red' ? 'blue' : 'red',
-      };
+      const sockets = await io.in(roomCode).fetchSockets();
+      for (const s of sockets) {
+        const sid = s.data.playerId as string | undefined;
+        if (!sid) continue;
+        const yourPlayer: RoomPlayerSide =
+          room.players.red === sid ? 'red' : room.players.blue === sid ? 'blue' : 'red';
 
-      s.emit(SERVER_EVENTS.GAME_START, gameStartPayload);
+        const gameStartPayload: GameStartPayload = {
+          roomCode,
+          serializedState: room.state,
+          yourPlayer,
+          turn: yourPlayer === 'red' ? 'blue' : 'red',
+        };
+
+        s.emit(SERVER_EVENTS.GAME_START, gameStartPayload);
+      }
     }
-  };
-  await notifyGameStart();
+  );
 }
