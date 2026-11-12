@@ -11,7 +11,7 @@ import { PlayerType } from '../../interfaces/Board';
 import { clearLoser } from '../../store/gameSlice';
 import { Board } from '../../classes/Board';
 import { GamePhase } from '@infection-game/shared';
-import JoinedRoomModal from '../JoinedRoomModal';
+import GameStartModal from '../GameStartModal';
 
 const { Footer } = Layout;
 
@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
   const { board, gamePhase, movesLeft, onCellClick } = useVirusGame();
   const { availableCellCodes, loser } = useAppSelector((state) => state.game);
 
-  const { stateJoinedRoom, actionLeaveRoom, isRoomCreator } = useSocketContext();
+  const { stateJoinedRoom, stateYourSide, playerName, actionLeaveRoom } = useSocketContext();
   const stateActiveRoom = null;
   const gameState = null;
 
@@ -57,10 +57,11 @@ const HomePage: React.FC = () => {
       <Footer style={{ textAlign: 'center' }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>
-      <JoinedRoomModal
-        stateJoinedRoom={stateJoinedRoom}
+      <GameStartModal
+        room={stateJoinedRoom}
+        yourSide={stateYourSide}
+        playerName={playerName}
         actionLeaveRoom={actionLeaveRoom}
-        isRoomCreator={isRoomCreator}
       />
       <Modal
         open={loser !== null}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
-import type { IGameRoom, IGameState } from '@infection-game/shared';
+import type { IGameRoom, IGameState, RoomPlayerSide } from '@infection-game/shared';
 
 import { useRoomEvents } from '../hooks/useRoomEvents';
 import { useSocketConnection } from '../hooks/useSocketConnection';
@@ -17,6 +17,7 @@ export type SocketContextValue = {
   stateJoinedRoom: IGameRoom | null;
   stateGame: IGameState | null;
   isRoomCreator: boolean;
+  stateYourSide: RoomPlayerSide | null;
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
@@ -34,6 +35,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     roomList,
     joinedRoom,
     isRoomCreator,
+    yourSide,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,
@@ -51,6 +53,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     stateGame,
 
     isRoomCreator,
+    stateYourSide: yourSide,
     stateRoomList: roomList,
     stateJoinedRoom: joinedRoom,
     actionListRooms,

@@ -11,6 +11,7 @@ import {
   type LeaveRoomFailedPayload,
   type RequestFailedPayload,
   type RoomCreatedPayload,
+  type RoomPlayerSide,
 } from '@infection-game/shared';
 import { usePlayerSession } from './usePlayerSession';
 
@@ -18,6 +19,8 @@ export function useRoomEvents(socket: Socket | null): {
   roomList: IGameRoom[];
   joinedRoom: IGameRoom | null;
   isRoomCreator: boolean;
+  /** Side assigned by the server in CREATE_ROOM_RESPONSE; null until a room is created. */
+  yourSide: RoomPlayerSide | null;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
   actionJoinRoom: (room: IGameRoom) => void;
@@ -26,6 +29,7 @@ export function useRoomEvents(socket: Socket | null): {
   const [roomList, setRoomList] = useState<IGameRoom[]>([]);
   const [joinedRoom, setJoinedRoom] = useState<IGameRoom | null>(null);
   const [isRoomCreator, setIsRoomCreator] = useState(false);
+  const [yourSide, setYourSide] = useState<RoomPlayerSide | null>(null);
   const { name: playerName, playerId } = usePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
@@ -66,6 +70,7 @@ export function useRoomEvents(socket: Socket | null): {
       );
       setJoinedRoom(joined ?? null);
       setIsRoomCreator(joined?.hostPlayerId === playerId);
+      if (!joined) setYourSide(null);
     };
 
     const onListed = (payload: RoomsListedPayload) => {
@@ -77,12 +82,14 @@ export function useRoomEvents(socket: Socket | null): {
     const onRoomCreated = (payload: RoomCreatedPayload) => {
       setJoinedRoom(payload.room);
       setIsRoomCreator(payload.room.hostPlayerId === playerId);
+      setYourSide(payload.player);
     };
 
     const onPlayerLeftRoom = (payload: PlayerLeftRoomPayload) => {
       setRoomList(payload.roomList);
       setJoinedRoom(null);
       setIsRoomCreator(false);
+      setYourSide(null);
     };
 
     const onJoinFailed = (payload: JoinFailedPayload) => {
@@ -128,6 +135,7 @@ export function useRoomEvents(socket: Socket | null): {
     roomList,
     joinedRoom,
     isRoomCreator,
+    yourSide,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,
