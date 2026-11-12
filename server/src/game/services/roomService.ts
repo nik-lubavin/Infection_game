@@ -1,4 +1,4 @@
-import { GameState, type IGameRoom, RoomStatus } from '@infection-game/shared';
+import { EVENTS, GameState, type IGameRoom, RoomStatus } from '@infection-game/shared';
 
 function generateRoomCode(): string {
   // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -52,11 +52,11 @@ export class RoomService {
   ): { success: true; data: IGameRoom } | { success: false; reason: string } {
     const room = roomService.getRoom(roomCode);
     if (!room) {
-      // socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Room not found' });
+      // socket.emit(EVENTS.JOIN_ROOM_FAILED, { reason: 'Room not found' });
       return { success: false, reason: 'Room not found' };
     }
     if (room.players.blue !== null) {
-      // socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Room is full' });
+      // socket.emit(EVENTS.JOIN_ROOM_FAILED, { reason: 'Room is full' });
       return { success: false, reason: 'Room is full' };
     }
 

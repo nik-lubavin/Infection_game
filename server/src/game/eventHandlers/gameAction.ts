@@ -1,4 +1,4 @@
-import { CLIENT_REQUEST_EVENTS, type GameActionPayloadV2 } from '@infection-game/shared';
+import { EVENTS, type GameActionPayloadV2 } from '@infection-game/shared';
 import { onEvent, type EventContext } from '../../socketUtils.js';
 import {
   MAX_ROOM_CODE_LENGTH,
@@ -18,7 +18,7 @@ export function parseGameAction(raw: GameActionPayloadV2): ParseResult<GameActio
 }
 
 export function registerGameAction({ socket }: EventContext): void {
-  onEvent(socket, CLIENT_REQUEST_EVENTS.GAME_ACTION, parseGameAction, () => {
+  onEvent(socket, EVENTS.GAME_ACTION_REQUEST, parseGameAction, () => {
     // TODO (S6): check room and turn, applyMove from shared, broadcast STATE_UPDATE
   });
 }

@@ -2,11 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { message } from 'antd';
 import type { Socket } from 'socket.io-client';
 import {
-  CLIENT_REQUEST_EVENTS,
+  EVENTS,
   CreateRoomPayload,
   PlayerLeftRoomPayload,
   RoomsListedPayload,
-  SERVER_EVENTS,
   type IGameRoom,
   type JoinFailedPayload,
   type LeaveRoomFailedPayload,
@@ -31,16 +30,16 @@ export function useRoomEvents(socket: Socket | null): {
 
   const actionCreateRoom = useCallback(() => {
     const payload: CreateRoomPayload = { userName: playerName, playerId };
-    socket?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, payload);
+    socket?.emit(EVENTS.CREATE_ROOM_REQUEST, payload);
   }, [socket, playerName, playerId]);
 
   const actionListRooms = useCallback(() => {
-    socket?.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS, { playerId });
+    socket?.emit(EVENTS.LIST_ROOMS_REQUEST, { playerId });
   }, [socket, playerId]);
 
   const actionJoinRoom = useCallback(
     (room: IGameRoom) => {
-      socket?.emit(CLIENT_REQUEST_EVENTS.JOIN_ROOM, {
+      socket?.emit(EVENTS.JOIN_ROOM_REQUEST, {
         roomCode: room.id,
         playerId,
       });
@@ -50,7 +49,7 @@ export function useRoomEvents(socket: Socket | null): {
 
   const actionLeaveRoom = useCallback(
     (roomCode: string) => {
-      socket?.emit(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, {
+      socket?.emit(EVENTS.LEAVE_ROOM_REQUEST, {
         roomCode,
         playerId,
       });
@@ -100,27 +99,27 @@ export function useRoomEvents(socket: Socket | null): {
     };
 
     const onConnect = () => {
-      socket.emit(CLIENT_REQUEST_EVENTS.LIST_ROOMS, { playerId });
+      socket.emit(EVENTS.LIST_ROOMS_REQUEST, { playerId });
     };
 
-    socket.on(SERVER_EVENTS.ROOMS_LISTED, onListed);
-    socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
-    socket.on(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
-    socket.on(SERVER_EVENTS.JOIN_FAILED, onJoinFailed);
-    socket.on(SERVER_EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
-    socket.on(SERVER_EVENTS.REQUEST_FAILED, onRequestFailed);
+    socket.on(EVENTS.LIST_ROOMS_RESPONSE, onListed);
+    socket.on(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
+    socket.on(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeftRoom);
+    socket.on(EVENTS.JOIN_ROOM_FAILED, onJoinFailed);
+    socket.on(EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
+    socket.on(EVENTS.REQUEST_FAILED, onRequestFailed);
     socket.on('connect', onConnect);
     if (socket.connected) {
       onConnect();
     }
 
     return () => {
-      socket.off(SERVER_EVENTS.ROOMS_LISTED, onListed);
-      socket.off(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
-      socket.off(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
-      socket.off(SERVER_EVENTS.JOIN_FAILED, onJoinFailed);
-      socket.off(SERVER_EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
-      socket.off(SERVER_EVENTS.REQUEST_FAILED, onRequestFailed);
+      socket.off(EVENTS.LIST_ROOMS_RESPONSE, onListed);
+      socket.off(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
+      socket.off(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeftRoom);
+      socket.off(EVENTS.JOIN_ROOM_FAILED, onJoinFailed);
+      socket.off(EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
+      socket.off(EVENTS.REQUEST_FAILED, onRequestFailed);
       socket.off('connect', onConnect);
     };
   }, [socket, playerId]);

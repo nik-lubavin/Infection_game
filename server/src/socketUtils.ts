@@ -1,5 +1,5 @@
 import type { Server, Socket } from 'socket.io';
-import { SERVER_EVENTS, type RequestFailedPayload } from '@infection-game/shared';
+import { EVENTS, type RequestFailedPayload } from '@infection-game/shared';
 import type { Parser } from './validation.js';
 
 /** What every event registration function receives. */
@@ -10,7 +10,7 @@ export interface EventContext {
 
 function emitRequestFailed(socket: Socket, event: string, reason: string): void {
   const payload: RequestFailedPayload = { event, reason };
-  socket.emit(SERVER_EVENTS.REQUEST_FAILED, payload);
+  socket.emit(EVENTS.REQUEST_FAILED, payload);
 }
 
 /**

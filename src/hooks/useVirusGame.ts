@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { ICell } from "../classes/Cell";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useEffect } from 'react';
+import { ICell } from '../classes/Cell';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   initializeNewGame,
   addVirusCell,
@@ -8,9 +8,9 @@ import {
   switchPlayer,
   decrementMoves,
   resetMoves,
-} from "../store/gameSlice";
-import { isCellAvailable } from "../state/helpers/cellsGetters";
-import { getCellType } from "../state/helpers/cellsGetters";
+} from '../store/gameSlice';
+import { isCellAvailable } from '../state/helpers/cellsGetters';
+import { getCellType } from '../state/helpers/cellsGetters';
 
 export function useVirusGame() {
   const dispatch = useAppDispatch();

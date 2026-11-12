@@ -1,6 +1,5 @@
 import {
-  CLIENT_REQUEST_EVENTS,
-  SERVER_EVENTS,
+  EVENTS,
   type IGameRoom,
   type ListRoomsPayload,
   type RoomsListedPayload,
@@ -23,7 +22,7 @@ export function parseListRooms(raw: ListRoomsPayload): ParseResult<ListRoomsPayl
 }
 
 export function registerListRooms({ socket }: EventContext): void {
-  onEvent(socket, CLIENT_REQUEST_EVENTS.LIST_ROOMS, parseListRooms, ({ playerId }) => {
+  onEvent(socket, EVENTS.LIST_ROOMS_REQUEST, parseListRooms, ({ playerId }) => {
     socket.data.playerId = playerId;
     for (const room of roomService.listRooms()) {
       if (room.players.red === playerId || room.players.blue === playerId) {
@@ -32,6 +31,6 @@ export function registerListRooms({ socket }: EventContext): void {
     }
     const data: IGameRoom[] = roomService.listRooms();
     const payload: RoomsListedPayload = { data };
-    socket.emit(SERVER_EVENTS.ROOMS_LISTED, payload);
+    socket.emit(EVENTS.LIST_ROOMS_RESPONSE, payload);
   });
 }

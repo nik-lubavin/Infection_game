@@ -6,26 +6,38 @@ import type {
   RoomStatus,
 } from './types/index.js';
 
-/** Client → server */
-export const CLIENT_REQUEST_EVENTS = {
-  CREATE_ROOM: 'request_create_room',
-  LIST_ROOMS: 'list_rooms',
-  JOIN_ROOM: 'join_room',
-  LEAVE_ROOM: 'leave_room',
-  GAME_ACTION: 'game_action',
-} as const;
+/**
+ * Socket.IO event names. Each logical event has a pair:
+ * - `X_REQUEST`: client → server;
+ * - `X_RESPONSE`: server → client on success;
+ * - `X_FAILED`: server → client when the request is refused.
+ *
+ * Events without a suffix are server-initiated.
+ */
+export const EVENTS = {
+  CREATE_ROOM_REQUEST: 'request_create_room',
+  CREATE_ROOM_RESPONSE: 'room_created',
+  CREATE_ROOM_FAILED: 'create_room_failed',
 
-/** Server → client */
-export const SERVER_EVENTS = {
-  ROOM_CREATED: 'room_created',
-  ROOMS_LISTED: 'rooms_listed',
-  JOIN_FAILED: 'join_failed',
-  GAME_START: 'game_start',
-  STATE_UPDATE: 'state_update',
-  PLAYER_LEFT: 'player_left',
-  OPPONENT_LEFT: 'opponent_left',
-  ACTION_REJECTED: 'action_rejected',
+  LIST_ROOMS_REQUEST: 'list_rooms',
+  LIST_ROOMS_RESPONSE: 'rooms_listed',
+  LIST_ROOMS_FAILED: 'list_rooms_failed',
+
+  JOIN_ROOM_REQUEST: 'join_room',
+  JOIN_ROOM_RESPONSE: 'game_start',
+  JOIN_ROOM_FAILED: 'join_failed',
+
+  LEAVE_ROOM_REQUEST: 'leave_room',
+  LEAVE_ROOM_RESPONSE: 'player_left',
   LEAVE_ROOM_FAILED: 'leave_room_failed',
+
+  GAME_ACTION_REQUEST: 'game_action',
+  GAME_ACTION_RESPONSE: 'state_update',
+  GAME_ACTION_FAILED: 'action_rejected',
+
+  /** Sent to the remaining player when the opponent leaves. */
+  OPPONENT_LEFT: 'opponent_left',
+  /** Generic refusal for any request (bad payload, internal error). */
   REQUEST_FAILED: 'request_failed',
 } as const;
 
@@ -74,6 +86,14 @@ export interface RoomCreatedPayload {
 
 export interface RoomsListedPayload {
   data: IGameRoom[];
+}
+
+export interface CreateRoomFailedPayload {
+  reason: string;
+}
+
+export interface ListRoomsFailedPayload {
+  reason: string;
 }
 
 export interface JoinFailedPayload {

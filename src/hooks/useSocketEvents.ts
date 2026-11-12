@@ -1,7 +1,7 @@
 // import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 // import type { PlayerType } from '../interfaces/Board';
 // import type { Socket } from 'socket.io-client';
-// import { CLIENT_REQUEST_EVENTS, SERVER_EVENTS } from '@infection-game/shared';
+// import { EVENTS } from '@infection-game/shared';
 // import { getOrCreateSessionName } from '../utils/playerSession';
 
 // export function useSocketEvents(
@@ -19,13 +19,13 @@
 //   // currentRoomIdRef.current = currentRoomId;
 
 //   // const createRoom = useCallback(() => {
-//   //   socketRef.current?.emit(CLIENT_REQUEST_EVENTS.CREATE_ROOM, {
+//   //   socketRef.current?.emit(EVENTS.CREATE_ROOM_REQUEST, {
 //   //     userName: getOrCreateSessionName(),
 //   //   });
 //   // }, []);
 
 //   // const disconnectRoom = useCallback((roomCode: string) => {
-//   //   socketRef.current?.emit(CLIENT_REQUEST_EVENTS.LEAVE_ROOM, { roomCode });
+//   //   socketRef.current?.emit(EVENTS.LEAVE_ROOM_REQUEST, { roomCode });
 //   //   if (currentRoomIdRef.current === roomCode) {
 //   //     setMultiplayerGameStarted(false);
 //   //   }
@@ -55,14 +55,14 @@
 //     //   setCurrentRoomId((id) => (id === payload.roomCode ? null : id));
 //     // };
 
-//     // socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
-//     // socket.on(SERVER_EVENTS.GAME_START, onGameStart);
-//     // socket.on(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeft);
+//     // socket.on(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
+//     // socket.on(EVENTS.JOIN_ROOM_RESPONSE, onGameStart);
+//     // socket.on(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeft);
 
 //     return () => {
-//       // socket.off(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
-//       // socket.off(SERVER_EVENTS.GAME_START, onGameStart);
-//       // socket.off(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeft);
+//       // socket.off(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
+//       // socket.off(EVENTS.JOIN_ROOM_RESPONSE, onGameStart);
+//       // socket.off(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeft);
 //     };
 //   }, [socket]);
 

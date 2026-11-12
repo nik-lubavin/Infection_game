@@ -1,9 +1,4 @@
-import {
-  CLIENT_REQUEST_EVENTS,
-  SERVER_EVENTS,
-  type CreateRoomPayload,
-  type RoomCreatedPayload,
-} from '@infection-game/shared';
+import { EVENTS, type CreateRoomPayload, type RoomCreatedPayload } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
 import { onEvent, type EventContext } from '../../socketUtils.js';
 import {
@@ -24,7 +19,7 @@ export function parseCreateRoom(raw: CreateRoomPayload): ParseResult<CreateRoomP
 }
 
 export function registerCreateRoom({ socket }: EventContext): void {
-  onEvent(socket, CLIENT_REQUEST_EVENTS.CREATE_ROOM, parseCreateRoom, (payload) => {
+  onEvent(socket, EVENTS.CREATE_ROOM_REQUEST, parseCreateRoom, (payload) => {
     socket.data.playerId = payload.playerId;
     const gameRoom = roomService.createGameRoomInstance({
       redPlayerId: payload.playerId,
@@ -33,6 +28,6 @@ export function registerCreateRoom({ socket }: EventContext): void {
     socket.join(gameRoom.id);
     console.log('socket joined, room code:', gameRoom.id);
     const roomCreatedPayload: RoomCreatedPayload = { room: gameRoom, player: 'red' };
-    socket.emit(SERVER_EVENTS.ROOM_CREATED, roomCreatedPayload);
+    socket.emit(EVENTS.CREATE_ROOM_RESPONSE, roomCreatedPayload);
   });
 }
