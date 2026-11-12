@@ -62,7 +62,7 @@ export function useRoomEvents(socket: Socket | null): {
 
     const syncJoinedRoomFromRoomList = (list: IGameRoom[]) => {
       const joined = list.find(
-        (room) => room.players.red === playerId || room.players.blue === playerId
+        (room) => room.hostPlayerId === playerId || room.guestPlayerId === playerId
       );
       setJoinedRoom(joined ?? null);
       setIsRoomCreator(joined?.hostPlayerId === playerId);

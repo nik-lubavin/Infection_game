@@ -1,4 +1,9 @@
-import { EVENTS, GameState, type IGameRoom, RoomStatus } from '@infection-game/shared';
+import {
+  createInitialState,
+  startGame as startGameState,
+  type IGameRoom,
+  type RoomPlayerSide,
+} from '@infection-game/shared';
 
 function generateRoomCode(): string {
   // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -11,30 +16,42 @@ function generateRoomCode(): string {
   return '123456_' + Math.random().toString(36).substring(2, 4);
 }
 
+/** Whether the player is the host or the guest of the room. */
+export function isPlayerInRoom(room: IGameRoom, playerId: string): boolean {
+  return room.hostPlayerId === playerId || room.guestPlayerId === playerId;
+}
+
+/** The host plays red, the guest plays blue. Null if the player is not in the room. */
+export function getPlayerSide(room: IGameRoom, playerId: string): RoomPlayerSide | null {
+  if (room.hostPlayerId === playerId) return 'red';
+  if (room.guestPlayerId === playerId) return 'blue';
+  return null;
+}
+
 type RoomResult = { success: true; data?: IGameRoom } | { success: false; reason: string };
 
 export class RoomService {
   private _rooms = new Map<string, IGameRoom>();
 
   createGameRoomInstance({
-    redPlayerId,
-    userName,
+    hostPlayerId,
+    hostName,
   }: {
-    redPlayerId: string;
-    userName: string;
+    hostPlayerId: string;
+    hostName: string;
   }): IGameRoom {
     const roomCode = generateRoomCode();
     const newRoom: IGameRoom = {
       id: roomCode,
       status: 'waiting',
-      players: { red: redPlayerId, blue: null },
       createdAt: Date.now(),
-      hostPlayerId: redPlayerId,
-      hostName: userName,
-      state: GameState.newGameState().toIGameState(),
+      hostPlayerId,
+      hostName,
+      guestPlayerId: null,
+      state: createInitialState(),
     };
     this._rooms.set(roomCode, newRoom);
-    console.log(`room created ${roomCode} by ${redPlayerId}`);
+    console.log(`room created ${roomCode} by ${hostPlayerId}`);
     return newRoom;
   }
 
@@ -46,28 +63,43 @@ export class RoomService {
     return this._rooms.get(roomCode);
   }
 
-  assignBluePlayerToRoom(
+  playerJoinRoom(
     roomCode: string,
     playerId: string
   ): { success: true; data: IGameRoom } | { success: false; reason: string } {
-    const room = roomService.getRoom(roomCode);
+    const room = this.getRoom(roomCode);
     if (!room) {
-      // socket.emit(EVENTS.JOIN_ROOM_FAILED, { reason: 'Room not found' });
       return { success: false, reason: 'Room not found' };
     }
-    if (room.players.blue !== null) {
-      // socket.emit(EVENTS.JOIN_ROOM_FAILED, { reason: 'Room is full' });
+    if (room.hostPlayerId === playerId) {
+      return { success: false, reason: 'Already in this room' };
+    }
+    if (room.guestPlayerId !== null) {
       return { success: false, reason: 'Room is full' };
     }
 
-    room.players.blue = playerId;
-    room.status = 'playing' as RoomStatus;
-    this.setRoom(room);
+    room.guestPlayerId = playerId;
     return { success: true, data: room };
   }
 
-  private setRoom(room: IGameRoom): void {
-    this._rooms.set(room.id, room);
+  /** Starts the game of a waiting room that has both players. */
+  startGame(
+    roomCode: string
+  ): { success: true; data: IGameRoom } | { success: false; reason: string } {
+    const room = this.getRoom(roomCode);
+    if (!room) {
+      return { success: false, reason: 'Room not found' };
+    }
+    if (room.status !== 'waiting') {
+      return { success: false, reason: 'Game already started' };
+    }
+    if (room.guestPlayerId === null) {
+      return { success: false, reason: 'Waiting for another player' };
+    }
+
+    room.status = 'playing';
+    room.state = startGameState(room.state);
+    return { success: true, data: room };
   }
 
   disconnectPlayerFromRoom(roomCode: string, playerId: string): RoomResult {
@@ -75,22 +107,19 @@ export class RoomService {
     if (!room) {
       return { success: false, reason: 'Room not found' };
     }
-    if (room.players.red !== playerId && room.players.blue !== playerId) {
-      return { success: false, reason: 'You are not in this room' };
-    }
 
-    if (room.players.red === playerId) {
-      room.players.red = null;
-      console.log(`player ${playerId} left room ${roomCode} (red)`);
-    } else if (room.players.blue === playerId) {
-      console.log(`player ${playerId} left room ${roomCode} (blue)`);
-      room.players.blue = null;
-    }
-
-    if (room.players.red === null && room.players.blue === null) {
+    if (room.hostPlayerId === playerId) {
+      // The room belongs to the host: when the host leaves, the room is gone.
+      console.log(`host ${playerId} left room ${roomCode}, room deleted`);
       this._rooms.delete(roomCode);
+    } else if (room.guestPlayerId === playerId) {
+      console.log(`guest ${playerId} left room ${roomCode}`);
+      room.guestPlayerId = null;
+      // The game cannot go on without the guest: the room waits for a new one.
+      room.status = 'waiting';
+      room.state = createInitialState(room.state.gridSize);
     } else {
-      this.setRoom(room);
+      return { success: false, reason: 'You are not in this room' };
     }
     return { success: true };
   }

@@ -4,7 +4,7 @@ import {
   type ListRoomsPayload,
   type RoomsListedPayload,
 } from '@infection-game/shared';
-import { roomService } from '../services/roomService.js';
+import { isPlayerInRoom, roomService } from '../services/roomService.js';
 import { onEvent, type EventContext } from '../../socketUtils.js';
 import {
   MAX_PLAYER_ID_LENGTH,
@@ -25,7 +25,7 @@ export function registerListRooms({ socket }: EventContext): void {
   onEvent(socket, EVENTS.LIST_ROOMS_REQUEST, parseListRooms, ({ playerId }) => {
     socket.data.playerId = playerId;
     for (const room of roomService.listRooms()) {
-      if (room.players.red === playerId || room.players.blue === playerId) {
+      if (isPlayerInRoom(room, playerId)) {
         socket.join(room.id);
       }
     }

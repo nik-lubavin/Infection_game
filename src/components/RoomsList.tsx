@@ -63,7 +63,7 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
           size="small"
           dataSource={roomList}
           renderItem={(room: IGameRoom) => {
-            const inThisRoom = room.players.red === playerId || room.players.blue === playerId;
+            const inThisRoom = room.hostPlayerId === playerId || room.guestPlayerId === playerId;
             const canConnect = socketConnected;
             return (
               <List.Item

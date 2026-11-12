@@ -8,22 +8,21 @@ export interface IRoomSummary {
   id: string;
   status: RoomStatus;
   hostName: string;
-  /** Whether the seat is taken. */
-  seats: { red: boolean; blue: boolean };
+  /** Whether a second player has joined. */
+  hasGuest: boolean;
 }
 
 /** Server-internal room. Must not be sent to clients (it holds player ids). */
 export interface IGameRoom {
   id: string;
   status: RoomStatus;
-  players: {
-    red: string | null;
-    blue: string | null;
-  };
   state: IGameState;
   createdAt: number;
+  /** Player who created the room. */
   hostPlayerId: string;
   hostName: string;
+  /** Player who joined the host; null while the room is waiting. */
+  guestPlayerId: string | null;
 }
 
 export enum PlayerType {

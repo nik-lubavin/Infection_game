@@ -22,8 +22,8 @@ export function registerCreateRoom({ socket }: EventContext): void {
   onEvent(socket, EVENTS.CREATE_ROOM_REQUEST, parseCreateRoom, (payload) => {
     socket.data.playerId = payload.playerId;
     const gameRoom = roomService.createGameRoomInstance({
-      redPlayerId: payload.playerId,
-      userName: payload.userName,
+      hostPlayerId: payload.playerId,
+      hostName: payload.userName,
     });
     socket.join(gameRoom.id);
     console.log('socket joined, room code:', gameRoom.id);

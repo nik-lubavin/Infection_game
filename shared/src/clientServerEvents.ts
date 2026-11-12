@@ -15,25 +15,27 @@ import type {
  * Events without a suffix are server-initiated.
  */
 export const EVENTS = {
-  CREATE_ROOM_REQUEST: 'request_create_room',
-  CREATE_ROOM_RESPONSE: 'room_created',
+  CREATE_ROOM_REQUEST: 'create_room_request',
+  CREATE_ROOM_RESPONSE: 'create_room_response',
   CREATE_ROOM_FAILED: 'create_room_failed',
 
-  LIST_ROOMS_REQUEST: 'list_rooms',
-  LIST_ROOMS_RESPONSE: 'rooms_listed',
+  LIST_ROOMS_REQUEST: 'list_rooms_request',
+  LIST_ROOMS_RESPONSE: 'list_rooms_response',
   LIST_ROOMS_FAILED: 'list_rooms_failed',
 
-  JOIN_ROOM_REQUEST: 'join_room',
-  JOIN_ROOM_RESPONSE: 'game_start',
-  JOIN_ROOM_FAILED: 'join_failed',
+  JOIN_ROOM_REQUEST: 'join_room_request',
+  JOIN_ROOM_RESPONSE: 'join_room_response',
+  JOIN_ROOM_FAILED: 'join_room_failed',
+  /** Sent to everyone else in the room when a player joins it. */
+  PLAYER_JOINED_ROOM: 'player_joined_room',
 
-  LEAVE_ROOM_REQUEST: 'leave_room',
-  LEAVE_ROOM_RESPONSE: 'player_left',
+  LEAVE_ROOM_REQUEST: 'leave_room_request',
+  LEAVE_ROOM_RESPONSE: 'leave_room_response',
   LEAVE_ROOM_FAILED: 'leave_room_failed',
 
-  GAME_ACTION_REQUEST: 'game_action',
-  GAME_ACTION_RESPONSE: 'state_update',
-  GAME_ACTION_FAILED: 'action_rejected',
+  GAME_ACTION_REQUEST: 'game_action_request',
+  GAME_ACTION_RESPONSE: 'game_action_response',
+  GAME_ACTION_FAILED: 'game_action_failed',
 
   /** Sent to the remaining player when the opponent leaves. */
   OPPONENT_LEFT: 'opponent_left',
@@ -114,6 +116,9 @@ export interface GameStartPayload {
   yourPlayer: RoomPlayerSide;
   turn: RoomPlayerSide;
 }
+
+/** Same data as the joiner gets, with `yourPlayer` set for the receiver. */
+export type PlayerJoinedRoomPayload = GameStartPayload;
 
 // Server events payloads (new contract; V2 names replace the legacy ones in SH3)
 export interface RoomsListedPayloadV2 {
