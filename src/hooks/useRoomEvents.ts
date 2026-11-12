@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { message } from 'antd';
 import type { Socket } from 'socket.io-client';
 import {
   CLIENT_REQUEST_EVENTS,
@@ -7,9 +8,12 @@ import {
   RoomsListedPayload,
   SERVER_EVENTS,
   type IGameRoom,
+  type JoinFailedPayload,
+  type LeaveRoomFailedPayload,
+  type RequestFailedPayload,
   type RoomCreatedPayload,
 } from '@infection-game/shared';
-import { getOrCreatePlayerSession } from '../utils/playerSession';
+import { usePlayerSession } from './usePlayerSession';
 
 export function useRoomEvents(socket: Socket | null): {
   roomList: IGameRoom[];
@@ -23,7 +27,7 @@ export function useRoomEvents(socket: Socket | null): {
   const [roomList, setRoomList] = useState<IGameRoom[]>([]);
   const [joinedRoom, setJoinedRoom] = useState<IGameRoom | null>(null);
   const [isRoomCreator, setIsRoomCreator] = useState(false);
-  const { name: playerName, playerId } = getOrCreatePlayerSession();
+  const { name: playerName, playerId } = usePlayerSession();
 
   const actionCreateRoom = useCallback(() => {
     const payload: CreateRoomPayload = { userName: playerName, playerId };
@@ -73,7 +77,6 @@ export function useRoomEvents(socket: Socket | null): {
 
     const onRoomCreated = (payload: RoomCreatedPayload) => {
       setJoinedRoom(payload.room);
-      setIsRoomCreator(true);
       setIsRoomCreator(payload.room.hostPlayerId === playerId);
     };
 
@@ -83,8 +86,17 @@ export function useRoomEvents(socket: Socket | null): {
       setIsRoomCreator(false);
     };
 
-    const onJoinFailed = () => {
+    const onJoinFailed = (payload: JoinFailedPayload) => {
       setIsRoomCreator(false);
+      message.error(payload.reason);
+    };
+
+    const onLeaveFailed = (payload: LeaveRoomFailedPayload) => {
+      message.error(payload.reason);
+    };
+
+    const onRequestFailed = (payload: RequestFailedPayload) => {
+      message.error(payload.reason);
     };
 
     const onConnect = () => {
@@ -95,16 +107,20 @@ export function useRoomEvents(socket: Socket | null): {
     socket.on(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
     socket.on(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
     socket.on(SERVER_EVENTS.JOIN_FAILED, onJoinFailed);
+    socket.on(SERVER_EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
+    socket.on(SERVER_EVENTS.REQUEST_FAILED, onRequestFailed);
     socket.on('connect', onConnect);
     if (socket.connected) {
       onConnect();
     }
 
     return () => {
-      socket.off(SERVER_EVENTS.ROOMS_LISTED);
-      socket.off(SERVER_EVENTS.ROOM_CREATED);
-      socket.off(SERVER_EVENTS.PLAYER_LEFT);
-      socket.off(SERVER_EVENTS.JOIN_FAILED);
+      socket.off(SERVER_EVENTS.ROOMS_LISTED, onListed);
+      socket.off(SERVER_EVENTS.ROOM_CREATED, onRoomCreated);
+      socket.off(SERVER_EVENTS.PLAYER_LEFT, onPlayerLeftRoom);
+      socket.off(SERVER_EVENTS.JOIN_FAILED, onJoinFailed);
+      socket.off(SERVER_EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
+      socket.off(SERVER_EVENTS.REQUEST_FAILED, onRequestFailed);
       socket.off('connect', onConnect);
     };
   }, [socket, playerId]);

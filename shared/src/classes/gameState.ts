@@ -1,4 +1,10 @@
-import { GamePhase, type IGameState, type CellCode, CellType } from '../types/index.js';
+import {
+  GamePhase,
+  type IGameState,
+  type CellCode,
+  CellType,
+  type PlayerType,
+} from '../types/index.js';
 import { ColonySet } from './colonySet.js';
 
 export class GameState {
@@ -9,6 +15,9 @@ export class GameState {
   public redColonySets: ColonySet[];
   public blueColonySets: ColonySet[];
   public gridSize: number;
+  public availableCellCodes: string[];
+  public loser: PlayerType | null;
+  public firstMoveDone: { red: boolean; blue: boolean };
 
   constructor({
     gamePhase,
@@ -18,6 +27,9 @@ export class GameState {
     redColonySets,
     blueColonySets,
     gridSize,
+    availableCellCodes = [],
+    loser = null,
+    firstMoveDone = { red: false, blue: false },
   }: {
     gamePhase: GamePhase;
     movesLeft: number;
@@ -26,6 +38,9 @@ export class GameState {
     redColonySets: ColonySet[];
     blueColonySets: ColonySet[];
     gridSize: number;
+    availableCellCodes?: string[];
+    loser?: PlayerType | null;
+    firstMoveDone?: { red: boolean; blue: boolean };
   }) {
     this.gamePhase = gamePhase;
     this.movesLeft = movesLeft;
@@ -34,6 +49,9 @@ export class GameState {
     this.redColonySets = redColonySets;
     this.blueColonySets = blueColonySets;
     this.gridSize = gridSize;
+    this.availableCellCodes = availableCellCodes;
+    this.loser = loser;
+    this.firstMoveDone = firstMoveDone;
   }
 
   static newGameState(): GameState {
@@ -57,6 +75,9 @@ export class GameState {
       redColonySets: serializedGameState.redColonySets.map(ColonySet.fromIColonySet),
       blueColonySets: serializedGameState.blueColonySets.map(ColonySet.fromIColonySet),
       gridSize: serializedGameState.gridSize,
+      availableCellCodes: serializedGameState.availableCellCodes,
+      loser: serializedGameState.loser,
+      firstMoveDone: serializedGameState.firstMoveDone,
     });
   }
 
@@ -69,6 +90,9 @@ export class GameState {
       redColonySets: this.redColonySets.map((c) => c.toIColonySet()),
       blueColonySets: this.blueColonySets.map((c) => c.toIColonySet()),
       gridSize: this.gridSize,
+      availableCellCodes: this.availableCellCodes,
+      loser: this.loser,
+      firstMoveDone: this.firstMoveDone,
     };
   }
 

@@ -25,5 +25,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .vscode
-DEPLOYMENT.md
-/private
+.cursor

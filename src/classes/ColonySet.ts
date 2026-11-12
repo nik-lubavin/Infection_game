@@ -1,8 +1,7 @@
-import { IColonySet } from '@infection-game/shared';
 import { PlayerType } from '../interfaces/Board';
 
 let idCounter = 1;
-export class ColonySet implements IColonySet {
+export class ColonySet {
   public id: number;
 
   constructor(

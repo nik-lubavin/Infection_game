@@ -53,7 +53,7 @@ export function actionAddCellToColony(cellCode: string, state: IGameState): IGam
       new Set([cellCode]),
       true,
       state.gamePhase === GamePhase.RED_TURN ? PlayerType.RED : PlayerType.BLUE
-    );
+    ).toIColonySet();
 
     newState = {
       ...newState,

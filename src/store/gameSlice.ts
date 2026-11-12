@@ -7,7 +7,9 @@ import { GamePhase, IGameState } from '@infection-game/shared';
 import { calculateAvailableCellCodes } from '../state/helpers/cellsGetters';
 import { testInitialViruses } from '../state/helpers/testInitialViruses';
 
-const initialState: IGameState = {
+type GameSliceState = IGameState & { board: Board };
+
+const initialState: GameSliceState = {
   gamePhase: GamePhase.NOT_STARTED,
   movesLeft: 3,
   board: new Board(GRID_SIZE, GRID_SIZE),
@@ -18,6 +20,7 @@ const initialState: IGameState = {
   availableCellCodes: [],
   loser: null,
   gridSize: GRID_SIZE,
+  firstMoveDone: { red: false, blue: false },
 };
 
 const gameSlice = createSlice({
@@ -40,13 +43,12 @@ const gameSlice = createSlice({
       state.loser = null;
     },
     addVirusCell: (state, action: PayloadAction<{ cellCode: string }>) => {
-      const plainState = current(state) as IGameState;
-      return actionAddVirusCell(action.payload.cellCode, plainState);
+      const plainState = current(state);
+      return { ...plainState, ...actionAddVirusCell(action.payload.cellCode, plainState) };
     },
     addCellToColony: (state, action: PayloadAction<{ cellCode: string }>) => {
-      const plainState = current(state) as IGameState;
-      const newState = actionAddCellToColony(action.payload.cellCode, plainState);
-      return newState;
+      const plainState = current(state);
+      return { ...plainState, ...actionAddCellToColony(action.payload.cellCode, plainState) };
     },
     switchPlayer: (state) => {
       state.gamePhase =

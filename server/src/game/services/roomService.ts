@@ -11,6 +11,8 @@ function generateRoomCode(): string {
   return '123456_' + Math.random().toString(36).substring(2, 4);
 }
 
+type RoomResult = { success: true; data?: IGameRoom } | { success: false; reason: string };
+
 export class RoomService {
   private _rooms = new Map<string, IGameRoom>();
 
@@ -47,7 +49,7 @@ export class RoomService {
   assignBluePlayerToRoom(
     roomCode: string,
     playerId: string
-  ): { success: boolean; reason?: string; data?: IGameRoom } {
+  ): { success: true; data: IGameRoom } | { success: false; reason: string } {
     const room = roomService.getRoom(roomCode);
     if (!room) {
       // socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Room not found' });
@@ -68,10 +70,7 @@ export class RoomService {
     this._rooms.set(room.id, room);
   }
 
-  disconnectPlayerFromRoom(
-    roomCode: string,
-    playerId: string
-  ): { success: boolean; reason?: string; data?: IGameRoom } {
+  disconnectPlayerFromRoom(roomCode: string, playerId: string): RoomResult {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };

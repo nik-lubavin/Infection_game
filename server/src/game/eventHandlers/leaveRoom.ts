@@ -1,5 +1,5 @@
 import type { Socket } from 'socket.io';
-import { SERVER_EVENTS } from '@infection-game/shared';
+import { SERVER_EVENTS, type LeaveRoomPayload } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
 
 export function leaveRoomHandler({
@@ -7,13 +7,10 @@ export function leaveRoomHandler({
   payload,
 }: {
   socket: Socket;
-  payload: { roomCode: string; playerId: string };
+  payload: LeaveRoomPayload;
 }): void {
   console.log('leave room handler', payload);
   const { roomCode, playerId } = payload;
-  // const roomCode = payload?.roomCode;
-  // const playerId = payload?.playerId;
-  // if (!roomCode || !playerId) return;
 
   const result = roomService.disconnectPlayerFromRoom(roomCode, playerId);
   if (!result.success) {

@@ -1,16 +1,18 @@
-import { IGameState } from '@infection-game/shared';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-
-import { SERVER_EVENTS } from '@infection-game/shared';
-import { GameState } from '@infection-game/shared';
+import { SERVER_EVENTS, type IGameState, type StateUpdatePayload } from '@infection-game/shared';
 
 export function useGameState(socket: Socket | null) {
-  const [stateGame, setStateGame] = useState<GameState | null>(null);
+  const [stateGame, setStateGame] = useState<IGameState | null>(null);
 
-  socket?.on(SERVER_EVENTS.GAME_STATE_UPDATE, (payload: { data: IGameState }) => {
-    setStateGame(GameState.fromSerializedGameState(payload.data));
-  });
+  useEffect(() => {
+    if (!socket) return;
+    const onStateUpdate = (payload: StateUpdatePayload) => setStateGame(payload.state);
+    socket.on(SERVER_EVENTS.STATE_UPDATE, onStateUpdate);
+    return () => {
+      socket.off(SERVER_EVENTS.STATE_UPDATE, onStateUpdate);
+    };
+  }, [socket]);
 
   return {
     stateGame,

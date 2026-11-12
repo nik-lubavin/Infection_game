@@ -7,13 +7,13 @@ export function getAdjacentColonies(cellCode: string, state: IGameState) {
   const adjacentBlueColonies: IColonySet[] = [];
   allAdjacentCellCodes.forEach((adjacentCellCode) => {
     const foundRedColonySet = state.redColonySets.find((colSet: IColonySet) =>
-      colSet.colonyCellsCodes.has(adjacentCellCode)
+      colSet.colonyCellsCodes.includes(adjacentCellCode)
     );
     if (foundRedColonySet) {
       adjacentRedColonies.push(foundRedColonySet);
     }
     const foundBlueColonySet = state.blueColonySets.find((colSet: IColonySet) =>
-      colSet.colonyCellsCodes.has(adjacentCellCode)
+      colSet.colonyCellsCodes.includes(adjacentCellCode)
     );
     if (foundBlueColonySet) {
       adjacentBlueColonies.push(foundBlueColonySet);

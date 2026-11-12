@@ -10,6 +10,7 @@
     "shared"
   ],
   "dependencies": {
+    "@ant-design/icons": "^5.6.1",
     "@infection-game/shared": "workspace:*",
     "@reduxjs/toolkit": "^2.10.1",
     "@testing-library/dom": "^10.4.0",
@@ -34,13 +35,14 @@
     "build:server": "tsc -p server",
     "build:all": "npm run build:shared && npm run build:server && npm run build",
     "start": "react-scripts start",
-    "server": "tsx server/src/index.ts",
+    "server": "tsx watch server/src/index.ts",
     "server:start": "node server/dist/index.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:shared": "node --import tsx --test 'shared/src/**/*.test.ts'"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

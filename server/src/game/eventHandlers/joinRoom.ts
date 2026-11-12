@@ -1,27 +1,23 @@
 import type { Server, Socket } from 'socket.io';
-import { GameStartPayload, SERVER_EVENTS, type RoomPlayerSide } from '@infection-game/shared';
+import {
+  GameStartPayload,
+  JoinRoomPayload,
+  SERVER_EVENTS,
+  type RoomPlayerSide,
+} from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
 
-export function joinRoomHandler({
+export async function joinRoomHandler({
   socket,
   io,
   payload,
 }: {
   socket: Socket;
   io: Server;
-  payload: { roomCode?: string; playerId?: string };
-}): void {
+  payload: JoinRoomPayload;
+}): Promise<void> {
   console.log('join game event', payload);
-  const roomCode = payload?.roomCode;
-  const playerId = payload?.playerId;
-  if (!roomCode) {
-    socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Missing room code' });
-    return;
-  }
-  if (!playerId) {
-    socket.emit(SERVER_EVENTS.JOIN_FAILED, { reason: 'Missing player id' });
-    return;
-  }
+  const { roomCode, playerId } = payload;
 
   const result = roomService.assignBluePlayerToRoom(roomCode, playerId);
   if (!result.success) {
@@ -29,7 +25,7 @@ export function joinRoomHandler({
     return;
   }
 
-  const room = result.data!;
+  const room = result.data;
 
   socket.data.playerId = playerId;
   socket.join(roomCode);
@@ -53,5 +49,5 @@ export function joinRoomHandler({
       s.emit(SERVER_EVENTS.GAME_START, gameStartPayload);
     }
   };
-  void notifyGameStart();
+  await notifyGameStart();
 }

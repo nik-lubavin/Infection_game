@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build:shared": "tsc",
+    "build:shared": "rm -rf dist && tsc",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

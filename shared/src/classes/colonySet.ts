@@ -1,7 +1,7 @@
 import { type IColonySet, PlayerType } from '../types/index.js';
 
 let colonyIdCounter = 1;
-export class ColonySet implements IColonySet {
+export class ColonySet {
   public id: number;
 
   constructor(
@@ -14,17 +14,18 @@ export class ColonySet implements IColonySet {
   }
 
   static fromIColonySet(colony: IColonySet): ColonySet {
-    const codes =
-      colony.colonyCellsCodes instanceof Set
-        ? colony.colonyCellsCodes
-        : new Set(colony.colonyCellsCodes as unknown as Iterable<string>);
-    return new ColonySet(codes, colony.activated, colony.owner, colony.id);
+    return new ColonySet(
+      new Set(colony.colonyCellsCodes),
+      colony.activated,
+      colony.owner,
+      colony.id
+    );
   }
 
   toIColonySet(): IColonySet {
     return {
       id: this.id,
-      colonyCellsCodes: this.colonyCellsCodes,
+      colonyCellsCodes: Array.from(this.colonyCellsCodes),
       activated: this.activated,
       owner: this.owner,
     };

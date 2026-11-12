@@ -1,4 +1,10 @@
-import type { IGameRoom, IGameState, RoomPlayerSide } from './types/index.js';
+import type {
+  IGameRoom,
+  IGameState,
+  IRoomSummary,
+  RoomPlayerSide,
+  RoomStatus,
+} from './types/index.js';
 
 /** Client → server */
 export const CLIENT_REQUEST_EVENTS = {
@@ -17,12 +23,19 @@ export const SERVER_EVENTS = {
   GAME_START: 'game_start',
   STATE_UPDATE: 'state_update',
   PLAYER_LEFT: 'player_left',
+  OPPONENT_LEFT: 'opponent_left',
   ACTION_REJECTED: 'action_rejected',
   LEAVE_ROOM_FAILED: 'leave_room_failed',
-  GAME_STATE_UPDATE: 'game_state_update',
+  REQUEST_FAILED: 'request_failed',
 } as const;
 
-// Client request payloads
+/** Socket.IO handshake `auth` payload. */
+export interface SocketAuth {
+  playerId: string;
+  name: string;
+}
+
+// Client request payloads (legacy: playerId/userName are removed in task S2)
 export interface CreateRoomPayload {
   userName: string;
   playerId: string;
@@ -47,7 +60,13 @@ export interface GameActionPayload {
   action: unknown;
 }
 
-// Server events payloads
+/** New contract; replaces GameActionPayload in SH3. */
+export interface GameActionPayloadV2 {
+  roomCode: string;
+  cellCode: string;
+}
+
+// Server events payloads (legacy)
 export interface RoomCreatedPayload {
   room: IGameRoom;
   player: RoomPlayerSide;
@@ -74,4 +93,40 @@ export interface GameStartPayload {
   serializedState: IGameState;
   yourPlayer: RoomPlayerSide;
   turn: RoomPlayerSide;
+}
+
+// Server events payloads (new contract; V2 names replace the legacy ones in SH3)
+export interface RoomsListedPayloadV2 {
+  data: IRoomSummary[];
+  yourRoomId: string | null;
+}
+
+export interface RoomCreatedPayloadV2 {
+  room: IRoomSummary;
+  yourSide: RoomPlayerSide;
+}
+
+export interface GameStartPayloadV2 {
+  roomCode: string;
+  state: IGameState;
+  yourSide: RoomPlayerSide;
+}
+
+export interface StateUpdatePayload {
+  roomCode: string;
+  state: IGameState;
+  status: RoomStatus;
+}
+
+export interface ActionRejectedPayload {
+  reason: string;
+}
+
+export interface OpponentLeftPayload {
+  roomCode: string;
+}
+
+export interface RequestFailedPayload {
+  event: string;
+  reason: string;
 }

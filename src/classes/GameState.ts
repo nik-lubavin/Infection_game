@@ -12,7 +12,7 @@ export enum CellType {
   BLUE_COLONY_INACTIVE = 'blue_colony_inactive',
 }
 
-export class ColonySet implements IColonySet {
+export class ColonySet {
   constructor(
     public id: number,
     public colonyCellsCodes: Set<string>,
@@ -165,15 +165,15 @@ export class GameState {
       return CellType.BLUE_VIRUS;
     }
 
-    const redColonySet = this.redColonySets.find((colSet: ColonySet) =>
-      colSet.colonyCellsCodes.has(cellCode)
+    const redColonySet = this.redColonySets.find((colSet: IColonySet) =>
+      colSet.colonyCellsCodes.includes(cellCode)
     );
     if (redColonySet) {
       return redColonySet.activated ? CellType.RED_COLONY_ACTIVE : CellType.RED_COLONY_INACTIVE;
     }
 
-    const blueColonySet = this.blueColonySets.find((colSet: ColonySet) =>
-      colSet.colonyCellsCodes.has(cellCode)
+    const blueColonySet = this.blueColonySets.find((colSet: IColonySet) =>
+      colSet.colonyCellsCodes.includes(cellCode)
     );
     if (blueColonySet) {
       return blueColonySet.activated ? CellType.BLUE_COLONY_ACTIVE : CellType.BLUE_COLONY_INACTIVE;

@@ -3,6 +3,16 @@ export type RoomPlayerSide = 'red' | 'blue';
 
 export type RoomStatus = 'waiting' | 'playing' | 'finished';
 
+/** Public room view sent to clients. Contains no player identifiers. */
+export interface IRoomSummary {
+  id: string;
+  status: RoomStatus;
+  hostName: string;
+  /** Whether the seat is taken. */
+  seats: { red: boolean; blue: boolean };
+}
+
+/** Server-internal room. Must not be sent to clients (it holds player ids). */
 export interface IGameRoom {
   id: string;
   status: RoomStatus;
@@ -35,7 +45,7 @@ export interface IBoard {
 
 export interface IColonySet {
   id: number;
-  colonyCellsCodes: Set<string>;
+  colonyCellsCodes: string[];
   activated: boolean;
   owner: PlayerType;
 }
@@ -47,10 +57,11 @@ export interface IGameState {
   blueVirusCellCodes: string[];
   redColonySets: IColonySet[];
   blueColonySets: IColonySet[];
-  availableCellCodes?: string[];
+  availableCellCodes: string[];
   gridSize: number;
-  loser?: PlayerType | null;
-  board?: IBoard;
+  loser: PlayerType | null;
+  /** Whether the side has already made its first action (corner placement). */
+  firstMoveDone: { red: boolean; blue: boolean };
 }
 
 export type CellCode = string;
