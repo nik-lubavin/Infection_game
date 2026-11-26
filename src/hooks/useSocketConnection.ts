@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { io, type Socket } from 'socket.io-client';
+import type { SocketAuth } from '@infection-game/shared';
 import { SOCKET_SERVER_URL } from '../constants/socketEvents';
 
-function createSocket(): Socket {
-  return io(SOCKET_SERVER_URL);
+/** The server learns who the player is only from the handshake `auth`. */
+function createSocket(auth: SocketAuth): Socket {
+  return io(SOCKET_SERVER_URL, { auth });
 }
 
-export function useSocketConnection(): {
+export function useSocketConnection({ playerId, name }: SocketAuth): {
   socket: Socket | null;
   socketRef: RefObject<Socket | null>;
   socketConnected: boolean;
@@ -20,7 +22,7 @@ export function useSocketConnection(): {
   const [socketId, setSocketId] = useState<string | null>(null);
 
   useEffect(() => {
-    const s = createSocket();
+    const s = createSocket({ playerId, name });
     socketRef.current = s;
     setSocket(s);
 
@@ -52,7 +54,7 @@ export function useSocketConnection(): {
       setSocketConnected(false);
       setSocketId(null);
     };
-  }, []);
+  }, [playerId, name]);
 
   return { socket, socketRef, socketConnected, connectionError, socketId };
 }

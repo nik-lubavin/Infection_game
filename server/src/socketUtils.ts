@@ -1,14 +1,28 @@
-import type { Server, Socket } from 'socket.io';
+import type { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { EVENTS, type RequestFailedPayload } from '@infection-game/shared';
 import type { Parser } from './validation.js';
 
-/** What every event registration function receives. */
-export interface EventContext {
-  socket: Socket;
-  io: Server;
+/** Set by the auth middleware from the handshake before any handler runs; never changes. */
+export interface SocketData {
+  playerId: string;
+  name: string;
 }
 
-function emitRequestFailed(socket: Socket, event: string, reason: string): void {
+export type GameServer = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, SocketData>;
+export type GameSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, SocketData>;
+
+/** What every event registration function receives. */
+export interface EventContext {
+  socket: GameSocket;
+  io: GameServer;
+}
+
+/** Socket.IO room with every socket (browser tab) of the player. */
+export function playerRoom(playerId: string): string {
+  return 'player:' + playerId;
+}
+
+function emitRequestFailed(socket: GameSocket, event: string, reason: string): void {
   const payload: RequestFailedPayload = { event, reason };
   socket.emit(EVENTS.REQUEST_FAILED, payload);
 }
@@ -21,7 +35,7 @@ function emitRequestFailed(socket: Socket, event: string, reason: string): void 
  * `request_failed`), and the handler runs inside try/catch (async handlers: `.catch`).
  */
 export function onEvent<T>(
-  socket: Socket,
+  socket: GameSocket,
   event: string,
   parse: Parser<T>,
   handler: (payload: T) => void | Promise<void>

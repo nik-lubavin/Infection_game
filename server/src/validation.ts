@@ -8,7 +8,6 @@ export type Parser<T> = (raw: T) => ParseResult<T>;
 
 export const MAX_NAME_LENGTH = 32;
 export const MAX_ROOM_CODE_LENGTH = 16;
-export const MAX_PLAYER_ID_LENGTH = 64;
 
 const CELL_CODE_RE = /^\d{1,2}-\d{1,2}$/;
 
@@ -28,19 +27,16 @@ export function invalidResult(reason: string): { ok: false; reason: string } {
   return { ok: false, reason };
 }
 
-interface RoomAndPlayer {
-  roomCode: string;
-  playerId: string;
+/** For requests that carry no data: accepts `undefined` or any object and reads nothing from it. */
+export function parseNoPayload(raw: unknown): ParseResult<void> {
+  if (raw !== undefined && !isRecord(raw)) return invalidResult('Invalid payload');
+  return { ok: true, value: undefined };
 }
 
-/** Payload shape shared by the events that address a room on behalf of a player. */
-export function parseRoomAndPlayer(
-  raw: unknown
-): ParseResult<{ roomCode: string; playerId: string }> {
+/** Payload shape shared by the events that address a room. */
+export function parseRoomCode(raw: unknown): ParseResult<{ roomCode: string }> {
   if (!isRecord(raw)) return invalidResult('Invalid payload');
   if (!isNonEmptyString(raw.roomCode, MAX_ROOM_CODE_LENGTH))
     return invalidResult('Invalid room code');
-  if (!isNonEmptyString(raw.playerId, MAX_PLAYER_ID_LENGTH))
-    return invalidResult('Invalid player id');
-  return { ok: true, value: { roomCode: raw.roomCode, playerId: raw.playerId } };
+  return { ok: true, value: { roomCode: raw.roomCode } };
 }

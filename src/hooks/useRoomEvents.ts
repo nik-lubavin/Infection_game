@@ -3,12 +3,13 @@ import { App as AntdApp } from 'antd';
 import type { Socket } from 'socket.io-client';
 import {
   EVENTS,
-  CreateRoomPayload,
   PlayerLeftRoomPayload,
   RoomsListedPayload,
   type IGameRoom,
   type JoinFailedPayload,
+  type JoinRoomPayload,
   type LeaveRoomFailedPayload,
+  type LeaveRoomPayload,
   type RequestFailedPayload,
   type RoomCreatedPayload,
 } from '@infection-game/shared';
@@ -24,36 +25,32 @@ export function useRoomEvents(
   actionJoinRoom: (room: IGameRoom) => void;
   actionLeaveRoom: (roomCode: string) => void;
 } {
-  const { name: playerName, playerId } = usePlayerSession();
+  // Only to find the player's own room in the list; the server never gets it from a payload.
+  const { playerId } = usePlayerSession();
   const { message } = AntdApp.useApp();
 
   const actionCreateRoom = useCallback(() => {
-    const payload: CreateRoomPayload = { userName: playerName, playerId };
-    socket?.emit(EVENTS.CREATE_ROOM_REQUEST, payload);
-  }, [socket, playerName, playerId]);
+    socket?.emit(EVENTS.CREATE_ROOM_REQUEST);
+  }, [socket]);
 
   const actionListRooms = useCallback(() => {
-    socket?.emit(EVENTS.LIST_ROOMS_REQUEST, { playerId });
-  }, [socket, playerId]);
+    socket?.emit(EVENTS.LIST_ROOMS_REQUEST);
+  }, [socket]);
 
   const actionJoinRoom = useCallback(
     (room: IGameRoom) => {
-      socket?.emit(EVENTS.JOIN_ROOM_REQUEST, {
-        roomCode: room.id,
-        playerId,
-      });
+      const payload: JoinRoomPayload = { roomCode: room.id };
+      socket?.emit(EVENTS.JOIN_ROOM_REQUEST, payload);
     },
-    [socket, playerId]
+    [socket]
   );
 
   const actionLeaveRoom = useCallback(
     (roomCode: string) => {
-      socket?.emit(EVENTS.LEAVE_ROOM_REQUEST, {
-        roomCode,
-        playerId,
-      });
+      const payload: LeaveRoomPayload = { roomCode };
+      socket?.emit(EVENTS.LEAVE_ROOM_REQUEST, payload);
     },
-    [socket, playerId]
+    [socket]
   );
 
   useEffect(() => {
@@ -84,7 +81,7 @@ export function useRoomEvents(
     };
 
     const onConnect = () => {
-      socket.emit(EVENTS.LIST_ROOMS_REQUEST, { playerId });
+      socket.emit(EVENTS.LIST_ROOMS_REQUEST);
     };
 
     socket.on(EVENTS.LIST_ROOMS_RESPONSE, onListed);

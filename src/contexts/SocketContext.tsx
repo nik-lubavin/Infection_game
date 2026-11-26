@@ -25,8 +25,8 @@ export type SocketContextValue = {
 const SocketContext = createContext<SocketContextValue | null>(null);
 
 export function SocketProvider({ children }: { children: ReactNode }) {
-  const connection = useSocketConnection();
   const { name: playerName, playerId } = usePlayerSession();
+  const connection = useSocketConnection({ playerId, name: playerName });
   const [session, dispatch] = useReducer(sessionReducer, initialSessionState);
 
   const { actionListRooms, actionCreateRoom, actionJoinRoom, actionLeaveRoom } = useRoomEvents(

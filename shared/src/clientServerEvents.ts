@@ -49,24 +49,14 @@ export interface SocketAuth {
   name: string;
 }
 
-// Client request payloads (legacy: playerId/userName are removed in task S2)
-export interface CreateRoomPayload {
-  userName: string;
-  playerId: string;
-}
-
-export interface ListRoomsPayload {
-  playerId: string;
-}
-
+// Client request payloads. The player is identified by `SocketAuth`, never by the payload;
+// create_room_request and list_rooms_request carry no payload at all.
 export interface JoinRoomPayload {
   roomCode: string;
-  playerId: string;
 }
 
 export interface LeaveRoomPayload {
   roomCode: string;
-  playerId: string;
 }
 
 export interface GameActionPayload {
