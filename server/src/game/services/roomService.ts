@@ -5,16 +5,21 @@ import {
   type RoomPlayerSide,
 } from '@infection-game/shared';
 
-function generateRoomCode(): string {
-  // const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  // let code = '';
-  // for (let i = 0; i < 6; i++) {
-  //   code += chars[Math.floor(Math.random() * chars.length)];
-  // }
-  // return rooms.has(code) ? generateRoomCode() : code;
+/** Result of a service call that can be refused. */
+export type ServiceResult<T> = { success: true; data: T } | { success: false; reason: string };
 
-  return '123456_' + Math.random().toString(36).substring(2, 4);
+/** What happened to the room after a player left it. */
+export interface RemovePlayerData {
+  room: IGameRoom;
+  /** The player who is still in (or was in) the room with the leaver; null if there was none. */
+  opponentId: string | null;
+  /** True when the host left and the room no longer exists. */
+  roomDeleted: boolean;
 }
+
+/** No 0/O and 1/I: the code is read and typed by people. */
+const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const ROOM_CODE_LENGTH = 6;
 
 /** Whether the player is the host or the guest of the room. */
 export function isPlayerInRoom(room: IGameRoom, playerId: string): boolean {
@@ -28,10 +33,28 @@ export function getPlayerSide(room: IGameRoom, playerId: string): RoomPlayerSide
   return null;
 }
 
-type RoomResult = { success: true; data?: IGameRoom } | { success: false; reason: string };
-
 export class RoomService {
   private _rooms = new Map<string, IGameRoom>();
+
+  /** A random code that no existing room uses. */
+  private _generateRoomCode(): string {
+    let code: string;
+    do {
+      code = '';
+      for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+        code += ROOM_CODE_ALPHABET[Math.floor(Math.random() * ROOM_CODE_ALPHABET.length)];
+      }
+    } while (this._rooms.has(code));
+    return code;
+  }
+
+  /** The room of any status where the player is the host or the guest. */
+  findRoomByPlayer(playerId: string): IGameRoom | undefined {
+    for (const room of this._rooms.values()) {
+      if (isPlayerInRoom(room, playerId)) return room;
+    }
+    return undefined;
+  }
 
   createGameRoomInstance({
     hostPlayerId,
@@ -39,8 +62,12 @@ export class RoomService {
   }: {
     hostPlayerId: string;
     hostName: string;
-  }): IGameRoom {
-    const roomCode = generateRoomCode();
+  }): ServiceResult<IGameRoom> {
+    if (this.findRoomByPlayer(hostPlayerId)) {
+      return { success: false, reason: 'Already in a room' };
+    }
+
+    const roomCode = this._generateRoomCode();
     const newRoom: IGameRoom = {
       id: roomCode,
       status: 'waiting',
@@ -52,7 +79,7 @@ export class RoomService {
     };
     this._rooms.set(roomCode, newRoom);
     console.log(`room created ${roomCode} by ${hostPlayerId}`);
-    return newRoom;
+    return { success: true, data: newRoom };
   }
 
   listRooms(): IGameRoom[] {
@@ -63,16 +90,16 @@ export class RoomService {
     return this._rooms.get(roomCode);
   }
 
-  playerJoinRoom(
-    roomCode: string,
-    playerId: string
-  ): { success: true; data: IGameRoom } | { success: false; reason: string } {
+  playerJoinRoom(roomCode: string, playerId: string): ServiceResult<IGameRoom> {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };
     }
-    if (room.hostPlayerId === playerId) {
+    if (isPlayerInRoom(room, playerId)) {
       return { success: false, reason: 'Already in this room' };
+    }
+    if (this.findRoomByPlayer(playerId)) {
+      return { success: false, reason: 'Already in another room' };
     }
     if (room.guestPlayerId !== null) {
       return { success: false, reason: 'Room is full' };
@@ -83,9 +110,7 @@ export class RoomService {
   }
 
   /** Starts the game of a waiting room that has both players. */
-  startGame(
-    roomCode: string
-  ): { success: true; data: IGameRoom } | { success: false; reason: string } {
+  startGame(roomCode: string): ServiceResult<IGameRoom> {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };
@@ -102,7 +127,8 @@ export class RoomService {
     return { success: true, data: room };
   }
 
-  disconnectPlayerFromRoom(roomCode: string, playerId: string): RoomResult {
+  /** Takes the player out of the room. The host leaving deletes the room. */
+  removePlayer(roomCode: string, playerId: string): ServiceResult<RemovePlayerData> {
     const room = this.getRoom(roomCode);
     if (!room) {
       return { success: false, reason: 'Room not found' };
@@ -110,18 +136,25 @@ export class RoomService {
 
     if (room.hostPlayerId === playerId) {
       // The room belongs to the host: when the host leaves, the room is gone.
-      console.log(`host ${playerId} left room ${roomCode}, room deleted`);
+      const opponentId = room.guestPlayerId;
       this._rooms.delete(roomCode);
-    } else if (room.guestPlayerId === playerId) {
+      console.log(`host ${playerId} left room ${roomCode}, room deleted`);
+      return { success: true, data: { room, opponentId, roomDeleted: true } };
+    }
+
+    if (room.guestPlayerId === playerId) {
       console.log(`guest ${playerId} left room ${roomCode}`);
       room.guestPlayerId = null;
       // The game cannot go on without the guest: the room waits for a new one.
       room.status = 'waiting';
       room.state = createInitialState(room.state.gridSize);
-    } else {
-      return { success: false, reason: 'You are not in this room' };
+      return {
+        success: true,
+        data: { room, opponentId: room.hostPlayerId, roomDeleted: false },
+      };
     }
-    return { success: true };
+
+    return { success: false, reason: 'You are not in this room' };
   }
 }
 

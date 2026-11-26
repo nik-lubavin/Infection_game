@@ -16,7 +16,8 @@ export function registerLeaveRoom({ socket }: EventContext): void {
   onEvent(socket, EVENTS.LEAVE_ROOM_REQUEST, parseLeaveRoom, ({ roomCode, playerId }) => {
     console.log('leave room handler', { roomCode, playerId });
 
-    const result = roomService.disconnectPlayerFromRoom(roomCode, playerId);
+    // TODO (T04): notify result.data.opponentId that the player left.
+    const result = roomService.removePlayer(roomCode, playerId);
     if (!result.success) {
       const failed: LeaveRoomFailedPayload = { reason: result.reason };
       socket.emit(EVENTS.LEAVE_ROOM_FAILED, failed);

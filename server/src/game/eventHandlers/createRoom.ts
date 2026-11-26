@@ -1,4 +1,9 @@
-import { EVENTS, type CreateRoomPayload, type RoomCreatedPayload } from '@infection-game/shared';
+import {
+  EVENTS,
+  type CreateRoomFailedPayload,
+  type CreateRoomPayload,
+  type RoomCreatedPayload,
+} from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
 import { onEvent, type EventContext } from '../../socketUtils.js';
 import {
@@ -20,11 +25,18 @@ export function parseCreateRoom(raw: CreateRoomPayload): ParseResult<CreateRoomP
 
 export function registerCreateRoom({ socket }: EventContext): void {
   onEvent(socket, EVENTS.CREATE_ROOM_REQUEST, parseCreateRoom, (payload) => {
-    socket.data.playerId = payload.playerId;
-    const gameRoom = roomService.createGameRoomInstance({
+    const result = roomService.createGameRoomInstance({
       hostPlayerId: payload.playerId,
       hostName: payload.userName,
     });
+    if (!result.success) {
+      const failed: CreateRoomFailedPayload = { reason: result.reason };
+      socket.emit(EVENTS.CREATE_ROOM_FAILED, failed);
+      return;
+    }
+
+    const gameRoom = result.data;
+    socket.data.playerId = payload.playerId;
     socket.join(gameRoom.id);
     console.log('socket joined, room code:', gameRoom.id);
     const roomCreatedPayload: RoomCreatedPayload = { room: gameRoom, player: 'red' };

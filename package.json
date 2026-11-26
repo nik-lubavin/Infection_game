@@ -40,7 +40,8 @@
     "eject": "react-scripts eject",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:shared": "node --import tsx --test 'shared/src/**/*.test.ts'"
+    "test:shared": "node --import tsx --test 'shared/src/**/*.test.ts'",
+    "test:server": "node --import tsx --test 'server/src/**/*.test.ts'"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
