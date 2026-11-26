@@ -1,10 +1,11 @@
-import React, { createContext, useContext, type ReactNode } from 'react';
-import type { IGameRoom, IGameState, RoomPlayerSide } from '@infection-game/shared';
+import React, { createContext, useContext, useReducer, type ReactNode } from 'react';
+import type { IGameRoom } from '@infection-game/shared';
 
 import { useRoomEvents } from '../hooks/useRoomEvents';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { useGameState } from '../hooks/useGameState';
 import { usePlayerSession } from '../hooks/usePlayerSession';
+import { initialSessionState, sessionReducer, type SessionState } from '../session/sessionReducer';
 
 export type SocketContextValue = {
   socketConnected: boolean;
@@ -13,11 +14,7 @@ export type SocketContextValue = {
   playerId: string;
   playerName: string;
 
-  stateRoomList: IGameRoom[];
-  stateJoinedRoom: IGameRoom | null;
-  stateGame: IGameState | null;
-  isRoomCreator: boolean;
-  stateYourSide: RoomPlayerSide | null;
+  session: SessionState;
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
@@ -30,19 +27,14 @@ const SocketContext = createContext<SocketContextValue | null>(null);
 export function SocketProvider({ children }: { children: ReactNode }) {
   const connection = useSocketConnection();
   const { name: playerName, playerId } = usePlayerSession();
+  const [session, dispatch] = useReducer(sessionReducer, initialSessionState);
 
-  const {
-    roomList,
-    joinedRoom,
-    isRoomCreator,
-    yourSide,
-    actionListRooms,
-    actionCreateRoom,
-    actionJoinRoom,
-    actionLeaveRoom,
-  } = useRoomEvents(connection.socket);
+  const { actionListRooms, actionCreateRoom, actionJoinRoom, actionLeaveRoom } = useRoomEvents(
+    connection.socket,
+    dispatch
+  );
 
-  const { stateGame } = useGameState(connection.socket);
+  useGameState(connection.socket, dispatch);
 
   const value: SocketContextValue = {
     socketConnected: connection.socketConnected,
@@ -50,12 +42,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketId: connection.socketId,
     playerId,
     playerName,
-    stateGame,
-
-    isRoomCreator,
-    stateYourSide: yourSide,
-    stateRoomList: roomList,
-    stateJoinedRoom: joinedRoom,
+    session,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,

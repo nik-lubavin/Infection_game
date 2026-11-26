@@ -1,11 +1,6 @@
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-} from "react";
+import React, { createContext, useContext, ReactNode, useState } from 'react';
 
-// Secondary parameters that don't belong in Redux game state
+// UI-only settings that are not part of the session state
 interface SecondaryContextType {
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -31,7 +26,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 export const useGameContext = (): SecondaryContextType => {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new Error("useGameContext must be used within a GameProvider");
+    throw new Error('useGameContext must be used within a GameProvider');
   }
   return context;
 };

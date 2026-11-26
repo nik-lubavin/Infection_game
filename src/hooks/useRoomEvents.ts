@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { message } from 'antd';
+import { useCallback, useEffect, type Dispatch } from 'react';
+import { App as AntdApp } from 'antd';
 import type { Socket } from 'socket.io-client';
 import {
   EVENTS,
@@ -11,26 +11,21 @@ import {
   type LeaveRoomFailedPayload,
   type RequestFailedPayload,
   type RoomCreatedPayload,
-  type RoomPlayerSide,
 } from '@infection-game/shared';
 import { usePlayerSession } from './usePlayerSession';
+import type { SessionAction } from '../session/sessionReducer';
 
-export function useRoomEvents(socket: Socket | null): {
-  roomList: IGameRoom[];
-  joinedRoom: IGameRoom | null;
-  isRoomCreator: boolean;
-  /** Side assigned by the server in CREATE_ROOM_RESPONSE; null until a room is created. */
-  yourSide: RoomPlayerSide | null;
+export function useRoomEvents(
+  socket: Socket | null,
+  dispatch: Dispatch<SessionAction>
+): {
   actionListRooms: () => void;
   actionCreateRoom: () => void;
   actionJoinRoom: (room: IGameRoom) => void;
   actionLeaveRoom: (roomCode: string) => void;
 } {
-  const [roomList, setRoomList] = useState<IGameRoom[]>([]);
-  const [joinedRoom, setJoinedRoom] = useState<IGameRoom | null>(null);
-  const [isRoomCreator, setIsRoomCreator] = useState(false);
-  const [yourSide, setYourSide] = useState<RoomPlayerSide | null>(null);
   const { name: playerName, playerId } = usePlayerSession();
+  const { message } = AntdApp.useApp();
 
   const actionCreateRoom = useCallback(() => {
     const payload: CreateRoomPayload = { userName: playerName, playerId };
@@ -64,36 +59,19 @@ export function useRoomEvents(socket: Socket | null): {
   useEffect(() => {
     if (!socket) return;
 
-    const syncJoinedRoomFromRoomList = (list: IGameRoom[]) => {
-      const joined = list.find(
-        (room) => room.hostPlayerId === playerId || room.guestPlayerId === playerId
-      );
-      setJoinedRoom(joined ?? null);
-      setIsRoomCreator(joined?.hostPlayerId === playerId);
-      if (!joined) setYourSide(null);
-    };
-
     const onListed = (payload: RoomsListedPayload) => {
-      const list = payload.data ?? [];
-      setRoomList(list);
-      syncJoinedRoomFromRoomList(list);
+      dispatch({ type: 'roomListReceived', roomList: payload.data ?? [], playerId });
     };
 
     const onRoomCreated = (payload: RoomCreatedPayload) => {
-      setJoinedRoom(payload.room);
-      setIsRoomCreator(payload.room.hostPlayerId === playerId);
-      setYourSide(payload.player);
+      dispatch({ type: 'roomCreated', room: payload.room, yourSide: payload.player });
     };
 
     const onPlayerLeftRoom = (payload: PlayerLeftRoomPayload) => {
-      setRoomList(payload.roomList);
-      setJoinedRoom(null);
-      setIsRoomCreator(false);
-      setYourSide(null);
+      dispatch({ type: 'roomLeft', roomList: payload.roomList });
     };
 
     const onJoinFailed = (payload: JoinFailedPayload) => {
-      setIsRoomCreator(false);
       message.error(payload.reason);
     };
 
@@ -129,13 +107,9 @@ export function useRoomEvents(socket: Socket | null): {
       socket.off(EVENTS.REQUEST_FAILED, onRequestFailed);
       socket.off('connect', onConnect);
     };
-  }, [socket, playerId]);
+  }, [socket, playerId, dispatch, message]);
 
   return {
-    roomList,
-    joinedRoom,
-    isRoomCreator,
-    yourSide,
     actionListRooms,
     actionCreateRoom,
     actionJoinRoom,

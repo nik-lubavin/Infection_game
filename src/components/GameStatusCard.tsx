@@ -1,11 +1,11 @@
 import React from 'react';
 import { Typography, Card, Row, Col, Badge } from 'antd';
-import type { PlayerType } from '../interfaces/Board';
+import type { RoomPlayerSide } from '@infection-game/shared';
 
 const { Text } = Typography;
 
 export interface GameStatusCardProps {
-  currentPlayer: PlayerType;
+  currentPlayer: RoomPlayerSide;
   movesLeft: number;
   availableCellCodes: string[];
 }

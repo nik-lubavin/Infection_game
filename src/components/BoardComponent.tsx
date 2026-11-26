@@ -27,7 +27,8 @@ export interface BoardComponentProps {
 const BoardComponent: React.FC<BoardComponentProps> = (props) => {
   const { currentTurn, onCellClick, board, stateActiveRoom } = props;
 
-  const { stateGame } = useSocketContext();
+  const { session } = useSocketContext();
+  const stateGame = session.game;
 
   const gridWidth = CELL_SIZE * GRID_SIZE;
   const gridHeight = CELL_SIZE * GRID_SIZE;

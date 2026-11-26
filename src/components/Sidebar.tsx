@@ -1,27 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { PlayerType } from '../interfaces/Board';
+import { phaseSide } from '@infection-game/shared';
 import { useSocketContext } from '../contexts/SocketContext';
 import GameStatusCard from './GameStatusCard';
 import RoomsList from './RoomsList';
 
 interface SidebarProps {
-  currentPlayer: PlayerType;
-  movesLeft: number;
-  availableCellCodes: string[];
   collapsed: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  currentPlayer,
-  movesLeft,
-  availableCellCodes,
-  collapsed,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const [width, setWidth] = useState(300);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const {
-    stateRoomList,
+    session,
     socketConnected,
     connectionError,
     actionListRooms,
@@ -30,6 +22,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     actionLeaveRoom,
     playerId,
   } = useSocketContext();
+  const { game } = session;
+  // Side that moves now; null when nobody does (game not started or over).
+  const currentPlayer = game !== null ? phaseSide(game.gamePhase) : null;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -88,13 +83,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       />
       {!collapsed && (
         <>
-          <GameStatusCard
-            currentPlayer={currentPlayer}
-            movesLeft={movesLeft}
-            availableCellCodes={availableCellCodes}
-          />
+          {game !== null && currentPlayer !== null && (
+            <GameStatusCard
+              currentPlayer={currentPlayer}
+              movesLeft={game.movesLeft}
+              availableCellCodes={game.availableCellCodes}
+            />
+          )}
           <RoomsList
-            roomList={stateRoomList}
+            roomList={session.roomList}
             socketConnected={socketConnected}
             connectionError={connectionError}
             actionListRooms={actionListRooms}
@@ -106,12 +103,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         </>
       )}
 
-      {collapsed && (
+      {collapsed && game !== null && currentPlayer !== null && (
         <div style={{ textAlign: 'center', color: '#666' }}>
           <div style={{ fontSize: '12px', marginBottom: '8px' }}>
             {currentPlayer === 'red' ? '🔴' : '🔵'}
           </div>
-          <div style={{ fontSize: '10px' }}>{movesLeft}</div>
+          <div style={{ fontSize: '10px' }}>{game.movesLeft}</div>
         </div>
       )}
     </div>

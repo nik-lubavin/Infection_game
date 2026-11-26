@@ -1,51 +1,51 @@
 import React from 'react';
 import { Layout } from 'antd';
-import type { IGameRoom, IGameState } from '@infection-game/shared';
-import type { PlayerType } from '../../interfaces/Board';
-import type { ICell } from '../../classes/Cell';
-import { Board } from '../../classes/Board';
+import { DEFAULT_GRID_SIZE } from '@infection-game/shared';
 import Sidebar from '../Sidebar';
-import BoardComponent from '../BoardComponent';
+import { CELL_SIZE } from '../../constants/board';
+import '../../styles/Board.css';
+
+const { Content } = Layout;
+
+const containerPadding = 20;
+const placeholderSize = CELL_SIZE * DEFAULT_GRID_SIZE;
 
 export interface MainLayoutSectionProps {
   sidebarCollapsed: boolean;
-  currentPlayer: PlayerType;
-  movesLeft: number;
-  availableCellCodes: string[];
-  stateJoinedRoom: IGameRoom | null;
-  actionLeaveRoom: (roomCode: string) => void;
-  stateActiveRoom: IGameRoom | null;
-  gameState: IGameState | null;
-  board: Board;
-  onCellClick: (cell: ICell) => void;
 }
 
-const MainLayoutSection: React.FC<MainLayoutSectionProps> = ({
-  sidebarCollapsed,
-  currentPlayer,
-  movesLeft,
-  availableCellCodes,
-  stateActiveRoom,
-  gameState,
-  board,
-  onCellClick,
-}) => (
+const MainLayoutSection: React.FC<MainLayoutSectionProps> = ({ sidebarCollapsed }) => (
   <Layout style={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-    <Sidebar
-      currentPlayer={currentPlayer}
-      movesLeft={movesLeft}
-      availableCellCodes={availableCellCodes}
-      collapsed={sidebarCollapsed}
-    />
-    {stateActiveRoom && gameState && (
-      <BoardComponent
-        currentTurn={currentPlayer}
-        onCellClick={onCellClick}
-        board={board}
-        stateActiveRoom={stateActiveRoom}
-        gameState={gameState}
-      />
-    )}
+    <Sidebar collapsed={sidebarCollapsed} />
+    <Content
+      style={{
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'auto',
+        flexGrow: 1,
+      }}
+    >
+      <div
+        style={{
+          background: '#fff',
+          padding: containerPadding,
+          width: `${placeholderSize + 2 * containerPadding}px`,
+          height: `${placeholderSize + 2 * containerPadding}px`,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+          borderRadius: '4px',
+        }}
+      >
+        <div className="virus-grid-container virus-grid-container--placeholder">
+          <p className="virus-grid-placeholder-text">Join or create a room to see the board.</p>
+        </div>
+      </div>
+    </Content>
   </Layout>
 );
 
