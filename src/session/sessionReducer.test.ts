@@ -1,4 +1,4 @@
-import { createInitialState, type IGameRoom } from '@infection-game/shared';
+import { createInitialState, startGame, type IRoomSummary } from '@infection-game/shared';
 import {
   initialSessionState,
   sessionReducer,
@@ -6,19 +6,18 @@ import {
   type SessionState,
 } from './sessionReducer';
 
-const ME = 'player-me';
-const OTHER = 'player-other';
+function makeRoom(overrides: Partial<IRoomSummary> = {}): IRoomSummary {
+  return { id: 'ABC234', status: 'waiting', hostName: 'Other', hasGuest: false, ...overrides };
+}
 
-function makeRoom(overrides: Partial<IGameRoom> = {}): IGameRoom {
+/** A player sitting in `room` with a running game. */
+function inGame(room: IRoomSummary, yourSide: 'red' | 'blue' = 'red'): SessionState {
   return {
-    id: 'ABC234',
-    status: 'waiting',
-    state: createInitialState(),
-    createdAt: 1,
-    hostPlayerId: OTHER,
-    hostName: 'Other',
-    guestPlayerId: null,
-    ...overrides,
+    roomList: [room],
+    yourRoomId: room.id,
+    room,
+    yourSide,
+    game: startGame(createInitialState()),
   };
 }
 
@@ -33,62 +32,60 @@ function deepFreeze<T>(value: T): T {
 
 describe('sessionReducer', () => {
   describe('roomListReceived', () => {
-    it('stores the list and finds the room where the player is the host', () => {
-      const myRoom = makeRoom({ id: 'MINE22', hostPlayerId: ME });
+    it('stores the list and clears the room when the player is in none', () => {
+      const before = inGame(makeRoom({ id: 'MINE22' }));
       const otherRoom = makeRoom({ id: 'OTHER2' });
-
-      const next = sessionReducer(initialSessionState, {
-        type: 'roomListReceived',
-        roomList: [otherRoom, myRoom],
-        playerId: ME,
-      });
-
-      expect(next.roomList).toEqual([otherRoom, myRoom]);
-      expect(next.room).toBe(myRoom);
-    });
-
-    it('finds the room where the player is the guest and keeps yourSide and game', () => {
-      const game = createInitialState();
-      const before: SessionState = {
-        roomList: [],
-        room: makeRoom({ guestPlayerId: ME }),
-        yourSide: 'blue',
-        game,
-      };
-      const updatedRoom = makeRoom({ guestPlayerId: ME, status: 'playing' });
-
-      const next = sessionReducer(before, {
-        type: 'roomListReceived',
-        roomList: [updatedRoom],
-        playerId: ME,
-      });
-
-      expect(next.room).toBe(updatedRoom);
-      expect(next.yourSide).toBe('blue');
-      expect(next.game).toBe(game);
-    });
-
-    it('resets room, yourSide and game when the player has no room in the list', () => {
-      const before: SessionState = {
-        roomList: [],
-        room: makeRoom({ hostPlayerId: ME }),
-        yourSide: 'red',
-        game: createInitialState(),
-      };
-      const otherRoom = makeRoom();
 
       const next = sessionReducer(before, {
         type: 'roomListReceived',
         roomList: [otherRoom],
-        playerId: ME,
+        yourRoomId: null,
       });
 
-      expect(next).toEqual({ roomList: [otherRoom], room: null, yourSide: null, game: null });
+      expect(next).toEqual({
+        roomList: [otherRoom],
+        yourRoomId: null,
+        room: null,
+        yourSide: null,
+        game: null,
+      });
+    });
+
+    it('refreshes the current room from the list and keeps yourSide and game', () => {
+      const before = inGame(makeRoom({ id: 'MINE22', status: 'waiting' }), 'blue');
+      const updated = makeRoom({ id: 'MINE22', status: 'playing', hasGuest: true });
+
+      const next = sessionReducer(before, {
+        type: 'roomListReceived',
+        roomList: [makeRoom({ id: 'OTHER2' }), updated],
+        yourRoomId: 'MINE22',
+      });
+
+      expect(next.room).toBe(updated);
+      expect(next.yourRoomId).toBe('MINE22');
+      expect(next.yourSide).toBe('blue');
+      expect(next.game).toBe(before.game);
+    });
+
+    it('takes a new room from the list, drops the game and keeps yourSide', () => {
+      const before = inGame(makeRoom({ id: 'OLD222' }), 'red');
+      const fresh = makeRoom({ id: 'NEW222' });
+
+      const next = sessionReducer(before, {
+        type: 'roomListReceived',
+        roomList: [fresh],
+        yourRoomId: 'NEW222',
+      });
+
+      expect(next.room).toBe(fresh);
+      expect(next.yourRoomId).toBe('NEW222');
+      expect(next.yourSide).toBe('red');
+      expect(next.game).toBeNull();
     });
   });
 
-  it('roomCreated sets room and yourSide from the payload', () => {
-    const room = makeRoom({ hostPlayerId: ME });
+  it('roomCreated sets the room, yourRoomId and yourSide', () => {
+    const room = makeRoom({ id: 'MINE22' });
 
     const next = sessionReducer(initialSessionState, {
       type: 'roomCreated',
@@ -96,28 +93,76 @@ describe('sessionReducer', () => {
       yourSide: 'red',
     });
 
-    expect(next.room).toBe(room);
-    expect(next.yourSide).toBe('red');
-    expect(next.game).toBeNull();
+    expect(next).toEqual({ roomList: [], yourRoomId: 'MINE22', room, yourSide: 'red', game: null });
   });
 
-  it('roomLeft stores the new list and resets room, yourSide and game', () => {
-    const before: SessionState = {
-      roomList: [makeRoom({ hostPlayerId: ME })],
-      room: makeRoom({ hostPlayerId: ME }),
-      yourSide: 'red',
-      game: createInitialState(),
-    };
-    const remaining = makeRoom({ id: 'OTHER2' });
+  it('roomLeft keeps the list and resets everything about the room', () => {
+    const room = makeRoom({ id: 'MINE22' });
+    const before = inGame(room);
 
-    const next = sessionReducer(before, { type: 'roomLeft', roomList: [remaining] });
+    const next = sessionReducer(before, { type: 'roomLeft' });
 
-    expect(next).toEqual({ roomList: [remaining], room: null, yourSide: null, game: null });
+    expect(next).toEqual({
+      roomList: [room],
+      yourRoomId: null,
+      room: null,
+      yourSide: null,
+      game: null,
+    });
+  });
+
+  describe('opponentLeft', () => {
+    it('keeps the host in the room with the new summary and no game', () => {
+      const before = inGame(makeRoom({ id: 'MINE22', status: 'playing', hasGuest: true }), 'red');
+      const waiting = makeRoom({ id: 'MINE22', status: 'waiting', hasGuest: false });
+
+      const next = sessionReducer(before, { type: 'opponentLeft', room: waiting });
+
+      expect(next.room).toBe(waiting);
+      expect(next.yourRoomId).toBe('MINE22');
+      expect(next.yourSide).toBe('red');
+      expect(next.game).toBeNull();
+    });
+
+    it('sends the guest back to the lobby when the room was closed', () => {
+      const room = makeRoom({ id: 'THEIRS', status: 'playing', hasGuest: true });
+      const before = inGame(room, 'blue');
+
+      const next = sessionReducer(before, { type: 'opponentLeft', room: null });
+
+      expect(next).toEqual({
+        roomList: [room],
+        yourRoomId: null,
+        room: null,
+        yourSide: null,
+        game: null,
+      });
+    });
+  });
+
+  it('roomSessionReceived sets the room, side and game', () => {
+    const room = makeRoom({ id: 'THEIRS', status: 'playing', hasGuest: true });
+    const state = startGame(createInitialState());
+
+    const next = sessionReducer(initialSessionState, {
+      type: 'roomSessionReceived',
+      room,
+      state,
+      yourSide: 'blue',
+    });
+
+    expect(next).toEqual({
+      roomList: [],
+      yourRoomId: 'THEIRS',
+      room,
+      yourSide: 'blue',
+      game: state,
+    });
+    expect(next.game).toBe(state);
   });
 
   it('gameStateReceived replaces the game and keeps the rest', () => {
-    const room = makeRoom({ hostPlayerId: ME });
-    const before: SessionState = { roomList: [room], room, yourSide: 'red', game: null };
+    const before = inGame(makeRoom());
     const game = createInitialState();
 
     const next = sessionReducer(before, { type: 'gameStateReceived', state: game });
@@ -127,18 +172,22 @@ describe('sessionReducer', () => {
   });
 
   it('does not mutate the input state', () => {
-    const before: SessionState = deepFreeze({
-      roomList: [makeRoom({ hostPlayerId: ME })],
-      room: makeRoom({ hostPlayerId: ME }),
-      yourSide: 'red',
-      game: createInitialState(),
-    });
+    const before: SessionState = deepFreeze(inGame(makeRoom({ id: 'MINE22' })));
     const snapshot = JSON.parse(JSON.stringify(before));
     const actions: SessionAction[] = [
-      { type: 'roomListReceived', roomList: [makeRoom()], playerId: ME },
-      { type: 'roomListReceived', roomList: [makeRoom({ hostPlayerId: ME })], playerId: ME },
-      { type: 'roomCreated', room: makeRoom({ id: 'NEW234', hostPlayerId: ME }), yourSide: 'red' },
-      { type: 'roomLeft', roomList: [] },
+      { type: 'roomListReceived', roomList: [makeRoom()], yourRoomId: null },
+      { type: 'roomListReceived', roomList: [makeRoom({ id: 'MINE22' })], yourRoomId: 'MINE22' },
+      { type: 'roomListReceived', roomList: [makeRoom({ id: 'NEW222' })], yourRoomId: 'NEW222' },
+      { type: 'roomCreated', room: makeRoom({ id: 'NEW234' }), yourSide: 'red' },
+      { type: 'roomLeft' },
+      { type: 'opponentLeft', room: makeRoom({ id: 'MINE22' }) },
+      { type: 'opponentLeft', room: null },
+      {
+        type: 'roomSessionReceived',
+        room: makeRoom({ id: 'NEW222', status: 'playing' }),
+        state: createInitialState(),
+        yourSide: 'blue',
+      },
       { type: 'gameStateReceived', state: createInitialState() },
     ];
 

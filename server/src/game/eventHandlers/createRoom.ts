@@ -4,11 +4,12 @@ import {
   type RoomCreatedPayload,
 } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
+import { emitRoomList, toRoomSummary } from '../roomBroadcast.js';
 import { onEvent, playerRoom, type EventContext } from '../../socketUtils.js';
 import { parseNoPayload } from '../../validation.js';
 
 export function registerCreateRoom({ socket, io }: EventContext): void {
-  onEvent(socket, EVENTS.CREATE_ROOM_REQUEST, parseNoPayload, () => {
+  onEvent(socket, EVENTS.CREATE_ROOM_REQUEST, parseNoPayload, async () => {
     const { playerId, name } = socket.data;
     const result = roomService.createGameRoomInstance({ hostPlayerId: playerId, hostName: name });
     if (!result.success) {
@@ -17,7 +18,9 @@ export function registerCreateRoom({ socket, io }: EventContext): void {
       return;
     }
 
-    const roomCreatedPayload: RoomCreatedPayload = { room: result.data, player: 'red' };
-    io.to(playerRoom(playerId)).emit(EVENTS.CREATE_ROOM_RESPONSE, roomCreatedPayload);
+    // The host always plays red.
+    const created: RoomCreatedPayload = { room: toRoomSummary(result.data), yourSide: 'red' };
+    io.to(playerRoom(playerId)).emit(EVENTS.CREATE_ROOM_RESPONSE, created);
+    await emitRoomList(io);
   });
 }

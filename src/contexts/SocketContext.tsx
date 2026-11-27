@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useReducer, type ReactNode } from 'react';
-import type { IGameRoom } from '@infection-game/shared';
 
 import { useRoomEvents } from '../hooks/useRoomEvents';
 import { useSocketConnection } from '../hooks/useSocketConnection';
-import { useGameState } from '../hooks/useGameState';
+import { useGameEvents } from '../hooks/useGameEvents';
 import { usePlayerSession } from '../hooks/usePlayerSession';
 import { initialSessionState, sessionReducer, type SessionState } from '../session/sessionReducer';
 
@@ -11,14 +10,13 @@ export type SocketContextValue = {
   socketConnected: boolean;
   connectionError: string | null;
   socketId: string | null;
-  playerId: string;
   playerName: string;
 
   session: SessionState;
 
   actionListRooms: () => void;
   actionCreateRoom: () => void;
-  actionJoinRoom: (room: IGameRoom) => void;
+  actionJoinRoom: (roomCode: string) => void;
   actionLeaveRoom: (roomCode: string) => void;
 };
 
@@ -34,13 +32,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     dispatch
   );
 
-  useGameState(connection.socket, dispatch);
+  useGameEvents(connection.socket, dispatch);
 
   const value: SocketContextValue = {
     socketConnected: connection.socketConnected,
     connectionError: connection.connectionError,
     socketId: connection.socketId,
-    playerId,
     playerName,
     session,
     actionListRooms,

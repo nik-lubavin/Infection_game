@@ -1,25 +1,32 @@
 import React from 'react';
-import { Typography, Card, Row, Col, Button, List, Tag } from 'antd';
+import { Typography, Card, Row, Col, Button, List, Tag, Space } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
-import type { IGameRoom } from '@infection-game/shared';
+import type { IRoomSummary, RoomStatus } from '@infection-game/shared';
 import SocketConnectionStatus from './SocketConnectionStatus';
 const { Text } = Typography;
 
+const STATUS_COLOR: Record<RoomStatus, string> = {
+  waiting: 'gold',
+  playing: 'green',
+  finished: 'default',
+};
+
 export interface RoomsListProps {
-  playerId: string;
+  /** Room the player is in; null in the lobby. */
+  yourRoomId: string | null;
   connectionError: string | null;
-  roomList: IGameRoom[];
+  roomList: IRoomSummary[];
   socketConnected: boolean;
   actionListRooms: () => void;
   actionCreateRoom: () => void;
-  actionJoinRoom: (room: IGameRoom) => void;
+  actionJoinRoom: (roomCode: string) => void;
   actionLeaveRoom: (roomCode: string) => void;
 }
 
 const RoomsList: React.FC<RoomsListProps> = (props) => {
   const {
-    playerId,
+    yourRoomId,
     connectionError,
     roomList,
     socketConnected,
@@ -28,6 +35,8 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
     actionJoinRoom,
     actionLeaveRoom,
   } = props;
+  const inLobby = yourRoomId === null;
+
   return (
     <Card
       title="Server rooms"
@@ -50,11 +59,13 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
             connectionError={connectionError}
           />
         </Col>
-        <Col span={24}>
-          <Button type="primary" block disabled={!socketConnected} onClick={actionCreateRoom}>
-            Create room
-          </Button>
-        </Col>
+        {inLobby && (
+          <Col span={24}>
+            <Button type="primary" block disabled={!socketConnected} onClick={actionCreateRoom}>
+              Create room
+            </Button>
+          </Col>
+        )}
       </Row>
       {roomList.length === 0 ? (
         <Text type="secondary">No open rooms</Text>
@@ -62,42 +73,43 @@ const RoomsList: React.FC<RoomsListProps> = (props) => {
         <List
           size="small"
           dataSource={roomList}
-          renderItem={(room: IGameRoom) => {
-            const inThisRoom = room.hostPlayerId === playerId || room.guestPlayerId === playerId;
-            const canConnect = socketConnected;
-            return (
-              <List.Item
-                style={inThisRoom ? { backgroundColor: '#fffbe6' } : undefined}
-                actions={
-                  inThisRoom
-                    ? [
-                        <Button
-                          key="disconnect-room"
-                          type="link"
-                          danger
-                          size="small"
-                          onClick={() => actionLeaveRoom(room.id)}
-                          aria-label={`Disconnect from room ${room.id}`}
-                        >
-                          Disconnect room
-                        </Button>,
-                      ]
-                    : canConnect
-                      ? [
-                          <Button
-                            key="connect-room"
-                            type="link"
-                            size="small"
-                            onClick={() => actionJoinRoom(room)}
-                            aria-label={`Connect to room ${room.id}`}
-                          >
-                            Connect
-                          </Button>,
-                        ]
-                      : undefined
-                }
+          renderItem={(room: IRoomSummary) => {
+            const inThisRoom = room.id === yourRoomId;
+            const canConnect =
+              socketConnected && inLobby && room.status === 'waiting' && !room.hasGuest;
+            // Own layout instead of List.Item `actions`: their 48px indent pushes the button
+            // out of the narrow sidebar.
+            const action = inThisRoom ? (
+              <Button
+                type="link"
+                danger
+                size="small"
+                onClick={() => actionLeaveRoom(room.id)}
+                aria-label={`Disconnect from room ${room.id}`}
               >
-                <Tag color="gray">{room.id}</Tag>
+                Disconnect room
+              </Button>
+            ) : canConnect ? (
+              <Button
+                type="link"
+                size="small"
+                onClick={() => actionJoinRoom(room.id)}
+                aria-label={`Connect to room ${room.id}`}
+              >
+                Connect
+              </Button>
+            ) : null;
+
+            return (
+              <List.Item style={inThisRoom ? { backgroundColor: '#fffbe6' } : undefined}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+                  <Space size={4} wrap style={{ flex: 1, minWidth: 0 }}>
+                    <Tag color="gray">{room.id}</Tag>
+                    <Text>{room.hostName}</Text>
+                    <Tag color={STATUS_COLOR[room.status]}>{room.status}</Tag>
+                  </Space>
+                  {action}
+                </div>
               </List.Item>
             );
           }}

@@ -1,6 +1,12 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { EVENTS } from '@infection-game/shared';
+import {
+  EVENTS,
+  createInitialState,
+  startGame,
+  type IRoomSummary,
+  type RoomSessionPayload,
+} from '@infection-game/shared';
 import App from './App';
 
 type Handler = (payload: unknown) => void;
@@ -62,4 +68,53 @@ test('sends the player identity in the handshake auth', () => {
       name: expect.stringMatching(/^[A-Z]{3}\d$/),
     },
   });
+});
+
+const waitingRoom: IRoomSummary = {
+  id: 'ABC234',
+  status: 'waiting',
+  hostName: 'HST1',
+  hasGuest: false,
+};
+const playingRoom: IRoomSummary = { ...waitingRoom, status: 'playing', hasGuest: true };
+
+function session(yourSide: 'red' | 'blue'): RoomSessionPayload {
+  return { room: playingRoom, state: startGame(createInitialState()), yourSide };
+}
+
+test('lists rooms pushed by the server with host name and status', () => {
+  render(<App />);
+  serverEmits('connect', undefined);
+  serverEmits(EVENTS.ROOM_LIST_UPDATED, { data: [waitingRoom], yourRoomId: null });
+  expect(screen.getByText('ABC234')).toBeInTheDocument();
+  expect(screen.getByText('HST1')).toBeInTheDocument();
+  expect(screen.getByText('waiting')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Connect to room ABC234' })).toBeInTheDocument();
+});
+
+test('the guest sees the board with nothing to click on the red turn', () => {
+  render(<App />);
+  serverEmits(EVENTS.JOIN_ROOM_RESPONSE, session('blue'));
+  expect(screen.getAllByLabelText(/^Cell \d+-\d+$/)).toHaveLength(100);
+  expect(screen.getByLabelText('Cell 0-0')).toHaveStyle({ backgroundColor: '#f0f0f0' });
+});
+
+test('the host waits in the modal, then sees the board with 0-0 available', () => {
+  render(<App />);
+  serverEmits(EVENTS.CREATE_ROOM_RESPONSE, { room: waitingRoom, yourSide: 'red' });
+  expect(screen.getByText('New game')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Cell 0-0')).not.toBeInTheDocument();
+
+  serverEmits(EVENTS.PLAYER_JOINED_ROOM, session('red'));
+  expect(screen.queryByText('New game')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Cell 0-0')).toHaveStyle({ backgroundColor: '#ffeeee' });
+  expect(screen.getByLabelText('Cell 0-1')).toHaveStyle({ backgroundColor: '#f0f0f0' });
+});
+
+test('the guest is back in the lobby when the host closes the room', async () => {
+  render(<App />);
+  serverEmits(EVENTS.JOIN_ROOM_RESPONSE, session('blue'));
+  serverEmits(EVENTS.OPPONENT_LEFT, { roomCode: 'ABC234', room: null });
+  expect(await screen.findByText('Opponent left. The room was closed.')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Cell 0-0')).not.toBeInTheDocument();
 });

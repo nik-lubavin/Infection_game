@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
-import { PlayerType } from '../interfaces/Board';
+import { CellType, type RoomPlayerSide } from '@infection-game/shared';
 import { CELL_SIZE } from '../constants/board';
-import { ICell } from '../classes/Cell';
-import { CellType, IColonySet } from '@infection-game/shared';
 
 interface CellProps {
-  cell: ICell;
-  currentTurn: PlayerType;
-  onCellClick?: (cell: ICell) => void;
-  isAvailable: boolean;
-  colonySet: IColonySet | null;
+  cellCode: string;
   cellType: CellType | null;
+  isAvailable: boolean;
+  /** Side of the player; colors the highlight of an available cell. */
+  side: RoomPlayerSide;
+  onClick?: (cellCode: string) => void;
 }
 
 const CellComponent: React.FC<CellProps> = (props: CellProps) => {
-  const { cell, onCellClick: onClick, isAvailable, currentTurn, cellType } = props;
+  const { cellCode, cellType, isAvailable, side, onClick } = props;
 
   const [isHovered, setIsHovered] = useState(false);
   const [animationClass, setAnimationClass] = useState<string>('');
@@ -71,11 +69,7 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
       backgroundColor = notAvailableHoverColor;
     }
   } else if (isAvailable) {
-    if (currentTurn === PlayerType.RED) {
-      backgroundColor = redBaseColor;
-    } else if (currentTurn === PlayerType.BLUE) {
-      backgroundColor = blueBaseColor;
-    }
+    backgroundColor = side === 'red' ? redBaseColor : blueBaseColor;
   }
 
   // Determine cell content styling
@@ -147,12 +141,13 @@ const CellComponent: React.FC<CellProps> = (props: CellProps) => {
 
   const handleClick = () => {
     if (isAvailable && onClick) {
-      onClick(cell);
+      onClick(cellCode);
     }
   };
 
   return (
     <div
+      aria-label={`Cell ${cellCode}`}
       style={{
         width: `${CELL_SIZE}px`,
         height: `${CELL_SIZE}px`,

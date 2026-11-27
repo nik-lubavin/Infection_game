@@ -1,11 +1,6 @@
-import {
-  EVENTS,
-  type GameStartPayload,
-  type JoinFailedPayload,
-  type JoinRoomPayload,
-  type RoomPlayerSide,
-} from '@infection-game/shared';
+import { EVENTS, type JoinFailedPayload, type JoinRoomPayload } from '@infection-game/shared';
 import { roomService } from '../services/roomService.js';
+import { emitRoomList, roomSessionFor } from '../roomBroadcast.js';
 import { onEvent, playerRoom, type EventContext } from '../../socketUtils.js';
 import { parseRoomCode, type ParseResult } from '../../validation.js';
 
@@ -14,7 +9,7 @@ export function parseJoinRoom(raw: JoinRoomPayload): ParseResult<JoinRoomPayload
 }
 
 export function registerJoinRoom({ socket, io }: EventContext): void {
-  onEvent(socket, EVENTS.JOIN_ROOM_REQUEST, parseJoinRoom, ({ roomCode }) => {
+  onEvent(socket, EVENTS.JOIN_ROOM_REQUEST, parseJoinRoom, async ({ roomCode }) => {
     const me = socket.data.playerId;
     console.log('join game event', { roomCode, playerId: me });
 
@@ -35,15 +30,13 @@ export function registerJoinRoom({ socket, io }: EventContext): void {
     const room = started.data;
     console.log(`player ${me} joined room ${roomCode}`);
 
-    const payloadFor = (yourPlayer: RoomPlayerSide): GameStartPayload => ({
-      roomCode,
-      serializedState: room.state,
-      yourPlayer,
-      turn: yourPlayer === 'red' ? 'blue' : 'red',
-    });
-
-    // The joiner is the guest (blue); every tab of the host (red) learns about the join.
-    io.to(playerRoom(me)).emit(EVENTS.JOIN_ROOM_RESPONSE, payloadFor('blue'));
-    io.to(playerRoom(room.hostPlayerId)).emit(EVENTS.PLAYER_JOINED_ROOM, payloadFor('red'));
+    // Every tab of the guest gets the game; every tab of the host learns the game started.
+    const guestSession = roomSessionFor(room, me);
+    if (guestSession) io.to(playerRoom(me)).emit(EVENTS.JOIN_ROOM_RESPONSE, guestSession);
+    const hostSession = roomSessionFor(room, room.hostPlayerId);
+    if (hostSession) {
+      io.to(playerRoom(room.hostPlayerId)).emit(EVENTS.PLAYER_JOINED_ROOM, hostSession);
+    }
+    await emitRoomList(io);
   });
 }

@@ -20,7 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     actionCreateRoom,
     actionJoinRoom,
     actionLeaveRoom,
-    playerId,
   } = useSocketContext();
   const { game } = session;
   // Side that moves now; null when nobody does (game not started or over).
@@ -98,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
             actionCreateRoom={actionCreateRoom}
             actionJoinRoom={actionJoinRoom}
             actionLeaveRoom={actionLeaveRoom}
-            playerId={playerId}
+            yourRoomId={session.yourRoomId}
           />
         </>
       )}

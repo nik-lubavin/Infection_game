@@ -3,17 +3,16 @@ import { App as AntdApp } from 'antd';
 import type { Socket } from 'socket.io-client';
 import {
   EVENTS,
-  PlayerLeftRoomPayload,
-  RoomsListedPayload,
-  type IGameRoom,
+  type CreateRoomFailedPayload,
   type JoinFailedPayload,
   type JoinRoomPayload,
   type LeaveRoomFailedPayload,
   type LeaveRoomPayload,
+  type OpponentLeftPayload,
   type RequestFailedPayload,
   type RoomCreatedPayload,
+  type RoomListPayload,
 } from '@infection-game/shared';
-import { usePlayerSession } from './usePlayerSession';
 import type { SessionAction } from '../session/sessionReducer';
 
 export function useRoomEvents(
@@ -22,11 +21,9 @@ export function useRoomEvents(
 ): {
   actionListRooms: () => void;
   actionCreateRoom: () => void;
-  actionJoinRoom: (room: IGameRoom) => void;
+  actionJoinRoom: (roomCode: string) => void;
   actionLeaveRoom: (roomCode: string) => void;
 } {
-  // Only to find the player's own room in the list; the server never gets it from a payload.
-  const { playerId } = usePlayerSession();
   const { message } = AntdApp.useApp();
 
   const actionCreateRoom = useCallback(() => {
@@ -38,8 +35,8 @@ export function useRoomEvents(
   }, [socket]);
 
   const actionJoinRoom = useCallback(
-    (room: IGameRoom) => {
-      const payload: JoinRoomPayload = { roomCode: room.id };
+    (roomCode: string) => {
+      const payload: JoinRoomPayload = { roomCode };
       socket?.emit(EVENTS.JOIN_ROOM_REQUEST, payload);
     },
     [socket]
@@ -56,27 +53,39 @@ export function useRoomEvents(
   useEffect(() => {
     if (!socket) return;
 
-    const onListed = (payload: RoomsListedPayload) => {
-      dispatch({ type: 'roomListReceived', roomList: payload.data ?? [], playerId });
+    // The answer to our own request and the broadcast after any change look the same.
+    const onRoomList = (payload: RoomListPayload) => {
+      dispatch({
+        type: 'roomListReceived',
+        roomList: payload.data,
+        yourRoomId: payload.yourRoomId,
+      });
     };
 
     const onRoomCreated = (payload: RoomCreatedPayload) => {
-      dispatch({ type: 'roomCreated', room: payload.room, yourSide: payload.player });
+      dispatch({ type: 'roomCreated', room: payload.room, yourSide: payload.yourSide });
     };
 
-    const onPlayerLeftRoom = (payload: PlayerLeftRoomPayload) => {
-      dispatch({ type: 'roomLeft', roomList: payload.roomList });
+    const onRoomLeft = () => {
+      dispatch({ type: 'roomLeft' });
     };
 
-    const onJoinFailed = (payload: JoinFailedPayload) => {
-      message.error(payload.reason);
+    const onOpponentLeft = (payload: OpponentLeftPayload) => {
+      dispatch({ type: 'opponentLeft', room: payload.room });
+      message.info(
+        payload.room === null
+          ? 'Opponent left. The room was closed.'
+          : 'Opponent left. Waiting for a new player.'
+      );
     };
 
-    const onLeaveFailed = (payload: LeaveRoomFailedPayload) => {
-      message.error(payload.reason);
-    };
-
-    const onRequestFailed = (payload: RequestFailedPayload) => {
+    const onFailed = (
+      payload:
+        | CreateRoomFailedPayload
+        | JoinFailedPayload
+        | LeaveRoomFailedPayload
+        | RequestFailedPayload
+    ) => {
       message.error(payload.reason);
     };
 
@@ -84,27 +93,33 @@ export function useRoomEvents(
       socket.emit(EVENTS.LIST_ROOMS_REQUEST);
     };
 
-    socket.on(EVENTS.LIST_ROOMS_RESPONSE, onListed);
+    socket.on(EVENTS.LIST_ROOMS_RESPONSE, onRoomList);
+    socket.on(EVENTS.ROOM_LIST_UPDATED, onRoomList);
     socket.on(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
-    socket.on(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeftRoom);
-    socket.on(EVENTS.JOIN_ROOM_FAILED, onJoinFailed);
-    socket.on(EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
-    socket.on(EVENTS.REQUEST_FAILED, onRequestFailed);
+    socket.on(EVENTS.LEAVE_ROOM_RESPONSE, onRoomLeft);
+    socket.on(EVENTS.OPPONENT_LEFT, onOpponentLeft);
+    socket.on(EVENTS.CREATE_ROOM_FAILED, onFailed);
+    socket.on(EVENTS.JOIN_ROOM_FAILED, onFailed);
+    socket.on(EVENTS.LEAVE_ROOM_FAILED, onFailed);
+    socket.on(EVENTS.REQUEST_FAILED, onFailed);
     socket.on('connect', onConnect);
     if (socket.connected) {
       onConnect();
     }
 
     return () => {
-      socket.off(EVENTS.LIST_ROOMS_RESPONSE, onListed);
+      socket.off(EVENTS.LIST_ROOMS_RESPONSE, onRoomList);
+      socket.off(EVENTS.ROOM_LIST_UPDATED, onRoomList);
       socket.off(EVENTS.CREATE_ROOM_RESPONSE, onRoomCreated);
-      socket.off(EVENTS.LEAVE_ROOM_RESPONSE, onPlayerLeftRoom);
-      socket.off(EVENTS.JOIN_ROOM_FAILED, onJoinFailed);
-      socket.off(EVENTS.LEAVE_ROOM_FAILED, onLeaveFailed);
-      socket.off(EVENTS.REQUEST_FAILED, onRequestFailed);
+      socket.off(EVENTS.LEAVE_ROOM_RESPONSE, onRoomLeft);
+      socket.off(EVENTS.OPPONENT_LEFT, onOpponentLeft);
+      socket.off(EVENTS.CREATE_ROOM_FAILED, onFailed);
+      socket.off(EVENTS.JOIN_ROOM_FAILED, onFailed);
+      socket.off(EVENTS.LEAVE_ROOM_FAILED, onFailed);
+      socket.off(EVENTS.REQUEST_FAILED, onFailed);
       socket.off('connect', onConnect);
     };
-  }, [socket, playerId, dispatch, message]);
+  }, [socket, dispatch, message]);
 
   return {
     actionListRooms,

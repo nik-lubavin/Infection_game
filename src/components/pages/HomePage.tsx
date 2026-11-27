@@ -26,7 +26,7 @@ const HomePage: React.FC = () => {
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      <MainLayoutSection sidebarCollapsed={sidebarCollapsed} />
+      <MainLayoutSection sidebarCollapsed={sidebarCollapsed} session={session} />
       <Footer style={{ textAlign: 'center' }}>
         Virus Infection Game ©{new Date().getFullYear()}
       </Footer>

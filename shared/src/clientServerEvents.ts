@@ -1,10 +1,4 @@
-import type {
-  IGameRoom,
-  IGameState,
-  IRoomSummary,
-  RoomPlayerSide,
-  RoomStatus,
-} from './types/index.js';
+import type { IGameState, IRoomSummary, RoomPlayerSide, RoomStatus } from './types/index.js';
 
 /**
  * Socket.IO event names. Each logical event has a pair:
@@ -22,11 +16,13 @@ export const EVENTS = {
   LIST_ROOMS_REQUEST: 'list_rooms_request',
   LIST_ROOMS_RESPONSE: 'list_rooms_response',
   LIST_ROOMS_FAILED: 'list_rooms_failed',
+  /** Sent to every socket whenever the room list changes; `yourRoomId` is per player. */
+  ROOM_LIST_UPDATED: 'room_list_updated',
 
   JOIN_ROOM_REQUEST: 'join_room_request',
   JOIN_ROOM_RESPONSE: 'join_room_response',
   JOIN_ROOM_FAILED: 'join_room_failed',
-  /** Sent to everyone else in the room when a player joins it. */
+  /** Sent to the host when a guest joins the room. */
   PLAYER_JOINED_ROOM: 'player_joined_room',
 
   LEAVE_ROOM_REQUEST: 'leave_room_request',
@@ -70,14 +66,27 @@ export interface GameActionPayloadV2 {
   cellCode: string;
 }
 
-// Server events payloads (legacy)
-export interface RoomCreatedPayload {
-  room: IGameRoom;
-  player: RoomPlayerSide;
+// Server events payloads
+export interface RoomListPayload {
+  data: IRoomSummary[];
+  /** Room the receiving player is in; null in the lobby. */
+  yourRoomId: string | null;
 }
 
-export interface RoomsListedPayload {
-  data: IGameRoom[];
+export interface RoomCreatedPayload {
+  room: IRoomSummary;
+  yourSide: RoomPlayerSide;
+}
+
+/** Everything a player needs to show their room: sent on join, on opponent join and on reconnect. */
+export interface RoomSessionPayload {
+  room: IRoomSummary;
+  state: IGameState;
+  yourSide: RoomPlayerSide;
+}
+
+export interface LeaveRoomResponsePayload {
+  roomCode: string;
 }
 
 export interface CreateRoomFailedPayload {
@@ -96,37 +105,6 @@ export interface LeaveRoomFailedPayload {
   reason: string;
 }
 
-export interface PlayerLeftRoomPayload {
-  roomList: IGameRoom[];
-}
-
-export interface GameStartPayload {
-  roomCode: string;
-  serializedState: IGameState;
-  yourPlayer: RoomPlayerSide;
-  turn: RoomPlayerSide;
-}
-
-/** Same data as the joiner gets, with `yourPlayer` set for the receiver. */
-export type PlayerJoinedRoomPayload = GameStartPayload;
-
-// Server events payloads (new contract; V2 names replace the legacy ones in SH3)
-export interface RoomsListedPayloadV2 {
-  data: IRoomSummary[];
-  yourRoomId: string | null;
-}
-
-export interface RoomCreatedPayloadV2 {
-  room: IRoomSummary;
-  yourSide: RoomPlayerSide;
-}
-
-export interface GameStartPayloadV2 {
-  roomCode: string;
-  state: IGameState;
-  yourSide: RoomPlayerSide;
-}
-
 export interface StateUpdatePayload {
   roomCode: string;
   state: IGameState;
@@ -139,6 +117,8 @@ export interface ActionRejectedPayload {
 
 export interface OpponentLeftPayload {
   roomCode: string;
+  /** The room after the opponent left; null when the host left and the room was closed. */
+  room: IRoomSummary | null;
 }
 
 export interface RequestFailedPayload {

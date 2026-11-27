@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Button, Modal, Space, Tag, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { opponentOf, type IGameRoom, type RoomPlayerSide } from '@infection-game/shared';
+import { opponentOf, type IRoomSummary, type RoomPlayerSide } from '@infection-game/shared';
 
 const { Text } = Typography;
 
@@ -54,14 +54,17 @@ const Seat: React.FC<SeatProps> = ({ side, playerName, isYou }) => {
 };
 
 interface GameStartModalProps {
-  room: IGameRoom | null;
+  room: IRoomSummary | null;
   /** Side of the current player; the modal stays closed while it is unknown. */
   yourSide: RoomPlayerSide | null;
   playerName: string;
   actionLeaveRoom: (roomCode: string) => void;
 }
 
-/** Game start form: the current player's seat is filled, the opponent's seat stays empty. */
+/**
+ * Game start form while the room waits for the second player: the current player's seat is
+ * filled, the opponent's seat stays empty. Closes by itself once the game starts.
+ */
 const GameStartModal: React.FC<GameStartModalProps> = ({
   room,
   yourSide,
@@ -70,11 +73,12 @@ const GameStartModal: React.FC<GameStartModalProps> = ({
 }) => {
   const [dismissed, setDismissed] = useState(false);
 
+  // Opens again for a new room and when the room is back to waiting (the guest left).
   useEffect(() => {
     setDismissed(false);
-  }, [room?.id]);
+  }, [room?.id, room?.status]);
 
-  if (room === null || yourSide === null) return null;
+  if (room === null || yourSide === null || room.status !== 'waiting') return null;
 
   const you: SeatProps = { side: yourSide, playerName, isYou: true };
   const opponent: SeatProps = { side: opponentOf(yourSide), playerName: null, isYou: false };
